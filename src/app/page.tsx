@@ -2,6 +2,7 @@ import Hero from "@/components/Hero";
 import { FloatingNav } from "@/components/ui/FloatingNavbar";
 import React from "react";
 import { navItems } from "./data";
+import Grid from "@/components/Grid";
 
 const page = () => {
   return (
@@ -9,6 +10,7 @@ const page = () => {
       <div className="max-w-7xl w-full">
         <FloatingNav navItems={navItems} />
         <Hero />
+        <Grid />
       </div>
     </main>
   );

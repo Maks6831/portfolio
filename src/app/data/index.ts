@@ -68,3 +68,22 @@ export const navItems = [
       spareImg: "",
     },
   ];
+
+  export const projects = [
+    {
+      id: 1,
+      title: "Panther Print - Custom Cases",
+      des: "Create custom high-quality phone cases in seconds",
+      img: "/PantherPrint-screenshot.png",
+      iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/pri.png'],
+      link: "https://pantherprint.netlify.app/",
+    },
+    {
+      id: 2,
+      title: "CoinFlow - Crypto Asset App",
+      des: " real-time price tracking and portfolio management for all your favorite cryptocurrencies",
+      img: "/coinflow-screenshot.png",
+      iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/red.png'],
+      link: "/ui.yoom.com",
+    }
+  ];

@@ -120,3 +120,17 @@ export const navItems = [
       className: "md:col-span-2",
       thumbnail: "/exp4.svg",
     },*/}
+
+
+    export const socialMedia = [
+      {
+        id: 1,
+        img: "/git.svg",
+        url:"https://github.com/Maks6831"
+      },
+      {
+        id: 3,
+        img: "/link.svg",
+        url: 'https://www.linkedin.com/in/muhammad-khan-464b80203/'
+      },
+    ];

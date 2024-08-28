@@ -4,6 +4,7 @@ import React from "react";
 import { navItems } from "./data";
 import Grid from "@/components/Grid";
 import RecentProjects from "@/components/RecentProjects";
+import Experience from "@/components/Experience";
 
 const page = () => {
   return (
@@ -13,6 +14,7 @@ const page = () => {
         <Hero />
         <Grid />
         <RecentProjects />
+        <Experience />
       </div>
     </main>
   );

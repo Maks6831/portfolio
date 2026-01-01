@@ -48,7 +48,7 @@ export const navItems = [
   
     {
       id: 5,
-      title: "Currently building a Django Nextjs application",
+      title: "Engaged in a SvelteKit project",
       description: "The Inside Scoop",
       className: "md:col-span-3 md:row-span-2",
       imgClassName: "absolute right-0 bottom-0 md:w-96 w-60",
@@ -71,6 +71,14 @@ export const navItems = [
   export const projects = [
     {
       id: 1,
+      title: "Simply Happy - Retreat Booking Platform",
+      des: "Book your next retreat with Simply Happy",
+      img: "/simplyhappy-screenshot.png",
+      iconLists: ["/svelte.svg", "/tail.svg", "/ts.svg",  '/supabase-icon.svg', 'trpc.svg'],
+      link: "https://simplyhappy.pt",
+    },
+    {
+      id: 2,
       title: "Panther Print - Custom Cases",
       des: "Create custom high-quality phone cases in seconds",
       img: "/PantherPrint-screenshot.png",
@@ -78,12 +86,12 @@ export const navItems = [
       link: "https://pantherprint.netlify.app/",
     },
     {
-      id: 2,
+      id: 3,
       title: "CoinFlow - Crypto Asset App",
       des: " real-time price tracking and portfolio management for all your favorite cryptocurrencies",
       img: "/coinflow-screenshot.png",
       iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/red.png'],
-      link: "https://muhammadalikhan.co.uk/",
+      link: "https://coinflow.co.uk/",
     }
   ];
 

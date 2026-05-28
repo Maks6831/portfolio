@@ -91,7 +91,7 @@ export const navItems = [
       des: " real-time price tracking and portfolio management for all your favorite cryptocurrencies",
       img: "/coinflow-screenshot.png",
       iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/red.png'],
-      link: "https://coinflow.co.uk/",
+      link: "https://coinflow.netlify.app/",
     }
   ];
 

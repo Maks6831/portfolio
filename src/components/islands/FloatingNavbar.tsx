@@ -17,11 +17,16 @@ export const FloatingNav = ({
 
   useEffect(() => {
     let last = window.scrollY;
-    // sync once after mount so a restored mid-page scroll position is respected
-    const raf = window.requestAnimationFrame(() => {
+    // Sync state with the scroll position. Run after mount, after load and on pageshow,
+    // because browsers restore a mid-page scroll position after the first frame.
+    const sync = () => {
       const max = document.documentElement.scrollHeight - window.innerHeight;
       setVisible(max <= 0 || window.scrollY / max < 0.05);
-    });
+      last = window.scrollY;
+    };
+    const raf = window.requestAnimationFrame(sync);
+    window.addEventListener("load", sync);
+    window.addEventListener("pageshow", sync);
     const onScroll = () => {
       const y = window.scrollY;
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -35,6 +40,8 @@ export const FloatingNav = ({
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
       window.cancelAnimationFrame(raf);
+      window.removeEventListener("load", sync);
+      window.removeEventListener("pageshow", sync);
       window.removeEventListener("scroll", onScroll);
     };
   }, []);

@@ -7,12 +7,13 @@
   },
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/check-islands.mjs && node scripts/check-dates.mjs",
-    "build": "next build",
+    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && next build && node scripts/check-budget.mjs && node scripts/check-anchors.mjs",
     "start": "next start",
     "lint": "eslint . && node scripts/check-islands.mjs && node scripts/check-dates.mjs",
     "check:islands": "node scripts/check-islands.mjs",
-    "check:dates": "node scripts/check-dates.mjs"
+    "check:dates": "node scripts/check-dates.mjs",
+    "check:budget": "node scripts/check-budget.mjs",
+    "check:anchors": "node scripts/check-anchors.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

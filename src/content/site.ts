@@ -23,8 +23,8 @@ export const simplyHappyFeature = {
     src: "/simplyhappy-screenshot.png",
     width: 2880,
     height: 1556,
-    alt: "The Simply Happy public website home page, showing the retreat listings.",
-    caption: "The public site, simplyhappy.pt",
+    alt: "The Simply Happy booking flow: a step for adding services such as cleaning, laundry and massage to a stay.",
+    caption: "The booking flow, simplyhappy.pt",
   },
   // Interim target until the case study route ships (Story 2.9).
   link: { label: "Visit simplyhappy.pt", href: "https://simplyhappy.pt" },

@@ -1,3 +1,6 @@
+const siteName = "Muhammad Ali Khan";
+const siteRole = "Full-stack engineer";
+
 export const email = "ma.khan6971@gmail.com";
 
 export const hero = {
@@ -159,5 +162,16 @@ export const contact = {
   linkedin: "https://www.linkedin.com/in/muhammad-khan-464b80203/",
   github: "https://github.com/Maks6831",
   cv: { href: "/Muhammad-Ali-Khan-CV.pdf", label: "Download CV (PDF)" },
-  name: "Muhammad Ali Khan",
+  name: siteName,
+};
+
+export const siteMeta = {
+  origin: "https://muhammadalikhan.co.uk",
+  name: siteName,
+  role: siteRole,
+  title: `${siteName} · ${siteRole}`,
+  description:
+    "Full-stack engineer in London. I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform.",
+  imageLine: "From email bookings to a live booking and payments platform.",
+  imageAlt: `${siteName}, ${siteRole.toLowerCase()}. From email bookings to a live booking and payments platform.`,
 };

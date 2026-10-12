@@ -1,12 +1,28 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { siteMeta } from "@/content/site";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Muhammad Ali Khan",
-  description: "Portfolio",
+  metadataBase: new URL(siteMeta.origin),
+  title: siteMeta.title,
+  description: siteMeta.description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: siteMeta.name,
+    title: siteMeta.title,
+    description: siteMeta.description,
+    locale: "en_GB",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteMeta.title,
+    description: siteMeta.description,
+  },
 };
 
 export default function RootLayout({

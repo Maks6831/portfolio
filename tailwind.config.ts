@@ -14,7 +14,6 @@ const config = {
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
     "./src/**/*.{ts,tsx}",
-    "./data/**/*.{ts,tsx}",
   ],
   prefix: "",
   theme: {
@@ -42,10 +41,21 @@ const config = {
           "100": "#E4ECFF",
         },
         purple: "#CBACF9",
-        border: "hsl(var(--border))",
+        // DESIGN.md tokens (single source). `background`, `border` and
+        // `accent` take the DESIGN.md values; shadcn `foreground` etc. stay.
+        background: "#000319",
+        surface: "#0A0D26",
+        "surface-raised": "#11152F",
+        border: "rgba(255, 255, 255, 0.125)",
+        "text-primary": "#FFFFFF",
+        "text-secondary": "#BEC1DD",
+        "text-muted": "#8E92B5",
+        "accent-strong": "#393BB2",
+        "accent-glow": "#E2CBFF",
+        success: "#7DD3A8",
+        "focus-ring": "#E2CBFF",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
           DEFAULT: "hsl(var(--primary))",
@@ -64,7 +74,7 @@ const config = {
           foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: "hsl(var(--accent))",
+          DEFAULT: "#CBACF9",
           foreground: "hsl(var(--accent-foreground))",
         },
         popover: {
@@ -76,7 +86,26 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      fontSize: {
+        display: ["56px", { lineHeight: "1.08", letterSpacing: "-0.02em", fontWeight: "700" }],
+        "display-mobile": ["36px", { lineHeight: "1.12", letterSpacing: "-0.02em", fontWeight: "700" }],
+        heading: ["32px", { lineHeight: "1.2", fontWeight: "700" }],
+        subheading: ["20px", { lineHeight: "1.3", fontWeight: "600" }],
+        body: ["17px", { lineHeight: "1.65", fontWeight: "400" }],
+        caption: ["14px", { lineHeight: "1.5", fontWeight: "400" }],
+        eyebrow: ["12px", { lineHeight: "1.4", letterSpacing: "0.14em", fontWeight: "600" }],
+        code: ["14px", { lineHeight: "1.6" }],
+      },
+      spacing: {
+        gutter: "24px",
+        "margin-mobile": "20px",
+        "margin-desktop": "40px",
+        "section-gap": "112px",
+        "section-gap-mobile": "72px",
+      },
       borderRadius: {
+        DEFAULT: "12px",
+        card: "20px",
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
@@ -89,16 +118,6 @@ const config = {
         "accordion-up": {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
-        },
-        spotlight: {
-          "0%": {
-            opacity: "0",
-            transform: "translate(-72%, -62%) scale(0.5)",
-          },
-          "100%": {
-            opacity: "1",
-            transform: "translate(-50%,-40%) scale(1)",
-          },
         },
         shimmer: {
           from: {
@@ -150,8 +169,8 @@ const config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        spotlight: "spotlight 2s ease .75s 1 forwards",
         shimmer: "shimmer 2s linear infinite",
+        "shimmer-slow": "shimmer 4s linear infinite",
         first: "moveVertical 30s ease infinite",
         second: "moveInCircle 20s reverse infinite",
         third: "moveInCircle 40s linear infinite",

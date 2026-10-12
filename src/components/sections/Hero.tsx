@@ -4,7 +4,7 @@ import { hero } from "@/content/site";
 
 const Hero = () => {
   return (
-    <section className="pb-20 pt-36">
+    <section className="flex min-h-svh flex-col justify-center pb-20 pt-36">
       {/* Static grid background */}
       <div
         aria-hidden="true"

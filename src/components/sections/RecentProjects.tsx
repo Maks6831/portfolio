@@ -1,9 +1,7 @@
-"use client";
-
 import { FaLocationArrow } from "react-icons/fa6";
 
-import { projects } from "@/app/data/index";
-import { PinContainer } from "@/components/ui/Pin";
+import { projects } from "@/content/site";
+import { LinkCard } from "@/components/ui/LinkCard";
 
 const RecentProjects = () => {
   return (
@@ -18,7 +16,7 @@ const RecentProjects = () => {
             className="lg:min-h-[32.5rem] h-[25rem] flex items-center justify-center sm:w-96 w-[80vw]"
             key={item.id}
           >
-            <PinContainer title="visit" href={item.link}>
+            <LinkCard href={item.link} className="w-full">
               <div className="relative flex items-center justify-center sm:w-96 w-[80vw] overflow-hidden h-[20vh] lg:h-[30vh] mb-10">
                 <div
                   className="relative w-full h-full overflow-hidden lg:rounded-3xl"
@@ -69,7 +67,7 @@ const RecentProjects = () => {
                   <FaLocationArrow className="ms-3" color="#CBACF9" />
                 </div>
               </div>
-            </PinContainer>
+            </LinkCard>
           </div>
         ))}
       </div>

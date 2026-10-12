@@ -1,7 +1,6 @@
 import React from "react";
 import Image from "next/image";
-import { workExperience } from "@/app/data";
-import { Button } from "./ui/MovingBorders";
+import { workExperience } from "@/content/site";
 
 const Experience = () => {
   return (
@@ -17,7 +16,7 @@ const Experience = () => {
 
           {/* Timeline items */}
           <div className="space-y-12">
-            {workExperience.map((experience, index) => (
+            {workExperience.map((experience) => (
               <div key={experience.id} className="relative pl-20 md:pl-28">
                 {/* Timeline dot */}
 
@@ -30,16 +29,12 @@ const Experience = () => {
                   className="absolute left-2 md:left-5 top-0 w-12 h-12 md:w-16 md:h-16 rounded-full object-cover border-2 border-purple/30"
                 />
 
-                <Button
-                  duration={Math.floor(Math.random() * 10000) + 10000}
-                  borderRadius="1.75rem"
+                <div
+                  className="w-full text-white border border-slate-800 text-xl overflow-hidden"
                   style={{
                     background: "rgb(4,7,29)",
-                    backgroundColor:
-                      "linear-gradient(90deg, rgba(4,7,29,1) 0%, rgba(12,14,35,1) 100%)",
-                    borderRadius: `calc(1.75rem* 0.96)`,
+                    borderRadius: "1.68rem",
                   }}
-                  className="w-full text-white border-neutral-200 dark:border-slate-800"
                 >
                   <div className=" min-w-full w-full p-6 md:p-8">
                     {/* Header */}
@@ -94,7 +89,7 @@ const Experience = () => {
                       ))}
                     </div>
                   </div>
-                </Button>
+                </div>
               </div>
             ))}
           </div>

@@ -6,10 +6,10 @@ import { LinkCard } from "@/components/ui/LinkCard";
 const RecentProjects = () => {
   return (
     <div className="py-20" id="projects">
-      <h1 className="heading">
+      <h2 className="heading">
         A small selection of{" "}
         <span className="text-purple">recent projects</span>
-      </h1>
+      </h2>
       <div className="flex flex-wrap items-center justify-center p-4 gap-16 mt-10">
         {projects.map((item) => (
           <div
@@ -31,9 +31,9 @@ const RecentProjects = () => {
                 />
               </div>
 
-              <h1 className="font-bold lg:text-2xl md:text-xl text-base line-clamp-1">
+              <h3 className="font-bold lg:text-2xl md:text-xl text-base line-clamp-1">
                 {item.title}
-              </h1>
+              </h3>
 
               <p
                 className="lg:text-xl lg:font-normal font-light text-sm line-clamp-2"

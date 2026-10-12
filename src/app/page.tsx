@@ -8,7 +8,7 @@ import { navItems } from "@/content/site";
 
 const Page = () => {
   return (
-    <main className="relative bg-black-100 w-screen flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
+    <div className="relative bg-black-100 w-screen flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <FloatingNav navItems={navItems} />
         <Hero />
@@ -17,7 +17,7 @@ const Page = () => {
         <Experience />
         <Footer />
       </div>
-    </main>
+    </div>
   );
 };
 

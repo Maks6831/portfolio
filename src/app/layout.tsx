@@ -17,7 +17,15 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={inter.className}>
-        {children}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[6000] focus:rounded-lg focus:bg-surface-raised focus:px-4 focus:py-3 focus:text-sm focus:text-text-primary focus:outline focus:outline-2 focus:outline-focus-ring"
+        >
+          Skip to content
+        </a>
+        <main id="main" tabIndex={-1} className="focus:outline-none">
+          {children}
+        </main>
       </body>
     </html>
   );

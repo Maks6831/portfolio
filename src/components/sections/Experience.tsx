@@ -5,9 +5,9 @@ import { workExperience } from "@/content/site";
 const Experience = () => {
   return (
     <div className="py-20 w-full">
-      <h1 className="heading">
+      <h2 className="heading">
         My <span className="text-purple">work experience</span>
-      </h1>
+      </h2>
 
       <div className="w-full mt-12 max-w-5xl mx-auto">
         <div className="relative">

@@ -17,6 +17,11 @@ export const FloatingNav = ({
 
   useEffect(() => {
     let last = window.scrollY;
+    // sync once after mount so a restored mid-page scroll position is respected
+    const raf = window.requestAnimationFrame(() => {
+      const max = document.documentElement.scrollHeight - window.innerHeight;
+      setVisible(max <= 0 || window.scrollY / max < 0.05);
+    });
     const onScroll = () => {
       const y = window.scrollY;
       const max = document.documentElement.scrollHeight - window.innerHeight;
@@ -28,15 +33,21 @@ export const FloatingNav = ({
       last = y;
     };
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.cancelAnimationFrame(raf);
+      window.removeEventListener("scroll", onScroll);
+    };
   }, []);
 
   return (
     <nav
       aria-label="Primary"
+      inert={!visible}
       className={cn(
-        "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-black/.1 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4 transition-[transform,opacity] duration-200",
-        visible ? "translate-y-0 opacity-100" : "-translate-y-24 opacity-0",
+        "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-white/10 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4 transition-[transform,opacity,visibility] duration-200 motion-reduce:transition-none",
+        visible
+          ? "translate-y-0 opacity-100"
+          : "invisible -translate-y-24 opacity-0",
         className
       )}
       style={{

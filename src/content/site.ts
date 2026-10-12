@@ -1,8 +1,17 @@
 export const email = "ma.khan6971@gmail.com";
 
+export const hero = {
+  eyebrow: "Muhammad Ali Khan · Full-stack engineer · London",
+  headline: "I turn a client's operational mess into a product that ships safely.",
+  lede: "I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform, and I own what runs behind it.",
+  // Interim target until the case study route ships (Story 2.9).
+  primaryCta: { label: "See Simply Happy live", href: "https://simplyhappy.pt" },
+  secondaryCta: { label: "Get in touch", href: "#contact" },
+};
+
 export const navItems = [
     { name: "About", link: "#about" },
-    { name: "Projects", link: "#projects" },
+    { name: "Work", link: "#projects" },
     { name: "Contact", link: "#contact" },
   ];
 

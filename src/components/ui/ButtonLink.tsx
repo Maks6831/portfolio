@@ -6,6 +6,7 @@ type Props = {
   children: ReactNode;
   variant?: "primary" | "secondary";
   external?: boolean;
+  download?: boolean;
   icon?: ReactNode;
   className?: string;
 };
@@ -19,6 +20,7 @@ const ButtonLink = ({
   children,
   variant = "primary",
   external = false,
+  download = false,
   icon,
   className,
 }: Props) => {
@@ -31,6 +33,7 @@ const ButtonLink = ({
       <a
         href={href}
         {...ext}
+        download={download || undefined}
         className={cn(
           "inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded-full border border-border px-7 text-sm font-medium text-text-primary transition-colors hover:border-accent motion-reduce:transition-none",
           focus,
@@ -48,6 +51,7 @@ const ButtonLink = ({
     <a
       href={href}
       {...ext}
+      download={download || undefined}
       className={cn(
         "relative inline-flex h-12 min-h-[44px] overflow-hidden rounded-full p-[1px]",
         focus,

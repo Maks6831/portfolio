@@ -85,7 +85,8 @@ export const supportingWork = {
       title: "Full-stack Developer",
       company: "Simply Happy",
       type: "Contract",
-      date: "Aug 2025 - Present · 5 mos",
+      start: "2025-08",
+      end: "present",
       location: "Portugal · Remote",
       responsibilities: [
         "Led end-to-end product development from stakeholder consultation through to implementation, gathering requirements and translating business needs into technical solutions",
@@ -105,7 +106,8 @@ export const supportingWork = {
       title: "Frontend Engineer",
       company: "Royal College of Nursing",
       type: "Full-time",
-      date: "Nov 2024 - Sep 2025 · 11 mos",
+      start: "2024-11",
+      end: "2025-09",
       location: "London Area, United Kingdom · Remote",
       responsibilities: [
         "Developed and maintained the Clinical Topics feature using Next.js and TypeScript, integrating with Sitecore CMS for content delivery",
@@ -119,9 +121,10 @@ export const supportingWork = {
     {
       id: 3,
       title: "Frontend Engineer",
-      company: "Previous Company",
+      company: "Faro",
       type: "Full-time",
-      date: "2023 - 2024",
+      start: "2023",
+      end: "2024",
       location: "Remote",
       responsibilities: [
         "Assisted in the development of a Chrome Bookmark Manager, built using Svelte"
@@ -132,9 +135,10 @@ export const supportingWork = {
     {
       id: 4,
       title: "Frontend Engineer",
-      company: "Previous Company",
+      company: "Developer Pro",
       type: "Full-time",
-      date: "2022 - 2023",
+      start: "2022",
+      end: "2023",
       location: "Remote",
       responsibilities: [
         "Contributed to a purpose-built tool for modern product development using MERN stack"
@@ -148,15 +152,12 @@ export const supportingWork = {
 
 
 
-    export const socialMedia = [
-      {
-        id: 1,
-        img: "/git.svg",
-        url:"https://github.com/Maks6831"
-      },
-      {
-        id: 3,
-        img: "/link.svg",
-        url: 'https://www.linkedin.com/in/muhammad-khan-464b80203/'
-      },
-    ];
+export const contact = {
+  heading: "Hiring for a full-stack role?",
+  line: "I'm available now.",
+  email,
+  linkedin: "https://www.linkedin.com/in/muhammad-khan-464b80203/",
+  github: "https://github.com/Maks6831",
+  cv: { href: "/Muhammad-Ali-Khan-CV.pdf", label: "Download CV (PDF)" },
+  name: "Muhammad Ali Khan",
+};

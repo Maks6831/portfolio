@@ -1,45 +1,53 @@
-import { FaLocationArrow } from "react-icons/fa6";
+import { FaGithub, FaLinkedin } from "react-icons/fa6";
+import { IoMail, IoDocumentTextOutline } from "react-icons/io5";
 
-import { socialMedia } from "@/content/site";
-import MagicButton from "@/components/ui/MagicButton";
+import { contact } from "@/content/site";
+import ButtonLink from "@/components/ui/ButtonLink";
+import CopyEmail from "@/components/islands/CopyEmail";
 
 const Footer = () => {
+  const year = new Date().getUTCFullYear();
   return (
     <footer className="w-full mb-[100px] md:mb-5 pb-10" id="contact">
-      <div className="flex flex-col items-center">
-        <h2 className="heading lg:max-w-[45vw]">
-          Ready to take <span className="text-purple">your</span> digital
-          presence to the next level?
-        </h2>
-        <p className="text-white-200 md:mt-10 my-5 text-center">
-          Reach out to me today and let&apos;s discuss how I can help you
-          achieve your goals.
-        </p>
-        <a href="mailto:ma.khan6971@gmail.com">
-          <MagicButton
-            title="Let's get in touch"
-            icon={<FaLocationArrow />}
-            position="right"
-          />
-        </a>
-      </div>
-      <div className="flex mt-16 md:flex-row flex-col justify-between items-center">
-        <p className="md:text-base text-sm md:font-normal font-light">
-          Copyright © 2024 Muhammad Ali Khan
-        </p>
-
-        <div className="flex items-center md:gap-3 gap-6">
-          {socialMedia.map((info) => (
-            <a
-              href={info.url}
-              key={info.id}
-              className="w-10 h-10 cursor-pointer flex justify-center items-center backdrop-filter backdrop-blur-lg saturate-180 bg-opacity-75 bg-black-200 rounded-lg border border-black-300"
-            >
-              <img src={info.img} alt="icons" width={20} height={20} />
-            </a>
-          ))}
+      <div className="flex flex-col items-center text-center">
+        <h2 className="heading lg:max-w-[45vw]">{contact.heading}</h2>
+        <p className="my-5 text-text-secondary md:mt-8">{contact.line}</p>
+        <div className="flex flex-col items-center gap-4 sm:flex-row">
+          <ButtonLink href={`mailto:${contact.email}`} icon={<IoMail aria-hidden="true" />}>
+            Email me
+          </ButtonLink>
+          <CopyEmail email={contact.email} />
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+          <ButtonLink
+            variant="secondary"
+            href={contact.linkedin}
+            external
+            icon={<FaLinkedin aria-hidden="true" />}
+          >
+            LinkedIn
+          </ButtonLink>
+          <ButtonLink
+            variant="secondary"
+            href={contact.github}
+            external
+            icon={<FaGithub aria-hidden="true" />}
+          >
+            GitHub
+          </ButtonLink>
+          <ButtonLink
+            href={contact.cv.href}
+            variant="secondary"
+            download
+            icon={<IoDocumentTextOutline aria-hidden="true" />}
+          >
+            {contact.cv.label}
+          </ButtonLink>
         </div>
       </div>
+      <p className="mt-16 text-center text-sm text-text-muted">
+        Copyright © {year} {contact.name}
+      </p>
     </footer>
   );
 };

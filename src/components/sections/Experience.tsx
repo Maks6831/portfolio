@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { workExperience } from "@/content/site";
+import { formatRange } from "@/lib/dates";
 
 const Experience = () => {
   return (
@@ -50,7 +51,7 @@ const Experience = () => {
                         <span className="text-sm">{experience.type}</span>
                       </div>
                       <div className="flex flex-col md:flex-row md:items-center gap-2 text-white-200 text-sm mt-1">
-                        <span>{experience.date}</span>
+                        <span>{formatRange(experience.start, experience.end)}</span>
                         <span className="hidden md:inline">•</span>
                         <span>{experience.location}</span>
                       </div>

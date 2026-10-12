@@ -33,96 +33,51 @@ export const navItems = [
     { name: "Contact", link: "#contact" },
   ];
 
-  export const gridItems = [
-    {
-      id: 1,
-      title: "I prioritize client collaboration, fostering open communication ",
-      description: "",
-      className: "lg:col-span-3 md:col-span-6 md:row-span-4 lg:min-h-[60vh]",
-      imgClassName: "w-full h-full",
-      titleClassName: "justify-end",
-      img: "/b1.svg",
-      spareImg: "",
-    },
-    {
-      id: 2,
-      title: "I'm very flexible with time zone communications",
-      description: "",
-      className: "lg:col-span-2 md:col-span-3 md:row-span-2",
-      imgClassName: "",
-      titleClassName: "justify-start",
-      img: "",
-      spareImg: "",
-    },
-    {
-      id: 3,
-      title: "My tech stack",
-      description: "I constantly try to improve",
-      className: "lg:col-span-2 md:col-span-3 md:row-span-2",
-      imgClassName: "",
-      titleClassName: "justify-center",
-      img: "",
-      spareImg: "",
-    },
-    {
-      id: 4,
-      title: "Tech enthusiast with a passion for development.",
-      description: "",
-      className: "lg:col-span-2 md:col-span-3 md:row-span-1",
-      imgClassName: "",
-      titleClassName: "justify-start",
-      img: "/grid.svg",
-      spareImg: "/b4.svg",
-    },
-  
-    {
-      id: 5,
-      title: "Engaged in a SvelteKit project",
-      description: "The Inside Scoop",
-      className: "md:col-span-3 md:row-span-2",
-      imgClassName: "absolute right-0 bottom-0 md:w-96 w-60",
-      titleClassName: "justify-center md:justify-start lg:justify-center",
-      img: "/b5.svg",
-      spareImg: "/grid.svg",
-    },
-    {
-      id: 6,
-      title: "Do you want to start a project together?",
-      description: "",
-      className: "lg:col-span-2 md:col-span-3 md:row-span-1",
-      imgClassName: "",
-      titleClassName: "justify-center md:max-w-full max-w-60 text-center",
-      img: "",
-      spareImg: "",
-    },
-  ];
+export const proofSection = {
+  eyebrow: "Proof",
+  heading: "What I can show, not just say",
+};
 
-  export const projects = [
+export const proofTiles = [
+  {
+    id: "owned",
+    title: "Owned it end to end",
+    body: "Requirements, architecture, payments, admin, a hired designer, and ongoing stakeholder contact.",
+    chip: "Led",
+  },
+  {
+    id: "tested",
+    title: "Tested like a team product",
+    body: "Playwright end-to-end tests over booking, auth and admin, plus Storybook stories for the components.",
+    chip: "Tested",
+  },
+  {
+    id: "safe",
+    title: "Safe by design",
+    body: "An admin AI assistant limited to seven fixed, read-only lookups. Health data is never sent, enforced by a test.",
+    chip: "Live",
+  },
+];
+
+export const supportingWork = {
+  heading: "Also shipped",
+  items: [
     {
-      id: 1,
-      title: "Simply Happy - Retreat Booking Platform",
-      des: "Book your next retreat with Simply Happy",
-      img: "/simplyhappy-screenshot.png",
-      iconLists: ["/svelte.svg", "/tail.svg", "/ts.svg",  '/supabase-icon.svg', 'trpc.svg'],
-      link: "https://simplyhappy.pt",
+      id: "assistant",
+      featured: true,
+      title: "Admin AI assistant",
+      body: "A read-only help panel for the back office. Seven fixed lookups beat free-form SQL because wrong joins look right. No chats are stored.",
+      // Not a link until the write-up exists (Epic 2).
+      href: undefined as string | undefined,
     },
     {
-      id: 2,
-      title: "Panther Print - Custom Cases",
-      des: "Create custom high-quality phone cases in seconds",
-      img: "/PantherPrint-screenshot.png",
-      iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/pri.png'],
-      link: "https://pantherprint.netlify.app/",
+      id: "coinflow",
+      title: "CoinFlow",
+      body: "Real-time crypto tracking in Next.js.",
+      href: "https://coinflow.netlify.app" as string | undefined,
     },
-    {
-      id: 3,
-      title: "CoinFlow - Crypto Asset App",
-      des: " real-time price tracking and portfolio management for all your favorite cryptocurrencies",
-      img: "/coinflow-screenshot.png",
-      iconLists: ["/re.svg", "/tail.svg", "/ts.svg", "/next.svg", '/red.png'],
-      link: "https://coinflow.netlify.app/",
-    }
-  ];
+  ],
+};
 
   export const workExperience = [
     {

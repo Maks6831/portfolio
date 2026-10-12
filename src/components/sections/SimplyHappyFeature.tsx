@@ -4,7 +4,7 @@ import ScreenshotFrame from "@/components/ui/ScreenshotFrame";
 import { simplyHappyFeature as f } from "@/content/site";
 
 const SimplyHappyFeature = () => (
-  <section id="work" aria-labelledby="headline-work" className="relative z-10 py-section-gap-mobile md:py-section-gap">
+  <section id="work" aria-labelledby="headline-work" className="relative z-10 scroll-mt-24 py-section-gap-mobile md:py-section-gap">
     <p className="text-eyebrow uppercase text-accent">{f.eyebrow}</p>
     <h2 id="headline-work" className="mt-3 text-subheading md:text-heading text-text-primary">
       {f.heading}

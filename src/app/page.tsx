@@ -1,8 +1,8 @@
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import Hero from "@/components/sections/Hero";
 import SimplyHappyFeature from "@/components/sections/SimplyHappyFeature";
-import Grid from "@/components/sections/Grid";
-import RecentProjects from "@/components/sections/RecentProjects";
+import ProofTiles from "@/components/sections/ProofTiles";
+import SupportingWork from "@/components/sections/SupportingWork";
 import Experience from "@/components/sections/Experience";
 import Footer from "@/components/sections/Footer";
 import { navItems } from "@/content/site";
@@ -14,8 +14,8 @@ const Page = () => {
         <FloatingNav navItems={navItems} />
         <Hero />
         <SimplyHappyFeature />
-        <Grid />
-        <RecentProjects />
+        <ProofTiles />
+        <SupportingWork />
         <Experience />
         <Footer />
       </div>

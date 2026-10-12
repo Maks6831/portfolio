@@ -9,9 +9,27 @@ export const hero = {
   secondaryCta: { label: "Get in touch", href: "#contact" },
 };
 
+export const simplyHappyFeature = {
+  eyebrow: "Headline work",
+  heading: "Simply Happy: retreat booking and payments",
+  before: "Bookings by email. A WordPress brochure site.",
+  after:
+    "A live booking platform with deposit and final payments, and an admin back office used daily by three admins.",
+  chips: ["SvelteKit", "TypeScript", "tRPC", "PostgreSQL", "Stripe", "Playwright"],
+  image: {
+    src: "/simplyhappy-screenshot.png",
+    width: 2880,
+    height: 1556,
+    alt: "The Simply Happy public website home page, showing the retreat listings.",
+    caption: "The public site, simplyhappy.pt",
+  },
+  // Interim target until the case study route ships (Story 2.9).
+  link: { label: "Visit simplyhappy.pt", href: "https://simplyhappy.pt" },
+};
+
 export const navItems = [
     { name: "About", link: "#about" },
-    { name: "Work", link: "#projects" },
+    { name: "Work", link: "#work" },
     { name: "Contact", link: "#contact" },
   ];
 

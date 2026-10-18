@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { siteMeta } from "@/content/site";
+import { person, siteMeta } from "@/content/site";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +25,21 @@ export const metadata: Metadata = {
   },
 };
 
+// Person entity for name search. `<` is escaped so content can never close the script tag.
+const personJsonLd = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: person.name,
+  jobTitle: person.jobTitle,
+  url: person.url,
+  sameAs: person.sameAs,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: person.address.locality,
+    addressCountry: person.address.country,
+  },
+}).replace(/</g, "\\u003c");
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -42,6 +57,7 @@ export default function RootLayout({
         <main id="main" tabIndex={-1} className="focus:outline-none">
           {children}
         </main>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
       </body>
     </html>
   );

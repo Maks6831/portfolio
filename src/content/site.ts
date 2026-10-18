@@ -167,6 +167,8 @@ export const contact = {
 
 export const siteMeta = {
   origin: "https://muhammadalikhan.co.uk",
+  // ISO date of the last home-page content change; feeds the sitemap.
+  updated: "2026-10-18",
   name: siteName,
   role: siteRole,
   title: `${siteName} · ${siteRole}`,
@@ -174,4 +176,13 @@ export const siteMeta = {
     "Full-stack engineer in London. I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform.",
   imageLine: "From email bookings to a live booking and payments platform.",
   imageAlt: `${siteName}, ${siteRole.toLowerCase()}. From email bookings to a live booking and payments platform.`,
+};
+
+// Person JSON-LD source (rendered once in the root layout). URLs come from `contact` and `siteMeta`.
+export const person = {
+  name: siteName,
+  jobTitle: siteRole,
+  url: siteMeta.origin,
+  sameAs: [contact.linkedin, contact.github],
+  address: { locality: "London", country: "GB" },
 };

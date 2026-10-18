@@ -8,7 +8,8 @@
 # AD-7: Lighthouse (mobile preset, the plugin default) audits the deployed site after each deploy and
 # reports scores in the deploy log. It is deliberately NOT set to fail the deploy: the plugin's blocking
 # mode serves the publish directory, and a Next.js build's publish directory has no root index.html.
-# The blocking gates are scripts/check-budget.mjs and scripts/check-anchors.mjs, run by `pnpm build`.
+# The blocking gates are scripts/check-islands.mjs, check-dates.mjs, check-budget.mjs, check-anchors.mjs and
+# check-case-study.mjs, all run by `pnpm build`.
 [[plugins]]
   package = "@netlify/plugin-lighthouse"
 

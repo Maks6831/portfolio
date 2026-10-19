@@ -1,6 +1,7 @@
 // Story 2.1: the case-study route, its metadata, robots, sitemap and the Person JSON-LD
 // must come out of the static build exactly as specified (spec I/O matrix).
 // Story 2.6: the Screenshots section, its "Test data" captions, the files behind it and the island set.
+// Story 2.3: the Decisions section between #owned and #screenshots, one card per decision with both columns.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -29,6 +30,12 @@ try {
   check(manifest.dynamicRoutes?.["/work/[slug]"]?.fallback === false, "prerender-manifest: /work/[slug] must have fallback === false (dynamicParams = false)");
 } catch { failures.push("prerender-manifest.json does not parse"); }
 
+// Counts derived from the content module so the gate tracks src/content/work/simply-happy.ts rather than literals.
+const contentSrc = read(join(root, "src", "content", "work", "simply-happy.ts")) ?? "";
+const expectedOwned = (contentSrc.match(/^\s*body:\s*"/gm) ?? []).length; // "What I owned" areas (the only entries with `body:`)
+const expectedDecisions = (contentSrc.match(/^\s*chose:\s*"/gm) ?? []).length; // decision cards (the only entries with `chose:`)
+check(expectedOwned > 0, "content module defines no owned areas (no `body:` entries)");
+
 // Page structure
 const html = read(join(workDir, "simply-happy.html")) ?? "";
 const h1s = html.match(/<h1\b/g) ?? [];
@@ -36,12 +43,19 @@ check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
 const firstH2 = html.search(/<h2\b/);
 check(firstH1 !== -1 && firstH2 > firstH1, "the first <h2> must come after the single <h1>");
-// 2 summary panels (Before, After) + 6 "What I owned" areas; these numbers track src/content/work/simply-happy.ts.
-check((html.match(/<h3\b/g) ?? []).length === 8, "expected exactly 8 <h3> panels (2 summary + 6 owned)");
+// 2 summary panels (Before, After) + the "What I owned" areas + one title per decision card.
+const expectedH3s = 2 + expectedOwned + expectedDecisions;
+const h3Count = (html.match(/<h3\b/g) ?? []).length;
+check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedDecisions} decisions), found ${h3Count}`);
 check(html.includes('id="summary"'), 'missing <section id="summary">');
 check(html.includes('id="owned"'), 'missing <section id="owned">');
 check(html.includes('<main id="main"'), "root layout <main id=\"main\"> must wrap the page");
 check(html.includes('id="contact"'), "contact footer (#contact) must be on the page for the nav link");
+// Every aria-labelledby must point at a real id, or the section has no accessible name.
+const ids = new Set([...html.matchAll(/\sid="([^"]+)"/g)].map((m) => m[1]));
+for (const [, ref] of html.matchAll(/\saria-labelledby="([^"]+)"/g)) {
+  for (const id of ref.split(/\s+/)) check(ids.has(id), `aria-labelledby="${id}" does not resolve to any id on the page`);
+}
 
 const stackList = /<ul\b[^>]*aria-label="Technologies used"[^>]*>([\s\S]*?)<\/ul>/.exec(html)?.[1] ?? "";
 check((stackList.match(/<li\b/g) ?? []).length === 6, "stack list should hold 6 chips");
@@ -56,18 +70,55 @@ if (live) {
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
 
-// Heading order: h1, Summary, What I owned, Screenshots, then the contact footer. Later stories insert
-// sections between and update this list.
+// Heading order: h1, Summary, What I owned, Decisions (only when the content has any), Screenshots, then the
+// contact footer. Later stories insert sections between and update this list.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
-const expectedH2s = ["Summary", "What I owned", "Screenshots (test data)"];
+const expectedH2s = [
+  "Summary",
+  "What I owned",
+  ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
+  "Screenshots (test data)",
+];
 check(
   h2s.length === expectedH2s.length + 1 && expectedH2s.every((t, i) => h2s[i] === t),
   `h2 order should be ${expectedH2s.join(" > ")} > contact, found: ${h2s.join(" > ") || "none"}`,
 );
 
+// Decisions (Story 2.3). One <article> per decision, each with both column labels; the section sits between
+// #owned and #screenshots. With no decisions in the content module the section must be absent.
+const decisionsStart = html.indexOf('id="decisions"');
+if (expectedDecisions === 0) {
+  check(decisionsStart === -1, "content module has no decisions, so <section id=\"decisions\"> must not render");
+} else {
+  check(decisionsStart !== -1, 'missing <section id="decisions">');
+  const screenshotsAt = html.indexOf('id="screenshots"');
+  check(ownedStart !== -1 && decisionsStart > ownedStart, "#decisions must come after #owned");
+  check(screenshotsAt === -1 || screenshotsAt > decisionsStart, "#decisions must come before #screenshots");
+  // The slice ends at the section's own closing tag, so a missing #screenshots never pulls the footer in.
+  const sectionClose = decisionsStart !== -1 ? html.indexOf("</section>", decisionsStart) : -1;
+  const decisions = decisionsStart !== -1 ? html.slice(decisionsStart, sectionClose === -1 ? html.length : sectionClose) : "";
+  check(expectedDecisions >= 4, `the case study needs at least four decision cards; content module has ${expectedDecisions}`);
+  const cards = decisions.match(/<article\b[\s\S]*?<\/article>/g) ?? [];
+  check(cards.length === expectedDecisions, `expected ${expectedDecisions} decision cards (<article>) inside #decisions, found ${cards.length}`);
+  // Later stories that add <article> elsewhere update this.
+  check((html.match(/<article\b/g) ?? []).length === cards.length, "every <article> on the page must sit inside #decisions");
+  cards.forEach((card, i) => {
+    check(/<h3\b/.test(card), `decision card ${i + 1} needs an <h3> title`);
+    check(/>\s*Chose\s*</.test(card), `decision card ${i + 1} is missing the "Chose" label`);
+    check(/>\s*Rejected, because\s*</.test(card), `decision card ${i + 1} is missing the "Rejected, because" label`);
+  });
+  check((decisions.match(/Rejected, because/g) ?? []).length === expectedDecisions, `"Rejected, because" should appear exactly ${expectedDecisions} times inside #decisions`);
+  check((decisions.match(/<h3\b/g) ?? []).length === expectedDecisions, `#decisions should hold exactly ${expectedDecisions} <h3>, one per card`);
+  // Honesty and confidentiality: no per-admin daily limit claim, no URLs, no repo paths or file names in the cards.
+  const text = decode(decisions.replace(/<[^>]+>/g, " "));
+  check(!/daily limit/i.test(text), '#decisions must not claim a per-admin "daily limit"');
+  check(!/https?:\/\//i.test(text), "#decisions must not contain a URL");
+  check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#decisions must not name a file path or file name");
+  check(!/<a\b/.test(decisions), "#decisions must not link anywhere (no links to the private repo)");
+}
+
 // Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
 // one explicit check pins what the manifest lists today.
-const contentSrc = read(join(root, "src", "content", "work", "simply-happy.ts")) ?? "";
 const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
   src: m[1],
   width: Number(/\bwidth:\s*(\d+)/.exec(m[2])?.[1]),
@@ -174,6 +225,8 @@ const walk = (dir) => {
 walk(join(root, "src", "app", "work"));
 walk(join(root, "src", "content", "work"));
 sourceFiles.push(join(root, "src", "components", "ui", "CaseStudyPanel.tsx"));
+sourceFiles.push(join(root, "src", "components", "ui", "DecisionCard.tsx"));
+sourceFiles.push(join(root, "src", "components", "sections", "DecisionsSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
 for (const file of sourceFiles) {

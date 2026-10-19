@@ -22,12 +22,12 @@ export type OwnedArea = {
   body: string;
 };
 
-/** Reserved for Story 2.3. Both columns are always visible. */
+/** Rendered by Story 2.3 as a DecisionCard. Both columns are always visible. */
 export type Decision = {
   title: string;
   chose: string;
   rejected: string;
-  /** Where in the Simply Happy repo the decision can be traced. */
+  /** A plain phrase naming the part of the codebase the decision lives in, never a path or a link. */
   source?: string;
 };
 
@@ -62,9 +62,10 @@ export type CaseStudy = {
   screenshots: Screenshot[];
   /** One or two sentences under the Screenshots heading, e.g. where the captures come from. */
   screenshotsNote?: string;
+  /** Story 2.3: one card per decision, rendered after What I owned. */
+  decisions?: Decision[];
   // Reserved for later stories; the launch version renders none of these.
   payments?: ProseSection;
-  decisions?: Decision[];
   testing?: ProseSection;
   assistant?: ProseSection;
 };

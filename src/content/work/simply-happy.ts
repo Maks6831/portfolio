@@ -43,6 +43,51 @@ export const simplyHappy = {
       body: "I set up Playwright end-to-end tests covering the booking flows, authentication and the admin, so the product is tested like a team product.",
     },
   ],
+  // Story 2.3. Wording from epic-2-owner-inputs.md section 4 and the addendum corrections, rewritten in
+  // first person. `source` names the part of the codebase in plain words: no paths, no links to the private repo.
+  // Honesty rules: the webhook-only claim is about paid offerings, never stays; no per-admin daily limit; no cron time.
+  decisions: [
+    {
+      title: "Admin AI assistant: how it reads data",
+      chose:
+        "Seven fixed read-only lookups. Each one checks that the caller is an admin before it reads anything, validates its input and selects an explicit list of columns, so the model only ever sees the fields I chose for it.",
+      rejected:
+        "Read-only SQL. A wrong join looks right in a chat answer, and a free query could reach tokens and allergy data. A fixed set of lookups is testable instead: one test walks every lookup and asserts it never touches a forbidden table or returns a forbidden field.",
+      source: "the shared backend's assistant module and its lookup tests",
+    },
+    {
+      title: "Admin AI assistant: where the lookups come from",
+      chose:
+        "Allow-listed columns, pages of twenty rows and guest-written text quoted rather than trusted, in lookups I wrote for the assistant alone.",
+      rejected:
+        "Reusing the admin screens' tRPC endpoints. They return whatever a screen needs, such as every booking with its guests' personal details, which is far more than any question requires and far more than I wanted a model to see.",
+      source: "the assistant lookups module and its column allow-list",
+    },
+    {
+      title: "Admin AI assistant: what it remembers",
+      chose:
+        "Conversations live in the browser tab only, in session storage. The server streams the answer and stores nothing, and a test asserts that neither the question nor the answer is logged.",
+      rejected:
+        "Storing chats. Saved conversations about guests become personal data the business has to search, export and erase on request, and an assistant that remembers nothing has nothing to leak.",
+      source: "the admin assistant panel component and its stories, plus the request handler's tests",
+    },
+    {
+      title: "One offerings model instead of the services engine",
+      chose:
+        "A single offerings model in PostgreSQL, with staff, shifts and supplies tied to offerings and the booking rules written as pure functions I can unit test.",
+      rejected:
+        "Keeping the services engine. Its data model had drifted: staff assignment lived in two tables that disagreed, stock was static and nothing consumed it, analytics summed list prices, and four charts never rendered. Two migrations dropped it and a replay test proves the old tables are gone.",
+      source: "the two drop migrations and the services-engine-dropped test",
+    },
+    {
+      title: "Paid offerings: confirmed by the webhook, not the redirect",
+      chose:
+        "For offerings paid on the site, the reservation is written only when Stripe's webhook arrives, through a locked SQL function keyed on a unique payment id, so a duplicate delivery can never book twice. The success page only reads the result. Stays take a different route: an idempotent confirm step reachable from both the webhook and the success page.",
+      rejected:
+        "Trusting the client redirect. The old engine wrote bookings only when the browser reached the success page, so confirmation depended on the customer's tab staying open.",
+      source: "the offerings webhook handler and the reserve-places SQL function",
+    },
+  ],
   // Develop-preview captures against the repo's seed data (epic-2-owner-inputs.md, section 1), in the
   // manifest's order. Prices and names are seed values; every caption says "Test data".
   screenshotsNote:

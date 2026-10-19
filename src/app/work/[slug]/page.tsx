@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
+import DecisionsSection from "@/components/sections/DecisionsSection";
 import Footer from "@/components/sections/Footer";
 import ButtonLink from "@/components/ui/ButtonLink";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
@@ -122,6 +123,8 @@ export default async function CaseStudyPage({ params }: Props) {
             ))}
           </ul>
         </section>
+
+        <DecisionsSection decisions={study.decisions} />
 
         {study.screenshots.length > 0 && (
           <section

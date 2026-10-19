@@ -6,6 +6,7 @@ import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import DecisionsSection from "@/components/sections/DecisionsSection";
 import Footer from "@/components/sections/Footer";
 import PaymentsSection from "@/components/sections/PaymentsSection";
+import TestingSection from "@/components/sections/TestingSection";
 import ButtonLink from "@/components/ui/ButtonLink";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import Chip from "@/components/ui/Chip";
@@ -128,6 +129,8 @@ export default async function CaseStudyPage({ params }: Props) {
         <PaymentsSection payments={study.payments} />
 
         <DecisionsSection decisions={study.decisions} />
+
+        <TestingSection testing={study.testing} />
 
         {study.screenshots.length > 0 && (
           <section

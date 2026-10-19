@@ -120,6 +120,37 @@ export const simplyHappy = {
       source: "the offerings webhook handler and the reserve-places SQL function",
     },
   ],
+  // Story 2.4. Counts from epic-2-owner-inputs.md section 2 (as of 18 Oct 2026); flow, hooks and CI facts from
+  // epic-2-facts-testing.md sections 3 to 6. Honesty rules: every count is approximate through the single as-of
+  // label; CI is only said to run lint, type checks, the stories audit, a production build and the Playwright
+  // integration tests, on pull requests; the Storybook test runner is local only; visual snapshots, pull-request
+  // and source-file counts are left out; no tool versions, repository names, branch patterns, paths or file names.
+  testing: {
+    countsAsOf: "2026-10-18",
+    counts: [
+      { label: "Playwright spec files", value: "94" },
+      {
+        label: "Playwright tests",
+        value: "about 394",
+        detail: "352 in the default run; the rest are the opt-in UI tests and the payment tests",
+      },
+      {
+        label: "Unit test files",
+        value: "158",
+        detail: "about 2,000 cases across the web app and the shared package",
+      },
+      {
+        label: "Storybook story files",
+        value: "187",
+        detail: "covering 172 components; 177 of the files have play functions",
+      },
+    ],
+    paragraphs: [
+      "Every change starts as a Linear issue. I branch from the issue, open a pull request into the epic branch, and the epic branch goes into develop as one pull request once its stories are in. Develop reaches main only through a release pull request, hotfixes branch from main, and the issue closes when its pull request merges.",
+      "Git hooks, installed with the dependencies, enforce that flow. The pre-commit hook rejects a commit on main or develop, and the pre-push hook rejects a push to either and refuses a branch whose name does not carry an issue key, hotfix branches aside, so work can only land through a pull request. The hooks run no checks of their own; that is CI's job.",
+      "CI runs only on pull requests into develop and main: lint, type checks, the stories-coverage audit that fails when a component has no story, a production build and the Playwright integration tests on Chromium. The Storybook test runner, the opt-in UI tests and the shared package's unit suite run locally only, so a green pull request means the integration suite passed, not that every suite did.",
+    ],
+  },
   // Develop-preview captures against the repo's seed data (epic-2-owner-inputs.md, section 1), in the
   // manifest's order. Prices and names are seed values; every caption says "Test data".
   screenshotsNote:

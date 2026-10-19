@@ -7,7 +7,7 @@ const src = readFileSync(new URL("../src/lib/dates.ts", import.meta.url), "utf8"
 const js = ts.transpileModule(src, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
-const { formatRange, monthsBetween } = await import(
+const { formatDay, formatRange, monthsBetween } = await import(
   "data:text/javascript;base64," + Buffer.from(js).toString("base64")
 );
 
@@ -27,6 +27,23 @@ assert.equal(formatRange("2025-8", "present", now), "");
 assert.equal(formatRange("2024-11", "2025-13", now), "");
 assert.equal(formatRange("2024-11", "Presnt", now), "");
 assert.equal(formatRange("2027-03", "present", now), "Mar 2027 – Present");
+
+// formatDay (Story 2.4, the case study's "as of" label): YYYY-MM-DD -> D Mon YYYY, "" on anything malformed
+assert.equal(formatDay("2026-10-18"), "18 Oct 2026");
+assert.equal(formatDay("2025-12-31"), "31 Dec 2025");
+assert.equal(formatDay("2026-01-01"), "1 Jan 2026");
+assert.equal(formatDay("2026-10-08"), "8 Oct 2026");
+assert.equal(formatDay(""), "");
+assert.equal(formatDay("2026-10"), "");
+assert.equal(formatDay("2026-10-8"), "");
+assert.equal(formatDay("18 Oct 2026"), "");
+assert.equal(formatDay("2026-13-01"), "");
+assert.equal(formatDay("2026-10-32"), "");
+assert.equal(formatDay("2026-02-30"), "");
+assert.equal(formatDay("2024-02-29"), "29 Feb 2024");
+assert.equal(formatDay("2023-02-29"), "");
+assert.equal(formatDay("2026-04-31"), "");
+assert.equal(formatDay("2026-10-18T00:00:00Z"), "");
 
 // every role in the content file must parse and must not read as "Present" by accident
 const site = ts.transpileModule(

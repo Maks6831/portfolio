@@ -1,4 +1,5 @@
-// Pure date helpers for the experience timeline. ISO input: "YYYY", "YYYY-MM" or "present".
+// Pure date helpers for the experience timeline and the case study. ISO input: "YYYY", "YYYY-MM" or
+// "present" for ranges; "YYYY-MM-DD" for a single day.
 // Keep this file free of imports and non-erasable syntax so scripts/check-dates.mjs can load it.
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -42,4 +43,17 @@ export function formatRange(start: string, end: string, now: Date = new Date()):
   const range = `${label(s)} – ${e ? label(e) : "Present"}`;
   const months = monthsBetween(start, end, now);
   return months === null ? range : `${range} · ${formatDuration(months)}`;
+}
+
+/** "18 Oct 2026" from "2026-10-18"; "" on malformed input (including impossible days such as 31 Feb). */
+export function formatDay(iso: string): string {
+  const m = /^(\d{4})-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.exec(iso);
+  if (!m) return "";
+  const year = Number(m[1]);
+  const month = Number(m[2]);
+  const day = Number(m[3]);
+  // A day past the end of its month would roll over into the next one: render nothing instead.
+  const d = new Date(Date.UTC(year, month - 1, day));
+  if (d.getUTCFullYear() !== year || d.getUTCMonth() !== month - 1 || d.getUTCDate() !== day) return "";
+  return `${day} ${MONTHS[month - 1]} ${year}`;
 }

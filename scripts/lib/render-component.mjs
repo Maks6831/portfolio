@@ -1,4 +1,4 @@
-// Shared plumbing for the component render tests (check-decisions, check-payments): transpile a few source
+// Shared plumbing for the component render tests (check-decisions, check-payments, check-testing): transpile a few source
 // files to plain ESM and render them with react-dom/server. No browser, no test framework.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";

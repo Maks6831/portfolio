@@ -31,7 +31,7 @@ export type Decision = {
   source?: string;
 };
 
-/** Reserved for Stories 2.4 and 2.5: a titled block of prose paragraphs. */
+/** Reserved for Story 2.5: a titled block of prose paragraphs. */
 export type ProseSection = {
   id: string;
   heading: string;
@@ -64,6 +64,27 @@ export type PaymentsSection = {
   reliability: { title: string; text: string }[];
 };
 
+/** One count tile in the Testing section: a label, the count as shown, and an optional line beneath it. */
+export type TestingCount = {
+  label: string;
+  /** The count as rendered, e.g. "94" or "about 394"; the single as-of label marks every value approximate. */
+  value: string;
+  detail?: string;
+};
+
+/**
+ * Story 2.4: "Testing and delivery". A row of count tiles under one "approx., as of" label, then three short
+ * first-person paragraphs: the delivery flow, the git hooks that enforce it, and what CI runs versus what stays
+ * local. The key `value:` is unique to this section in a content module: the build gate counts it inside the
+ * `testing: {` block the way `state:` is counted for payments.
+ */
+export type TestingSection = {
+  /** ISO date (YYYY-MM-DD) the counts were taken; rendered as "18 Oct 2026" by `formatDay`. */
+  countsAsOf: string;
+  counts: TestingCount[];
+  paragraphs: string[];
+};
+
 export type CaseStudy = {
   /** URL segment under /work. */
   slug: string;
@@ -92,7 +113,8 @@ export type CaseStudy = {
   decisions?: Decision[];
   /** Story 2.2: rendered between What I owned and Decisions. */
   payments?: PaymentsSection;
-  // Reserved for later stories; the launch version renders none of these.
-  testing?: ProseSection;
+  /** Story 2.4: rendered between Decisions and Screenshots. */
+  testing?: TestingSection;
+  // Reserved for Story 2.5; the launch version does not render it.
   assistant?: ProseSection;
 };

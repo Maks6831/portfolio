@@ -4,6 +4,9 @@
 // Story 2.3: the Decisions section between #owned and #screenshots, one card per decision with both columns.
 // Story 2.2: the Payments section between #owned and #decisions: four paragraphs, the state diagram, two panels,
 // and its honesty rules ("a daily job", never a time; no currency, URL, path or link).
+// Story 2.4: the Testing section between #decisions and #screenshots: one <dl> of count tiles under a single
+// "approx., as of" label, three paragraphs, and its honesty rules (approximate counts; CI only on pull requests;
+// Storybook only as local; no snapshots, URL, path, file name, domain or link).
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -45,6 +48,20 @@ const expectedPanels = (paymentsSrc.match(/^\s*text:\s*"/gm) ?? []).length; // r
 const expectedFlow = stringLiterals(/\bflow:\s*\[([\s\S]*?)\]/.exec(paymentsSrc)?.[1] ?? ""); // payments flow paragraphs
 const contentTransitions = stringLiterals(/\btransitions:\s*\[([\s\S]*?)\]/.exec(paymentsSrc)?.[1] ?? ""); // transition labels
 const hasPayments = expectedStates > 0;
+// Testing counts come from the `testing: {` ... `},` block alone: one `value:` per count tile and the string
+// literals of `paragraphs: [...]`. The as-of date stays ISO in content and is formatted at render.
+const testingSrc = /^  testing:\s*\{([\s\S]*?)^  \},/m.exec(contentSrc)?.[1] ?? "";
+const literal = (s) => { try { return JSON.parse(s); } catch { return s.slice(1, -1); } };
+const expectedTileValues = [...testingSrc.matchAll(/\bvalue:\s*("(?:[^"\\]|\\.)*")/g)].map((m) => literal(m[1])); // count tiles (the only entries with `value:`)
+const expectedTiles = expectedTileValues.length;
+const expectedTestingParagraphs = (/\bparagraphs:\s*\[([\s\S]*?)\]/.exec(testingSrc)?.[1] ?? "").match(/"(?:[^"\\]|\\.)*"/g)?.map(literal) ?? [];
+const countsAsOf = /\bcountsAsOf:\s*"([^"]*)"/.exec(testingSrc)?.[1] ?? "";
+const hasTesting = expectedTiles > 0;
+check((contentSrc.match(/\bvalue:\s*"/g) ?? []).length === expectedTiles, "`value:` must only appear inside the testing block of the content module (the gate counts it as a tile)");
+check(!hasTesting || expectedTestingParagraphs.length > 0, "content module has testing tiles but no paragraphs");
+// The section is a row of four tiles and three paragraphs today (spec 2.4); a dropped tile must fail by name.
+check(!hasTesting || expectedTiles === 4, `the Testing section lists four count tiles; content module has ${expectedTiles}`);
+check(!hasTesting || expectedTestingParagraphs.length === 3, `the Testing section has three paragraphs; content module has ${expectedTestingParagraphs.length}`);
 check(!hasPayments || contentTransitions === expectedStates - 1, `content module should give ${expectedStates - 1} transition labels (states - 1), found ${contentTransitions}`);
 check(expectedOwned > 0, "content module defines no owned areas (no `body:` entries)");
 check(!hasPayments || (expectedPanels > 0 && expectedFlow > 0), "content module has payment states but no reliability panels or flow paragraphs");
@@ -91,6 +108,7 @@ const expectedH2s = [
   "What I owned",
   ...(hasPayments ? ["The booking and payments flow"] : []),
   ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
+  ...(hasTesting ? ["Testing and delivery"] : []),
   "Screenshots (test data)",
 ];
 check(
@@ -192,6 +210,79 @@ if (expectedDecisions === 0) {
   check(!/https?:\/\//i.test(text), "#decisions must not contain a URL");
   check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#decisions must not name a file path or file name");
   check(!/<a\b/.test(decisions), "#decisions must not link anywhere (no links to the private repo)");
+}
+
+// Testing (Story 2.4). One <dl> of count tiles (a <dt> label and a <dd> value each, an optional detail <dd>)
+// under one "approx., as of" <p>, then the paragraphs; the section sits between #decisions and #screenshots.
+// With no testing content it must be absent.
+const testingStart = html.indexOf('id="testing"');
+if (!hasTesting) {
+  check(testingStart === -1, "content module has no testing counts, so <section id=\"testing\"> must not render");
+} else {
+  check(testingStart !== -1, 'missing <section id="testing">');
+  const testingClose = testingStart !== -1 ? html.indexOf("</section>", testingStart) : -1;
+  const testingHtml = testingStart !== -1 ? html.slice(testingStart, testingClose === -1 ? html.length : testingClose) : "";
+  check(decisionsStart === -1 || testingStart > decisionsStart, "#testing must come after #decisions");
+  check(paymentsStart === -1 || testingStart > paymentsStart, "#testing must come after #payments");
+  const screenshotsAt = html.indexOf('id="screenshots"');
+  check(screenshotsAt === -1 || screenshotsAt > testingStart, "#testing must come before #screenshots");
+  check(/<h2\b[^>]*>\s*Testing and delivery\s*<\/h2>/.test(testingHtml), '#testing h2 must read exactly "Testing and delivery"');
+  check(!/<article\b/.test(testingHtml), "#testing must not contain <article> (articles are decision cards)");
+  check(!/<h3\b/.test(testingHtml), "#testing must not contain <h3> (h3s are panels; tiles are dt/dd)");
+  check(!/<a\b/.test(testingHtml), "#testing must not link anywhere");
+  // The tiles: exactly one <dl>, one <dt> per tile, a value <dd> each plus at most one detail <dd>, real text only.
+  check((testingHtml.match(/<dl\b/g) ?? []).length === 1, "#testing must hold exactly one <dl> of count tiles");
+  const dl = /<dl\b[^>]*>[\s\S]*?<\/dl>/.exec(testingHtml)?.[0] ?? "";
+  const dts = (dl.match(/<dt\b/g) ?? []).length;
+  const dds = (dl.match(/<dd\b/g) ?? []).length;
+  check(dts === expectedTiles, `#testing should hold ${expectedTiles} count tiles (<dt>) from the content module, found ${dts}`);
+  check(dds >= expectedTiles && dds <= expectedTiles * 2, `#testing should hold between ${expectedTiles} and ${expectedTiles * 2} <dd> (a value each, an optional detail), found ${dds}`);
+  check(!/<(?:img|svg|picture|canvas)\b/.test(dl), "#testing tiles must be real text, not images");
+  check(!/<dd\b[^>]*>\s*<\/dd>/.test(dl) && !/<dt\b[^>]*>\s*<\/dt>/.test(dl), "#testing must not render an empty <dt> or <dd>");
+  const dlClass = /<dl\b[^>]*class="([^"]*)"/.exec(testingHtml)?.[1] ?? "";
+  check(/\bgrid-cols-2\b/.test(dlClass) && /\bmd:grid-cols-4\b/.test(dlClass), "#testing tile grid must be grid-cols-2 md:grid-cols-4");
+  // The slice starts inside the opening <section> tag, so drop its remaining attributes before reading the text.
+  const text = decode(testingHtml.slice(testingHtml.indexOf(">") + 1).replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ");
+  const ddTexts = [...dl.matchAll(/<dd\b[^>]*>([\s\S]*?)<\/dd>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+  for (const value of expectedTileValues) check(ddTexts.includes(value), `#testing tile value "${value}" from the content module is not the full text of any <dd> in the list`);
+  // One as-of label, as a <p>, carrying the content date formatted "D Mon YYYY" (the ISO form never leaks through).
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const asOfMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(countsAsOf);
+  check(!!asOfMatch, `content module countsAsOf must be an ISO date (YYYY-MM-DD), found "${countsAsOf}"`);
+  const asOfLabel = asOfMatch ? `approx., as of ${Number(asOfMatch[3])} ${months[Number(asOfMatch[2]) - 1]} ${asOfMatch[1]}` : "";
+  const asOfPs = [...testingHtml.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim()).filter((t) => t.startsWith("approx."));
+  check(asOfPs.length === 1 && asOfPs[0] === asOfLabel, `#testing needs the as-of label "${asOfLabel}" exactly once as a <p>, found: ${asOfPs.join(" | ") || "none"}`);
+  check((text.match(/approx\., as of/g) ?? []).length === 1, '#testing must carry "approx., as of" exactly once');
+  check(!countsAsOf || !text.includes(countsAsOf), "#testing must format the as-of date, never print the ISO string");
+  check(/\bapprox\./.test(text), '#testing text must say "approx."');
+  // Paragraphs: one <p> per content paragraph after the list, each present verbatim.
+  const dlEnd = testingHtml.indexOf("</dl>");
+  const afterList = dlEnd === -1 ? "" : testingHtml.slice(dlEnd);
+  const paragraphs = (afterList.match(/<p\b/g) ?? []).length;
+  check(paragraphs === expectedTestingParagraphs.length, `#testing should hold ${expectedTestingParagraphs.length} paragraphs (<p>) after the tiles, found ${paragraphs}`);
+  for (const [i, p] of expectedTestingParagraphs.entries()) check(text.includes(p.replace(/\s+/g, " ")), `#testing paragraph ${i + 1} from the content module is missing from the page`);
+  // Honesty: counts stay approximate; CI runs only on pull requests (never "every commit" or "on push"); the
+  // Playwright integration tests are the CI suite; Storybook appears in the prose only alongside "local"; no
+  // visual snapshots, tool versions, URLs, paths, file names, domains or links.
+  check(/\bPlaywright\b[^.]*\bCI\b|\bCI\b[^.]*\bPlaywright\b/.test(text), "#testing must say the Playwright integration tests run in CI");
+  check(/\bCI\b[^.]*\bpull requests?\b/.test(text), "#testing must say CI runs on pull requests");
+  check(!/\b(?:every|each)\s+(?:commit|push)\b/i.test(text) && !/\bon\s+(?:every\s+|each\s+)?push\b/i.test(text), '#testing must not claim CI runs on "every commit" or "on push"');
+  check(/\bStorybook test runner\b[^.]*\blocal/i.test(text), '#testing must say the Storybook test runner runs locally');
+  const proseSentences = [...afterList.matchAll(/<p\b[^>]*>([\s\S]*?)<\/p>/g)].flatMap((m) => decode(m[1].replace(/<[^>]+>/g, " ")).split(/(?<=[.;:])\s+/));
+  for (const sentence of proseSentences) {
+    if (/\bStorybook\b/.test(sentence)) check(/\blocal/i.test(sentence), `#testing names Storybook without "local" in the same sentence: "${sentence.trim()}"`);
+  }
+  check(!/\bsnapshots?\b/i.test(text), "#testing must not mention snapshots (visual snapshots are not wired)");
+  check(!/\bv\d+\.\d+\b/.test(text) && !/\b\d+\.\d+\.\d+\b/.test(text), "#testing must not give a tool version number");
+  check(!/\b[a-z]{2,5}-\d{2,4}\b/i.test(text), "#testing must not contain an issue key");
+  check(!/\b(?:asjir|simply-happy-web|makhan)/i.test(text), "#testing must not name the repository or a username");
+  check(!/https?:\/\//i.test(text) && !/\bwww\./i.test(text), "#testing must not contain a URL");
+  check(!/\b[a-z0-9-]+\.(?:com|co\.uk|io|app|dev|net|org|yml|yaml)\b/i.test(text), "#testing must not name a domain or a config file");
+  check(!/\b(?:src|apps|packages|supabase|lib|app|components|tests|\.github|\.githooks)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md|mjs|sh)\b/.test(text), "#testing must not name a file path or file name");
+  check(!/\b(?:bg|text|border)-success\b/.test(testingHtml), "#testing must not use the success colour");
+  // text-muted is for the as-of label and the tile detail lines only.
+  const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-text-muted\b[^"]*"/g)].map((m) => m[1]);
+  check(muted.every((tag) => tag === "p" || tag === "dd") && muted.filter((t) => t === "p").length === 1, `#testing text-muted is for the as-of <p> and detail <dd> only, found on: ${muted.join(", ") || "none"}`);
 }
 
 // Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
@@ -310,6 +401,7 @@ sourceFiles.push(join(root, "src", "components", "ui", "DecisionCard.tsx"));
 sourceFiles.push(join(root, "src", "components", "sections", "DecisionsSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "StateDiagram.tsx"));
 sourceFiles.push(join(root, "src", "components", "sections", "PaymentsSection.tsx"));
+sourceFiles.push(join(root, "src", "components", "sections", "TestingSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
 for (const file of sourceFiles) {

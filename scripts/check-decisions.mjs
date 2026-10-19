@@ -1,48 +1,24 @@
 // Story 2.3: render DecisionCard and DecisionsSection directly (no browser, no test framework) and check the
 // spec's I/O matrix rows the built page cannot exercise: a card without `source`, a study with no decisions,
 // and the stacked single-column layout below the md breakpoint.
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath, pathToFileURL } from "node:url";
-import ts from "typescript";
+import { compileComponents, renderTools } from "./lib/render-component.mjs";
 
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const outDir = join(root, "node_modules", ".cache", "check-decisions");
-mkdirSync(outDir, { recursive: true });
-
-// Transpile the three source files to plain ESM in a cache folder under node_modules so `react`, `clsx` and
-// `tailwind-merge` resolve as usual. `@/` aliases are rewritten to sibling files; type-only imports are elided.
-const aliases = {
-  "@/app/lib/utils": "./utils.js",
-  "@/components/ui/DecisionCard": "./DecisionCard.js",
-};
-const emit = (rel, name) => {
-  const source = readFileSync(join(root, rel), "utf8");
-  const { outputText, diagnostics } = ts.transpileModule(source, {
-    fileName: rel,
-    reportDiagnostics: true,
-    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
-  });
-  if (diagnostics?.length) throw new Error(`${rel}: ${diagnostics.map((d) => ts.flattenDiagnosticMessageText(d.messageText, "\n")).join("; ")}`);
-  const js = outputText.replace(/from "(@\/[^"]+)"/g, (m, spec) => {
-    if (!aliases[spec]) throw new Error(`${rel}: unmapped alias import ${spec}`);
-    return `from "${aliases[spec]}"`;
-  });
-  writeFileSync(join(outDir, name), js);
-};
-emit("src/app/lib/utils.ts", "utils.js");
-emit("src/components/ui/DecisionCard.tsx", "DecisionCard.js");
-emit("src/components/sections/DecisionsSection.tsx", "DecisionsSection.js");
-
-const { renderToStaticMarkup } = await import("react-dom/server");
-const { createElement: h } = await import("react");
-const DecisionCard = (await import(pathToFileURL(join(outDir, "DecisionCard.js")).href)).default;
-const DecisionsSection = (await import(pathToFileURL(join(outDir, "DecisionsSection.js")).href)).default;
-
-const failures = [];
-const check = (ok, msg) => { if (!ok) failures.push(msg); };
-const render = (el) => renderToStaticMarkup(el);
-const count = (html, re) => (html.match(re) ?? []).length;
+// `@/` aliases are rewritten to sibling files; type-only imports are elided (see scripts/lib/render-component.mjs).
+const { load } = compileComponents({
+  cacheName: "check-decisions",
+  aliases: {
+    "@/app/lib/utils": "./utils.js",
+    "@/components/ui/DecisionCard": "./DecisionCard.js",
+  },
+  files: {
+    "src/app/lib/utils.ts": "utils.js",
+    "src/components/ui/DecisionCard.tsx": "DecisionCard.js",
+    "src/components/sections/DecisionsSection.tsx": "DecisionsSection.js",
+  },
+});
+const DecisionCard = await load("DecisionCard.js");
+const DecisionsSection = await load("DecisionsSection.js");
+const { h, render, count, failures, check } = await renderTools();
 
 const withSource = { title: "Example decision", chose: "The thing I chose.", rejected: "The thing I rejected.", source: "the example module" };
 const withoutSource = { title: withSource.title, chose: withSource.chose, rejected: withSource.rejected };
@@ -68,8 +44,9 @@ const dl = /<dl\b[^>]*class="([^"]*)"/.exec(full)?.[1] ?? "";
 check(/\bgrid-cols-1\b/.test(dl), "card: the two-column grid must default to a single column (grid-cols-1)");
 check(/\bmd:grid-cols-2\b/.test(dl), "card: the second column must only appear from md: (md:grid-cols-2)");
 check(!/(^|\s)grid-cols-2\b/.test(dl), "card: grid-cols-2 must be md:-prefixed, never unconditional");
-check(!/\b(hidden|sr-only|invisible)\b/.test(full) && !/<details\b/.test(full), "card: nothing may be hidden behind disclosure or utility classes");
-check(!/(?:^|[\s"])(?:w-\[|min-w-\[|whitespace-nowrap)/.test(full), "card: no fixed widths or nowrap that could cause horizontal scroll at 390px");
+const cardClasses = [...full.matchAll(/\sclass="([^"]*)"/g)].map((m) => m[1]);
+check(!cardClasses.some((c) => /(?:^|\s)(?:hidden|sr-only|invisible)(?:\s|$)/.test(c)) && !/<details\b/.test(full), "card: nothing may be hidden behind disclosure or utility classes");
+check(!/(?:^|[\s":])(?:min-)?w-\[|whitespace-nowrap/.test(full), "card: no fixed widths or nowrap that could cause horizontal scroll at 390px (max-w- is fine)");
 
 // Matrix: "No decisions" -> the section is not rendered at all.
 check(render(h(DecisionsSection, {})) === "", "section: must render nothing when decisions is undefined");

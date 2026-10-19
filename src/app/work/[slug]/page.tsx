@@ -5,6 +5,7 @@ import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import DecisionsSection from "@/components/sections/DecisionsSection";
 import Footer from "@/components/sections/Footer";
+import PaymentsSection from "@/components/sections/PaymentsSection";
 import ButtonLink from "@/components/ui/ButtonLink";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import Chip from "@/components/ui/Chip";
@@ -123,6 +124,8 @@ export default async function CaseStudyPage({ params }: Props) {
             ))}
           </ul>
         </section>
+
+        <PaymentsSection payments={study.payments} />
 
         <DecisionsSection decisions={study.decisions} />
 

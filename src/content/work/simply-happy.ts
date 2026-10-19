@@ -43,6 +43,38 @@ export const simplyHappy = {
       body: "I set up Playwright end-to-end tests covering the booking flows, authentication and the admin, so the product is tested like a team product.",
     },
   ],
+  // Story 2.2. Facts from epic-2-facts-decisions.md section B (B.7 checkout and the deposit rule, B.8 idempotency
+  // and the sweep, B.9 webhook plus success page). Honesty rules: the balance is charged by "a daily job", never a
+  // time; "within 30 days of arrival" is the verified threshold; stays are never called webhook-only, because the
+  // success page runs the same idempotent confirm; no prices, names, domains or paths.
+  payments: {
+    flow: [
+      "I take payment for a stay through Stripe Checkout. Once a guest has chosen dates and a room, I create a Checkout session on the server and send the guest to Stripe to pay. I keep the booking's payment pending until Stripe reports that the session was paid.",
+      "Right before that session is created, I re-validate availability on the server. The availability a guest saw while browsing is only a hint; the check that counts runs at the moment of checkout, so a room taken while the guest was deciding is caught before any payment is taken.",
+      "I decide how much to take now from the arrival date. I take full payment when arrival is within 30 days, when the guest chooses to pay in full up front, or when the stay is booked with an event attached. Further out, I take a deposit and create a Stripe invoice for the balance, due 30 days before arrival.",
+      "A daily job I wrote collects the balance. It picks up the invoices whose charge date has passed and charges them, so I never wait on the guest coming back to the site for the final payment.",
+    ],
+    diagram: {
+      states: [
+        { state: "Pending", meaning: "The Checkout session is open and nothing is confirmed yet." },
+        { state: "Deposit confirmed", meaning: "Stripe's webhook has confirmed the deposit; arrival is more than 30 days away." },
+        { state: "Confirmed", meaning: "A daily job has charged the balance and the stay is fully paid." },
+      ],
+      transitions: ["Stripe's webhook confirms the deposit", "A daily job charges the balance"],
+      caption:
+        "The payment states of a stay booked more than 30 days before arrival. Within 30 days of arrival the session takes full payment and the webhook moves the payment straight from Pending to Confirmed. Failed and refunded states are left out.",
+    },
+    reliability: [
+      {
+        title: "Idempotent webhook",
+        text: "Stripe can deliver the same event more than once, so the confirm step is safe to repeat: it reads the payment's status first and does nothing when it is already confirmed or deposit-confirmed. The success page a guest lands on runs that same confirm as a second path, so a stay is confirmed whichever of the two arrives first.",
+      },
+      {
+        title: "Recovery sweep",
+        text: "A webhook can also fail to arrive. For stays, the success page runs the same idempotent confirm, so the guest's return completes it. For bookings tied to an event, a daily job sweeps the payments still pending, checks with Stripe whether each session was paid, and confirms the ones that were.",
+      },
+    ],
+  },
   // Story 2.3. Wording from epic-2-owner-inputs.md section 4 and the addendum corrections, rewritten in
   // first person. `source` names the part of the codebase in plain words: no paths, no links to the private repo.
   // Honesty rules: the webhook-only claim is about paid offerings, never stays; no per-admin daily limit; no cron time.

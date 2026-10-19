@@ -2,6 +2,8 @@
 // must come out of the static build exactly as specified (spec I/O matrix).
 // Story 2.6: the Screenshots section, its "Test data" captions, the files behind it and the island set.
 // Story 2.3: the Decisions section between #owned and #screenshots, one card per decision with both columns.
+// Story 2.2: the Payments section between #owned and #decisions: four paragraphs, the state diagram, two panels,
+// and its honesty rules ("a daily job", never a time; no currency, URL, path or link).
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -34,7 +36,18 @@ try {
 const contentSrc = read(join(root, "src", "content", "work", "simply-happy.ts")) ?? "";
 const expectedOwned = (contentSrc.match(/^\s*body:\s*"/gm) ?? []).length; // "What I owned" areas (the only entries with `body:`)
 const expectedDecisions = (contentSrc.match(/^\s*chose:\s*"/gm) ?? []).length; // decision cards (the only entries with `chose:`)
+// Payments counts come from the `payments: {` ... `},` block alone (a top-level key of the study object, indented
+// two spaces), so `state:`, `text:` and the arrays are never confused with later sections.
+const paymentsSrc = /^  payments:\s*\{([\s\S]*?)^  \},/m.exec(contentSrc)?.[1] ?? "";
+const stringLiterals = (src) => (src.match(/"(?:[^"\\]|\\.)*"/g) ?? []).length;
+const expectedStates = (paymentsSrc.match(/^\s*\{?\s*state:\s*"/gm) ?? []).length; // payment states (the only entries with `state:`)
+const expectedPanels = (paymentsSrc.match(/^\s*text:\s*"/gm) ?? []).length; // reliability panels (the only entries with `text:`)
+const expectedFlow = stringLiterals(/\bflow:\s*\[([\s\S]*?)\]/.exec(paymentsSrc)?.[1] ?? ""); // payments flow paragraphs
+const contentTransitions = stringLiterals(/\btransitions:\s*\[([\s\S]*?)\]/.exec(paymentsSrc)?.[1] ?? ""); // transition labels
+const hasPayments = expectedStates > 0;
+check(!hasPayments || contentTransitions === expectedStates - 1, `content module should give ${expectedStates - 1} transition labels (states - 1), found ${contentTransitions}`);
 check(expectedOwned > 0, "content module defines no owned areas (no `body:` entries)");
+check(!hasPayments || (expectedPanels > 0 && expectedFlow > 0), "content module has payment states but no reliability panels or flow paragraphs");
 
 // Page structure
 const html = read(join(workDir, "simply-happy.html")) ?? "";
@@ -43,10 +56,10 @@ check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
 const firstH2 = html.search(/<h2\b/);
 check(firstH1 !== -1 && firstH2 > firstH1, "the first <h2> must come after the single <h1>");
-// 2 summary panels (Before, After) + the "What I owned" areas + one title per decision card.
-const expectedH3s = 2 + expectedOwned + expectedDecisions;
+// 2 summary panels (Before, After) + the "What I owned" areas + one reliability panel each + one title per decision card.
+const expectedH3s = 2 + expectedOwned + expectedPanels + expectedDecisions;
 const h3Count = (html.match(/<h3\b/g) ?? []).length;
-check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedDecisions} decisions), found ${h3Count}`);
+check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions), found ${h3Count}`);
 check(html.includes('id="summary"'), 'missing <section id="summary">');
 check(html.includes('id="owned"'), 'missing <section id="owned">');
 check(html.includes('<main id="main"'), "root layout <main id=\"main\"> must wrap the page");
@@ -70,12 +83,13 @@ if (live) {
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
 
-// Heading order: h1, Summary, What I owned, Decisions (only when the content has any), Screenshots, then the
-// contact footer. Later stories insert sections between and update this list.
+// Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions (each only when the content
+// has any), Screenshots, then the contact footer. Later stories insert sections between and update this list.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
 const expectedH2s = [
   "Summary",
   "What I owned",
+  ...(hasPayments ? ["The booking and payments flow"] : []),
   ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
   "Screenshots (test data)",
 ];
@@ -83,6 +97,68 @@ check(
   h2s.length === expectedH2s.length + 1 && expectedH2s.every((t, i) => h2s[i] === t),
   `h2 order should be ${expectedH2s.join(" > ")} > contact, found: ${h2s.join(" > ") || "none"}`,
 );
+
+// Payments (Story 2.2). Four paragraphs, a <figure> holding the state diagram as one ordered list (states and
+// transitions interleaved, transitions = states - 1) named by its figcaption, and one CaseStudyPanel (<h3>) per
+// reliability entry; the section sits between #owned and #decisions. With no payments content it must be absent.
+const paymentsStart = html.indexOf('id="payments"');
+const paymentsClose = paymentsStart !== -1 ? html.indexOf("</section>", paymentsStart) : -1;
+const paymentsHtml = paymentsStart !== -1 ? html.slice(paymentsStart, paymentsClose === -1 ? html.length : paymentsClose) : "";
+if (!hasPayments) {
+  check(paymentsStart === -1, "content module has no payment states, so <section id=\"payments\"> must not render");
+} else {
+  check(paymentsStart !== -1, 'missing <section id="payments">');
+  check(ownedStart !== -1 && paymentsStart > ownedStart, "#payments must come after #owned");
+  const decisionsAt = html.indexOf('id="decisions"');
+  check(decisionsAt === -1 || decisionsAt > paymentsStart, "#payments must come before #decisions");
+  const screenshotsAt = html.indexOf('id="screenshots"');
+  check(screenshotsAt === -1 || screenshotsAt > paymentsStart, "#payments must come before #screenshots");
+  check(/<h2\b[^>]*>\s*The booking and payments flow\s*<\/h2>/.test(paymentsHtml), '#payments h2 must read exactly "The booking and payments flow"');
+  check(!/<article\b/.test(paymentsHtml), "#payments must not contain <article> (articles are decision cards)");
+  const figureAt = paymentsHtml.indexOf("<figure");
+  check(figureAt !== -1, "#payments must contain the state-diagram <figure>");
+  check((paymentsHtml.match(/<figure\b/g) ?? []).length === 1, "#payments must hold exactly one <figure>");
+  check((paymentsHtml.slice(0, figureAt === -1 ? undefined : figureAt).match(/<p\b/g) ?? []).length === expectedFlow, `#payments should hold ${expectedFlow} flow paragraphs (<p>) before the diagram`);
+  const figure = /<figure\b[\s\S]*?<\/figure>/.exec(paymentsHtml)?.[0] ?? "";
+  const labelledBy = /<figure\b[^>]*aria-labelledby="([^"]+)"/.exec(figure)?.[1];
+  check(!!labelledBy && new RegExp(`<figcaption\\b[^>]*\\sid="${labelledBy}"`).test(figure), "#payments figure must be named by its figcaption");
+  check(/<ol\b[^>]*role="list"/.test(figure), '#payments diagram must be an <ol role="list">');
+  check(!/<(?:img|svg|picture|canvas)\b/.test(figure), "#payments diagram must be real text, not an image or SVG");
+  const items = figure.match(/<li\b/g) ?? [];
+  const expectedTransitions = expectedStates - 1;
+  check(items.length === expectedStates + expectedTransitions, `#payments diagram should list ${expectedStates} states and ${expectedTransitions} transitions (${expectedStates + expectedTransitions} <li>), found ${items.length}`);
+  // The pills carry the raised surface; the labels between them carry an aria-hidden connector glyph.
+  check((figure.match(/<li\b[^>]*bg-surface-raised/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state pills`);
+  check((figure.match(/aria-hidden="true"/g) ?? []).length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} aria-hidden connector glyphs, one per transition`);
+  // Every transition item must carry a visible label once the glyph is removed; an undefined label renders an empty span.
+  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*bg-surface-raised)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
+    decode(m[1].replace(/<span\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, " ")).trim(),
+  );
+  check(transitionItems.length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} transition items, found ${transitionItems.length}`);
+  transitionItems.forEach((label, i) => check(label.length > 0, `#payments diagram transition ${i + 1} has no label text`));
+  const pills = [...figure.matchAll(/<li\b[^>]*bg-surface-raised[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
+  check(pills[0] === "Pending" && pills[pills.length - 1] === "Confirmed", `#payments diagram must run from Pending to Confirmed, found: ${pills.join(" > ") || "none"}`);
+  // Panels: one <h3> per reliability entry, under an eyebrow that is not a heading, in a grid that stacks first.
+  check((paymentsHtml.match(/<h3\b/g) ?? []).length === expectedPanels, `#payments should hold exactly ${expectedPanels} <h3>, one per reliability panel`);
+  check(/<p\b[^>]*>\s*Reliability decisions\s*<\/p>/.test(paymentsHtml), '#payments needs the "Reliability decisions" eyebrow as a <p>, not a heading');
+  const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(paymentsHtml)?.[1] ?? "";
+  check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#payments panel grid must be grid-cols-1 md:grid-cols-2");
+  // Honesty and confidentiality: "a daily job" and the verified 30-day threshold; no time of day or schedule, no
+  // currency, URL, path, file name or link, and stays are never described as webhook-only.
+  const text = decode(paymentsHtml.replace(/<[^>]+>/g, " "));
+  check(/\bdaily job\b/.test(text), '#payments must say the balance is charged by "a daily job"');
+  check(/\b30 days\b/.test(text), '#payments must state the verified "30 days" threshold');
+  check(!/\b\d{1,2}:\d{2}\b/.test(text) && !/\b\d{1,2}\s?(?:am|pm)\b/i.test(text) && !/\b(?:o'clock|UTC|GMT|midnight|noon)\b/i.test(text), "#payments must not give a time of day (the cron schedule is not in the repo)");
+  check(!/\b(?:every|each)\s+(?:morning|night|evening|hour)\b/i.test(text) && !/\b(?:nightly|overnight|hourly|weekly)\b/i.test(text) && !/\bcron\b/i.test(text), "#payments must not describe a schedule beyond \"a daily job\"");
+  check(!/[£$€]/.test(text) && !/\b(?:GBP|EUR|USD)\b/.test(text) && !/\b(?:pounds?|pence|dollars?|euros?|cents?)\b/i.test(text), "#payments must not mention prices or currency");
+  check(!/https?:\/\//i.test(text) && !/\bwww\./i.test(text), "#payments must not contain a URL");
+  check(!/\b[a-z0-9-]+\.(?:com|co\.uk|io|app|dev|net|org)\b/i.test(text), "#payments must not name a domain");
+  check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#payments must not name a file path or file name");
+  check(!/<a\b/.test(paymentsHtml), "#payments must not link anywhere");
+  check(!/webhook[\s-]only\b/i.test(text) && !/\bonly (?:the|by the) webhook\b/i.test(text), "#payments must not call the stays flow webhook-only (the success page is a second idempotent path)");
+  check(/\bidempotent\b/i.test(text) && /\bsweep/i.test(text), "#payments must name both the idempotent webhook and the recovery sweep");
+  check(!/\b(?:bg|text|border)-success\b/.test(paymentsHtml), "#payments must not use the success colour");
+}
 
 // Decisions (Story 2.3). One <article> per decision, each with both column labels; the section sits between
 // #owned and #screenshots. With no decisions in the content module the section must be absent.
@@ -93,6 +169,7 @@ if (expectedDecisions === 0) {
   check(decisionsStart !== -1, 'missing <section id="decisions">');
   const screenshotsAt = html.indexOf('id="screenshots"');
   check(ownedStart !== -1 && decisionsStart > ownedStart, "#decisions must come after #owned");
+  check(paymentsStart === -1 || decisionsStart > paymentsStart, "#decisions must come after #payments");
   check(screenshotsAt === -1 || screenshotsAt > decisionsStart, "#decisions must come before #screenshots");
   // The slice ends at the section's own closing tag, so a missing #screenshots never pulls the footer in.
   const sectionClose = decisionsStart !== -1 ? html.indexOf("</section>", decisionsStart) : -1;
@@ -151,12 +228,16 @@ const shotsStart = html.indexOf('id="screenshots"');
 const contactStart = html.indexOf('id="contact"');
 const shots = shotsStart !== -1 && contactStart > shotsStart ? html.slice(shotsStart, contactStart) : "";
 check(ownedStart !== -1 && shotsStart > ownedStart, "#screenshots must come after #owned");
+// Every figure is either a screenshot frame inside #screenshots or the one payments diagram inside #payments.
+const expectedFigures = expectedShots + (hasPayments ? 1 : 0);
 const figures = html.match(/<figure\b/g) ?? [];
-check(figures.length === expectedShots, `expected exactly ${expectedShots} <figure> on the case study, found ${figures.length}`);
-check((shots.match(/<figure\b/g) ?? []).length === expectedShots, `all ${expectedShots} figures must sit inside #screenshots`);
+check(figures.length === expectedFigures, `expected exactly ${expectedFigures} <figure> on the case study (${expectedShots} screenshots${hasPayments ? " + the payments diagram" : ""}), found ${figures.length}`);
+check((shots.match(/<figure\b/g) ?? []).length === expectedShots, `all ${expectedShots} screenshot figures must sit inside #screenshots`);
 check(!/<h3\b/.test(shots), "no <h3> inside #screenshots unless a figure heading is added deliberately");
-const captions = [...html.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
-check(captions.length === expectedShots, `expected ${expectedShots} <figcaption>, found ${captions.length}`);
+const allCaptions = html.match(/<figcaption\b/g) ?? [];
+check(allCaptions.length === expectedFigures, `expected ${expectedFigures} <figcaption> on the page, found ${allCaptions.length}`);
+const captions = [...shots.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+check(captions.length === expectedShots, `expected ${expectedShots} <figcaption> inside #screenshots, found ${captions.length}`);
 for (const c of captions) check(c.startsWith("Test data"), `figcaption must start with "Test data": ${c}`);
 const thumbs = shots.match(/<button\b[^>]*aria-haspopup="dialog"/g) ?? [];
 check(thumbs.length === expectedShots, `expected ${expectedShots} thumbnail buttons with aria-haspopup="dialog", found ${thumbs.length}`);
@@ -227,6 +308,8 @@ walk(join(root, "src", "content", "work"));
 sourceFiles.push(join(root, "src", "components", "ui", "CaseStudyPanel.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "DecisionCard.tsx"));
 sourceFiles.push(join(root, "src", "components", "sections", "DecisionsSection.tsx"));
+sourceFiles.push(join(root, "src", "components", "ui", "StateDiagram.tsx"));
+sourceFiles.push(join(root, "src", "components", "sections", "PaymentsSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
 for (const file of sourceFiles) {

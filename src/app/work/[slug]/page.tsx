@@ -2,6 +2,7 @@ import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
+import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import Footer from "@/components/sections/Footer";
 import ButtonLink from "@/components/ui/ButtonLink";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
@@ -121,6 +122,29 @@ export default async function CaseStudyPage({ params }: Props) {
             ))}
           </ul>
         </section>
+
+        {study.screenshots.length > 0 && (
+          <section
+            id="screenshots"
+            aria-labelledby="screenshots-heading"
+            className="relative z-10 scroll-mt-24 pb-section-gap-mobile md:pb-section-gap"
+          >
+            <h2 id="screenshots-heading" className="text-subheading md:text-heading text-text-primary">
+              Screenshots (test data)
+            </h2>
+            {study.screenshotsNote ? (
+              <p className="mt-4 max-w-[68ch] text-body text-text-secondary">{study.screenshotsNote}</p>
+            ) : null}
+            <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
+              {study.screenshots.map((shot) => (
+                // The portrait phone capture keeps one column but is capped so it does not tower over its neighbours.
+                <li key={shot.src} className={shot.height > shot.width ? "md:max-w-sm" : undefined}>
+                  <ScreenshotViewer {...shot} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <Footer />
       </div>

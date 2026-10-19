@@ -1,5 +1,6 @@
 // Story 2.1: the case-study route, its metadata, robots, sitemap and the Person JSON-LD
 // must come out of the static build exactly as specified (spec I/O matrix).
+// Story 2.6: the Screenshots section, its "Test data" captions, the files behind it and the island set.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -55,6 +56,98 @@ if (live) {
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
 
+// Heading order: h1, Summary, What I owned, Screenshots, then the contact footer. Later stories insert
+// sections between and update this list.
+const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+const expectedH2s = ["Summary", "What I owned", "Screenshots (test data)"];
+check(
+  h2s.length === expectedH2s.length + 1 && expectedH2s.every((t, i) => h2s[i] === t),
+  `h2 order should be ${expectedH2s.join(" > ")} > contact, found: ${h2s.join(" > ") || "none"}`,
+);
+
+// Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
+// one explicit check pins what the manifest lists today.
+const contentSrc = read(join(root, "src", "content", "work", "simply-happy.ts")) ?? "";
+const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
+  src: m[1],
+  width: Number(/\bwidth:\s*(\d+)/.exec(m[2])?.[1]),
+  height: Number(/\bheight:\s*(\d+)/.exec(m[2])?.[1]),
+}));
+const srcs = shotEntries.map((e) => e.src);
+check(new Set(srcs).size === srcs.length, "content module references the same screenshot twice");
+const expectedShots = new Set(srcs).size;
+check(expectedShots > 0, "content module references no screenshots under /work/simply-happy/");
+check(expectedShots === 7, `manifest currently lists 7 screenshots; content module references ${expectedShots}`);
+
+// Every referenced file exists under public/ and the declared intrinsic size matches the PNG header (IHDR).
+const pngSize = (file) => {
+  const b = readFileSync(file);
+  return b.length >= 24 && b.toString("latin1", 1, 4) === "PNG" ? [b.readUInt32BE(16), b.readUInt32BE(20)] : null;
+};
+for (const { src, width, height } of shotEntries) {
+  const file = join(root, "public", src);
+  check(existsSync(file), `screenshot missing on disk: public${src}`);
+  if (!existsSync(file)) continue;
+  const size = pngSize(file);
+  check(
+    !!size && size[0] === width && size[1] === height,
+    `content width/height for ${src} is ${width}x${height} but the PNG is ${size ? size.join("x") : "not a PNG"}`,
+  );
+}
+
+check(html.includes('id="screenshots"'), 'missing <section id="screenshots">');
+const shotsStart = html.indexOf('id="screenshots"');
+const contactStart = html.indexOf('id="contact"');
+const shots = shotsStart !== -1 && contactStart > shotsStart ? html.slice(shotsStart, contactStart) : "";
+check(ownedStart !== -1 && shotsStart > ownedStart, "#screenshots must come after #owned");
+const figures = html.match(/<figure\b/g) ?? [];
+check(figures.length === expectedShots, `expected exactly ${expectedShots} <figure> on the case study, found ${figures.length}`);
+check((shots.match(/<figure\b/g) ?? []).length === expectedShots, `all ${expectedShots} figures must sit inside #screenshots`);
+check(!/<h3\b/.test(shots), "no <h3> inside #screenshots unless a figure heading is added deliberately");
+const captions = [...html.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+check(captions.length === expectedShots, `expected ${expectedShots} <figcaption>, found ${captions.length}`);
+for (const c of captions) check(c.startsWith("Test data"), `figcaption must start with "Test data": ${c}`);
+const thumbs = shots.match(/<button\b[^>]*aria-haspopup="dialog"/g) ?? [];
+check(thumbs.length === expectedShots, `expected ${expectedShots} thumbnail buttons with aria-haspopup="dialog", found ${thumbs.length}`);
+const dialogs = shots.match(/<dialog\b[^>]*>/g) ?? [];
+check(
+  dialogs.length === expectedShots && dialogs.every((d) => /\saria-label="Larger view: Test data/.test(d)),
+  `expected ${expectedShots} <dialog> in #screenshots, each with aria-label starting "Larger view: Test data", found ${dialogs.length}`,
+);
+// The same <img> requirements apply to every ScreenshotFrame image, on this page and on the home feature.
+const checkFrameImg = (img, where) => {
+  check(/\salt="[^"]+"/.test(img), `${where} <img> needs non-empty alt: ${img.slice(0, 120)}`);
+  check(/\sloading="lazy"/.test(img) && !/fetchpriority="high"/i.test(img), `${where} <img> must be lazy, none is the LCP: ${img.slice(0, 120)}`);
+  check(/\swidth="\d+"/.test(img) && /\sheight="\d+"/.test(img) && /\ssizes="/.test(img), `${where} <img> needs width, height and sizes: ${img.slice(0, 120)}`);
+};
+const shotImgs = shots.match(/<img\b[^>]*>/g) ?? [];
+check(shotImgs.length === expectedShots, `expected ${expectedShots} <img> in #screenshots (dialog bodies mount only when open), found ${shotImgs.length}`);
+for (const img of shotImgs) checkFrameImg(img, "screenshot");
+// Next encodes the path in preload hrefs and imageSrcSet (%2Fwork%2Fsimply-happy%2F), so match both spellings.
+const shotPath = /(?:\/|%2F)work(?:\/|%2F)simply-happy(?:\/|%2F)/i;
+for (const tag of html.match(/<link\b[^>]*>/g) ?? []) {
+  if (/\srel="preload"/.test(tag) && /\sas="image"/.test(tag)) check(!shotPath.test(tag), `no screenshot may be preloaded: ${tag.slice(0, 160)}`);
+}
+
+// Home page: the ScreenshotFrame default image branch must still render inside the Simply Happy feature.
+const home = read(join(app, "index.html")) ?? "";
+const workStart = home.indexOf('id="work"');
+const workEnd = workStart === -1 ? -1 : home.indexOf("<section", workStart + 1);
+const homeWork = workStart === -1 ? "" : home.slice(workStart, workEnd === -1 ? undefined : workEnd);
+check((homeWork.match(/<figure\b/g) ?? []).length === 1, "home #work must hold exactly one <figure>");
+check((homeWork.match(/<figcaption\b/g) ?? []).length === 1, "home #work must hold exactly one <figcaption>");
+const homeImgs = homeWork.match(/<img\b[^>]*>/g) ?? [];
+check(homeImgs.length === 1, `home #work must hold exactly one <img>, found ${homeImgs.length}`);
+for (const img of homeImgs) checkFrameImg(img, "home feature");
+
+// Exactly the expected islands (source files only); "use client" placement itself is enforced by check-islands.
+const islandsDir = join(root, "src", "components", "islands");
+const islands = existsSync(islandsDir)
+  ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
+  : [];
+const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx"];
+check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
+
 // Metadata
 const title = attr(html, /<title>([^<]*)<\/title>/);
 check(title === "Simply Happy case study · Muhammad Ali Khan", `case study <title> mismatch: ${title}`);
@@ -81,6 +174,8 @@ const walk = (dir) => {
 walk(join(root, "src", "app", "work"));
 walk(join(root, "src", "content", "work"));
 sourceFiles.push(join(root, "src", "components", "ui", "CaseStudyPanel.tsx"));
+sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
+sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
 for (const file of sourceFiles) {
   const src = read(file);
   check(src !== null, `missing source file ${relative(root, file)}`);

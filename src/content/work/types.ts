@@ -60,6 +60,8 @@ export type CaseStudy = {
   };
   owned: OwnedArea[];
   screenshots: Screenshot[];
+  /** One or two sentences under the Screenshots heading, e.g. where the captures come from. */
+  screenshotsNote?: string;
   // Reserved for later stories; the launch version renders none of these.
   payments?: ProseSection;
   decisions?: Decision[];

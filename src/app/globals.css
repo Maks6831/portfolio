@@ -77,6 +77,10 @@
     button {
       @apply active:outline-none;
     }
+    /* Keep the page where it was while a modal is open, so focus returns to a visible thumbnail. */
+    body:has(dialog[open]) {
+      overflow: hidden;
+    }
   }
   
   @layer utilities {

@@ -9,7 +9,7 @@
 # reports scores in the deploy log. It is deliberately NOT set to fail the deploy: the plugin's blocking
 # mode serves the publish directory, and a Next.js build's publish directory has no root index.html.
 # The blocking gates are scripts/check-islands.mjs, check-dates.mjs, check-decisions.mjs, check-payments.mjs,
-# check-testing.mjs, check-assistant.mjs, check-toc.mjs, check-budget.mjs, check-anchors.mjs and check-case-study.mjs,
+# check-testing.mjs, check-assistant.mjs, check-toc.mjs, check-budget.mjs, check-anchors.mjs, check-case-study.mjs and check-not-found.mjs,
 # all run by `pnpm build`.
 [[plugins]]
   package = "@netlify/plugin-lighthouse"

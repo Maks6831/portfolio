@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs && next build && node scripts/check-budget.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs",
+    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs && next build && node scripts/check-budget.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs && node scripts/check-not-found.mjs",
     "start": "next start",
     "lint": "eslint . && node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs",
     "check:islands": "node scripts/check-islands.mjs",
@@ -15,6 +15,7 @@
     "check:budget": "node scripts/check-budget.mjs",
     "check:anchors": "node scripts/check-anchors.mjs",
     "check:case-study": "node scripts/check-case-study.mjs",
+    "check:not-found": "node scripts/check-not-found.mjs",
     "check:decisions": "node scripts/check-decisions.mjs",
     "check:payments": "node scripts/check-payments.mjs",
     "check:testing": "node scripts/check-testing.mjs",

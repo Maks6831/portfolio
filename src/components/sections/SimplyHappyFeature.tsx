@@ -28,7 +28,7 @@ const SimplyHappyFeature = () => (
           ))}
         </ul>
         <div>
-          <ButtonLink href={f.link.href} variant="secondary" external>
+          <ButtonLink href={f.link.href} variant="secondary">
             {f.link.label}
           </ButtonLink>
         </div>

@@ -5,12 +5,15 @@
   # Next 16 needs Node >= 20.9; pin so Netlify does not fall back to an older default.
   NODE_VERSION = "20.19.0"
 
-# AD-7: Lighthouse (mobile preset, the plugin default) audits the deployed site after each deploy and
-# reports scores in the deploy log. It is deliberately NOT set to fail the deploy: the plugin's blocking
-# mode serves the publish directory, and a Next.js build's publish directory has no root index.html.
+# AD-7: Lighthouse (mobile preset, the plugin default) audits the deployed home page and case study after each
+# deploy and reports scores in the deploy log; both audits use the top-level (Story 1.6) thresholds. It is
+# deliberately NOT set to fail the deploy: the plugin's blocking mode serves the publish directory, and a Next.js
+# build's publish directory has no root index.html. Production deploys arrive through the API and do not run this
+# plugin; Story 2.9 verification runs Google's lighthouse CLI once against `pnpm start` with the same preset and
+# thresholds, and records the scores in that spec's Implementation Notes.
 # The blocking gates are scripts/check-islands.mjs, check-dates.mjs, check-decisions.mjs, check-payments.mjs,
-# check-testing.mjs, check-assistant.mjs, check-toc.mjs, check-budget.mjs, check-anchors.mjs, check-case-study.mjs and check-not-found.mjs,
-# all run by `pnpm build`.
+# check-testing.mjs, check-assistant.mjs, check-toc.mjs, check-links.mjs, check-budget.mjs, check-anchors.mjs, check-case-study.mjs and
+# check-not-found.mjs, all run by `pnpm build`; check-budget and check-anchors cover every built page.
 [[plugins]]
   package = "@netlify/plugin-lighthouse"
 
@@ -20,3 +23,11 @@
       accessibility = 0.95
       best-practices = 0.9
       seo = 0.9
+
+  # Once audits are listed, only the listed ones run. After a deploy the plugin requests `${DEPLOY_URL}/${path}`, or
+  # the deploy URL itself when path is empty, so "/" is written as "" (path = "/" would request "//").
+  [[plugins.inputs.audits]]
+    path = ""
+
+  [[plugins.inputs.audits]]
+    path = "work/simply-happy"

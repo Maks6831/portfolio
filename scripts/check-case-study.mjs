@@ -13,6 +13,8 @@
 // name, domain or link).
 // Story 2.7: the contents list between the <h1> and #summary: a closed small-screen disclosure and a sticky column,
 // both listing every <section id> in source order with the agreed labels; every section takes focus; no aria-current.
+// Story 2.9: the home hero button, feature link and assistant tile open the case study in place; home has no link to
+// the client's site (the case study keeps the only one); the feature image is the test-data booking screenshot.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -529,6 +531,60 @@ check((homeWork.match(/<figcaption\b/g) ?? []).length === 1, "home #work must ho
 const homeImgs = homeWork.match(/<img\b[^>]*>/g) ?? [];
 check(homeImgs.length === 1, `home #work must hold exactly one <img>, found ${homeImgs.length}`);
 for (const img of homeImgs) checkFrameImg(img, "home feature");
+
+// Home wiring (Story 2.9). The three links into the case study are internal: no target and no new-tab hint.
+const anchors = (doc) =>
+  [...doc.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+    href: /\shref="([^"]*)"/.exec(m[1])?.[1],
+    attrs: m[1],
+    text: decode(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim(),
+  }));
+const checkInternal = (links, where, href, label) => {
+  check(links.length === 1, `${where} should hold exactly one link to ${href}, found ${links.length}`);
+  for (const a of links) {
+    check(a.text.startsWith(label), `${where} link should read "${label}", found "${a.text}"`);
+    check(!/\starget=/.test(a.attrs), `${where} link to ${href} must open in place (no target)`);
+    check(!a.text.includes("(opens in a new tab)"), `${where} link to ${href} must not carry the new-tab hint`);
+  }
+};
+const heroStart = home.search(/<h1\b/);
+const homeHero = heroStart !== -1 && workStart > heroStart ? home.slice(heroStart, workStart) : "";
+check(homeHero !== "", "home: could not find the hero between the <h1> and #work");
+checkInternal(anchors(homeHero).filter((a) => a.href === "/work/simply-happy"), "home hero", "/work/simply-happy", "Read the Simply Happy case study");
+checkInternal(anchors(homeWork).filter((a) => a.href === "/work/simply-happy"), "home #work feature", "/work/simply-happy", "Read the case study");
+checkInternal(anchors(home).filter((a) => a.href === "/work/simply-happy#assistant"), "home assistant tile", "/work/simply-happy#assistant", "Admin AI assistant");
+check(ids.has("assistant"), 'the case study needs id="assistant" for the home assistant tile to land on');
+const clientDomain = /\shref="[^"]*simplyhappy\.pt/i;
+check(!clientDomain.test(home), "home must not link to the client's site (simplyhappy.pt); only the case study does");
+const clientSite = /^https?:\/\/(?:[a-z0-9-]+\.)*simplyhappy\.pt(?:[/?#]|$)/i; // the client's domain and any subdomain
+const liveLinks = anchors(html).filter((a) => clientSite.test(a.href ?? ""));
+check(liveLinks.length === 1, `the case study should hold exactly one live-site link, found ${liveLinks.length}`);
+// The feature image is the test-data booking screenshot (next/image encodes the path as %2F in src and srcSet).
+const featureImg = homeImgs[0] ?? "";
+check(/(?:\/|%2F)work(?:\/|%2F)simply-happy(?:\/|%2F)booking-rooms\.png/i.test(featureImg), `home feature <img> must be /work/simply-happy/booking-rooms.png: ${featureImg.slice(0, 160)}`);
+check(
+  attr(featureImg, /\salt="([^"]*)"/) === "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
+  "home feature <img> alt must describe the room selection step (owner inputs, section 1)",
+);
+check(/\swidth="2880"/.test(featureImg) && /\sheight="1800"/.test(featureImg), "home feature <img> must declare 2880x1800, the PNG's intrinsic size");
+const homeCaption = decode((/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/.exec(homeWork)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
+check(homeCaption === "Test data. Room selection step of the booking flow, develop preview", `home feature caption mismatch: ${homeCaption}`);
+check(!existsSync(join(root, "public", "simplyhappy-screenshot.png")), "public/simplyhappy-screenshot.png should be deleted (nothing uses it)");
+// The file behind the feature image exists: next/image serves /_next/image?url=<encoded path>, so decode that path.
+const featureSrc = attr(featureImg, /\ssrc="([^"]*)"/) ?? "";
+let featurePath = featureSrc;
+try { featurePath = decodeURIComponent(new URL(featureSrc, "http://x").searchParams.get("url") ?? featureSrc); } catch {}
+check(featurePath.startsWith("/") && existsSync(join(root, "public", featurePath)), `home feature image file missing under public/: ${featurePath || "(no src)"}`);
+// Links that stay plain <a> (Story 2.9): the footer CV keeps download on both pages; the CoinFlow tile opens a new tab.
+for (const [name, doc] of [["home", home], ["case study", html]]) {
+  const cv = anchors(doc).filter((a) => a.href === "/Muhammad-Ali-Khan-CV.pdf");
+  check(cv.length === 1 && /\sdownload(?:=|\s|$)/.test(cv[0].attrs), `${name}: the footer CV link (/Muhammad-Ali-Khan-CV.pdf) needs a download attribute`);
+}
+const coinflow = anchors(home).filter((a) => a.href === "https://coinflow.netlify.app");
+check(
+  coinflow.length === 1 && /\starget="_blank"/.test(coinflow[0].attrs) && /\srel="noopener noreferrer"/.test(coinflow[0].attrs) && coinflow[0].text.includes("(opens in a new tab)"),
+  'home: the CoinFlow tile needs target="_blank", rel="noopener noreferrer" and the "(opens in a new tab)" hint',
+);
 
 // Exactly the expected islands (source files only); "use client" placement itself is enforced by check-islands.
 const islandsDir = join(root, "src", "components", "islands");

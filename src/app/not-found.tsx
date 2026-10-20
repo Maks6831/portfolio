@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
-import ButtonLink from "@/components/ui/ButtonLink";
+// ButtonLinkBase, not ButtonLink: its links stay plain <a>, as before Story 2.9. Importing next/link here puts Link
+// in this page's client graph, and Turbopack then splits the chunk home shares with the case study (+0.6 kB on
+// home, over the 152.7 kB Story 2.9 holds it to). A 404 is usually a first load, so prefetch from it buys little.
+import ButtonLink from "@/components/ui/ButtonLinkBase";
 import { siteMeta } from "@/content/site";
 import { getCaseStudy } from "@/content/work";
 

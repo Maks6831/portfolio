@@ -36,7 +36,6 @@ const Hero = () => {
           <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
             <ButtonLink
               href={hero.primaryCta.href}
-              external
               icon={<FaLocationArrow aria-hidden="true" />}
               className="w-full sm:w-auto"
             >

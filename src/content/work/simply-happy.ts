@@ -15,7 +15,8 @@ export const simplyHappy = {
     after: simplyHappyFeature.after,
   },
   stack: simplyHappyFeature.chips,
-  liveSite: simplyHappyFeature.link,
+  // The only link to the client's site: the home page links here instead.
+  liveSite: { label: "Visit simplyhappy.pt", href: "https://simplyhappy.pt" },
   // Mirrors proofTiles[0] on the home page: requirements, architecture, payments, admin, a hired designer, stakeholder contact.
   owned: [
     {

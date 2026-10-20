@@ -3,12 +3,14 @@ const siteRole = "Full-stack engineer";
 
 export const email = "ma.khan6971@gmail.com";
 
+// The home page links to the work, not the client's site; the live-site link lives only in the case study.
+const caseStudyHref = "/work/simply-happy";
+
 export const hero = {
   eyebrow: "Muhammad Ali Khan · Full-stack engineer · London",
   headline: "I turn a client's operational mess into a product that ships safely.",
   lede: "I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform, and I own what runs behind it.",
-  // Interim target until the case study route ships (Story 2.9).
-  primaryCta: { label: "See Simply Happy live", href: "https://simplyhappy.pt" },
+  primaryCta: { label: "Read the Simply Happy case study", href: caseStudyHref },
   secondaryCta: { label: "Get in touch", href: "#contact" },
 };
 
@@ -20,14 +22,13 @@ export const simplyHappyFeature = {
     "A live booking platform with deposit and final payments, and an admin back office used daily by three admins.",
   chips: ["SvelteKit", "TypeScript", "tRPC", "PostgreSQL", "Stripe", "Playwright"],
   image: {
-    src: "/simplyhappy-screenshot.png",
+    src: "/work/simply-happy/booking-rooms.png",
     width: 2880,
-    height: 1556,
-    alt: "The Simply Happy booking flow: a step for adding services such as cleaning, laundry and massage to a stay.",
-    caption: "The booking flow, simplyhappy.pt",
+    height: 1800,
+    alt: "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
+    caption: "Test data. Room selection step of the booking flow, develop preview",
   },
-  // Interim target until the case study route ships (Story 2.9).
-  link: { label: "Visit simplyhappy.pt", href: "https://simplyhappy.pt" },
+  link: { label: "Read the case study", href: caseStudyHref },
 };
 
 export const navItems = [
@@ -70,8 +71,7 @@ export const supportingWork = {
       featured: true,
       title: "Admin AI assistant",
       body: "A read-only help panel for the back office. Seven fixed lookups beat free-form SQL because wrong joins look right. No chats are stored.",
-      // Not a link until the write-up exists (Epic 2).
-      href: undefined as string | undefined,
+      href: `${caseStudyHref}#assistant` as string | undefined,
     },
     {
       id: "coinflow",
@@ -168,7 +168,7 @@ export const contact = {
 export const siteMeta = {
   origin: "https://muhammadalikhan.co.uk",
   // ISO date of the last home-page content change; feeds the sitemap.
-  updated: "2026-10-18",
+  updated: "2026-10-20",
   name: siteName,
   role: siteRole,
   title: `${siteName} · ${siteRole}`,

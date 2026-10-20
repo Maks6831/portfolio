@@ -113,6 +113,19 @@ export default function TocHighlight({ items }: Props) {
     };
   }, [items]);
 
+  // Arriving with a hash by client-side navigation (the home page's link to #assistant) leaves focus on <body>, because
+  // the router moves scroll but not focus. Move focus to the named element without scrolling, as a contents jump does.
+  useEffect(() => {
+    let id = "";
+    try {
+      id = decodeURIComponent(window.location.hash.slice(1));
+    } catch {
+      return;
+    }
+    const target = id ? document.getElementById(id) : null;
+    if (target && document.activeElement !== target) target.focus({ preventScroll: true });
+  }, []);
+
   // The browser follows the link itself. Closing the disclosure first means the jump lands where the section
   // ends up once the list has collapsed; focus then moves to the section if the browser did not move it there.
   const onNavigate = (event: MouseEvent<HTMLAnchorElement>, id: string) => {

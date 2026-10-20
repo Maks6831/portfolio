@@ -1,7 +1,7 @@
 import type { CaseStudy } from "./types";
 import { simplyHappy } from "./simply-happy";
 
-export type { CaseStudy, Screenshot, OwnedArea, Decision, ProseSection } from "./types";
+export type { CaseStudy, Screenshot, OwnedArea, Decision } from "./types";
 
 /** Every case study keyed by slug: the single lookup for the route, the sitemap and the home card. */
 export const caseStudies: Readonly<Record<string, CaseStudy>> = {

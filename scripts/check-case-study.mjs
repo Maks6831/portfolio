@@ -7,6 +7,10 @@
 // Story 2.4: the Testing section between #decisions and #screenshots: one <dl> of count tiles under a single
 // "approx., as of" label, three paragraphs, and its honesty rules (approximate counts; CI only on pull requests;
 // Storybook only as local; no snapshots, URL, path, file name, domain or link).
+// Story 2.5: the Assistant section between #testing and #screenshots: one intro paragraph, five safeguard panels (an <h3>
+// each) and one closing paragraph, and its honesty rules (seven read-only lookups, browser-tab chats, the tested excluded
+// fields, a monthly cap with no amount, an off switch; no vendor or model name, currency, "daily limit", URL, path, file
+// name, domain or link).
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -62,6 +66,19 @@ check(!hasTesting || expectedTestingParagraphs.length > 0, "content module has t
 // The section is a row of four tiles and three paragraphs today (spec 2.4); a dropped tile must fail by name.
 check(!hasTesting || expectedTiles === 4, `the Testing section lists four count tiles; content module has ${expectedTiles}`);
 check(!hasTesting || expectedTestingParagraphs.length === 3, `the Testing section has three paragraphs; content module has ${expectedTestingParagraphs.length}`);
+// Assistant counts come from the `assistant: {` ... `},` block alone: one `title:` and one `text:` per safeguard
+// panel (`text:` is shared with the reliability panels, so the block scope matters) plus the intro and closing.
+const assistantSrc = /^  assistant:\s*\{([\s\S]*?)^  \},/m.exec(contentSrc)?.[1] ?? "";
+const expectedSafeguardTitles = [...assistantSrc.matchAll(/\btitle:\s*("(?:[^"\\]|\\.)*")/g)].map((m) => literal(m[1]));
+const expectedSafeguardTexts = [...assistantSrc.matchAll(/\btext:\s*("(?:[^"\\]|\\.)*")/g)].map((m) => literal(m[1]));
+const expectedSafeguards = expectedSafeguardTexts.length;
+const expectedAssistantIntro = literal(/\bintro:\s*("(?:[^"\\]|\\.)*")/.exec(assistantSrc)?.[1] ?? '""');
+const expectedAssistantClosing = literal(/\bclosing:\s*("(?:[^"\\]|\\.)*")/.exec(assistantSrc)?.[1] ?? '""');
+const hasAssistant = expectedSafeguards > 0;
+check(!hasAssistant || expectedSafeguardTitles.length === expectedSafeguards, `content module assistant block has ${expectedSafeguardTitles.length} titles for ${expectedSafeguards} safeguard texts`);
+check(!hasAssistant || (expectedAssistantIntro.length > 0 && expectedAssistantClosing.length > 0), "content module has assistant safeguards but no intro or closing paragraph");
+// The section is five safeguard panels today (spec 2.5); a dropped panel must fail by name.
+check(!hasAssistant || expectedSafeguards === 5, `the Admin AI assistant section lists five safeguard panels; content module has ${expectedSafeguards}`);
 check(!hasPayments || contentTransitions === expectedStates - 1, `content module should give ${expectedStates - 1} transition labels (states - 1), found ${contentTransitions}`);
 check(expectedOwned > 0, "content module defines no owned areas (no `body:` entries)");
 check(!hasPayments || (expectedPanels > 0 && expectedFlow > 0), "content module has payment states but no reliability panels or flow paragraphs");
@@ -73,10 +90,11 @@ check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
 const firstH2 = html.search(/<h2\b/);
 check(firstH1 !== -1 && firstH2 > firstH1, "the first <h2> must come after the single <h1>");
-// 2 summary panels (Before, After) + the "What I owned" areas + one reliability panel each + one title per decision card.
-const expectedH3s = 2 + expectedOwned + expectedPanels + expectedDecisions;
+// 2 summary panels (Before, After) + the "What I owned" areas + one reliability panel each + one title per decision card
+// + one assistant safeguard panel each.
+const expectedH3s = 2 + expectedOwned + expectedPanels + expectedDecisions + expectedSafeguards;
 const h3Count = (html.match(/<h3\b/g) ?? []).length;
-check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions), found ${h3Count}`);
+check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions + ${expectedSafeguards} safeguards), found ${h3Count}`);
 check(html.includes('id="summary"'), 'missing <section id="summary">');
 check(html.includes('id="owned"'), 'missing <section id="owned">');
 check(html.includes('<main id="main"'), "root layout <main id=\"main\"> must wrap the page");
@@ -100,8 +118,9 @@ if (live) {
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
 
-// Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions (each only when the content
-// has any), Screenshots, then the contact footer. Later stories insert sections between and update this list.
+// Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions, Testing and delivery, Admin AI
+// assistant (each only when the content has any), Screenshots, then the contact footer. The content order is now
+// complete: 2.7 adds the contents list and 2.9 rewires home, neither adds a section.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
 const expectedH2s = [
   "Summary",
@@ -109,6 +128,7 @@ const expectedH2s = [
   ...(hasPayments ? ["The booking and payments flow"] : []),
   ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
   ...(hasTesting ? ["Testing and delivery"] : []),
+  ...(hasAssistant ? ["Admin AI assistant (safety design)"] : []),
   "Screenshots (test data)",
 ];
 check(
@@ -210,6 +230,10 @@ if (expectedDecisions === 0) {
   check(!/https?:\/\//i.test(text), "#decisions must not contain a URL");
   check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#decisions must not name a file path or file name");
   check(!/<a\b/.test(decisions), "#decisions must not link anywhere (no links to the private repo)");
+  // The three assistant facts #assistant repeats, so the two sections cannot drift apart.
+  check(/\bseven\b/i.test(text), '#decisions must say "seven" lookups (the count #assistant repeats)');
+  check(/\bbrowser tab\b/i.test(text), '#decisions must say chats live in the "browser tab" (as #assistant does)');
+  check(/\bwrong join\b/i.test(text), '#decisions must give the "wrong join" reason for rejecting SQL (as #assistant does)');
 }
 
 // Testing (Story 2.4). One <dl> of count tiles (a <dt> label and a <dd> value each, an optional detail <dd>)
@@ -283,6 +307,70 @@ if (!hasTesting) {
   // text-muted is for the as-of label and the tile detail lines only.
   const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-text-muted\b[^"]*"/g)].map((m) => m[1]);
   check(muted.every((tag) => tag === "p" || tag === "dd") && muted.filter((t) => t === "p").length === 1, `#testing text-muted is for the as-of <p> and detail <dd> only, found on: ${muted.join(", ") || "none"}`);
+}
+
+// Assistant (Story 2.5). One intro <p>, one <ul role="list"> of CaseStudyPanel tiles (an <h3> each, one per
+// safeguard in the content module) and one closing <p>; the section sits between #testing and #screenshots.
+// With no assistant content it must be absent.
+const assistantStart = html.indexOf('id="assistant"');
+if (!hasAssistant) {
+  check(assistantStart === -1, "content module has no assistant safeguards, so <section id=\"assistant\"> must not render");
+} else {
+  check(assistantStart !== -1, 'missing <section id="assistant">');
+  const assistantClose = assistantStart !== -1 ? html.indexOf("</section>", assistantStart) : -1;
+  const assistantHtml = assistantStart !== -1 ? html.slice(assistantStart, assistantClose === -1 ? html.length : assistantClose) : "";
+  check(testingStart === -1 || assistantStart > testingStart, "#assistant must come after #testing");
+  check(decisionsStart === -1 || assistantStart > decisionsStart, "#assistant must come after #decisions");
+  check(paymentsStart === -1 || assistantStart > paymentsStart, "#assistant must come after #payments");
+  const screenshotsAt = html.indexOf('id="screenshots"');
+  check(screenshotsAt === -1 || screenshotsAt > assistantStart, "#assistant must come before #screenshots");
+  check(/<h2\b[^>]*>\s*Admin AI assistant \(safety design\)\s*<\/h2>/.test(assistantHtml), '#assistant h2 must read exactly "Admin AI assistant (safety design)"');
+  check(!/<article\b/.test(assistantHtml), "#assistant must not contain <article> (articles are decision cards)");
+  check(!/<a\b/.test(assistantHtml), "#assistant must not link anywhere");
+  // Panels: one list, one <li> and one <h3> per safeguard, each <h3> reading its content title, in a grid that stacks first.
+  check((assistantHtml.match(/<ul\b/g) ?? []).length === 1 && /<ul\b[^>]*role="list"/.test(assistantHtml), '#assistant must hold exactly one <ul role="list"> of safeguard panels');
+  const ulStart = assistantHtml.indexOf("<ul");
+  const ulEnd = assistantHtml.indexOf("</ul>");
+  const list = ulStart === -1 || ulEnd === -1 ? "" : assistantHtml.slice(ulStart, ulEnd);
+  const items = (list.match(/<li\b/g) ?? []).length;
+  check(items === expectedSafeguards, `#assistant should hold ${expectedSafeguards} safeguard panels (<li>) from the content module, found ${items}`);
+  check((assistantHtml.match(/<h3\b/g) ?? []).length === expectedSafeguards, `#assistant should hold exactly ${expectedSafeguards} <h3>, one per safeguard panel`);
+  const h3Texts = [...list.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+  check(JSON.stringify(h3Texts) === JSON.stringify(expectedSafeguardTitles), `#assistant panel headings should read ${expectedSafeguardTitles.join(" | ")}, found: ${h3Texts.join(" | ") || "none"}`);
+  const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(assistantHtml)?.[1] ?? "";
+  check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#assistant panel grid must be grid-cols-1 md:grid-cols-2");
+  // One intro <p> between the h2 and the list and one closing <p> after it; the panels' own <p> bodies sit inside the list.
+  const beforeList = ulStart === -1 ? assistantHtml : assistantHtml.slice(0, ulStart);
+  const afterList = ulEnd === -1 ? "" : assistantHtml.slice(ulEnd);
+  check((beforeList.match(/<p\b/g) ?? []).length === 1, `#assistant should hold exactly one intro <p> before the panel list, found ${(beforeList.match(/<p\b/g) ?? []).length}`);
+  check((afterList.match(/<p\b/g) ?? []).length === 1, `#assistant should hold exactly one closing <p> after the panel list, found ${(afterList.match(/<p\b/g) ?? []).length}`);
+  // The slice starts inside the opening <section> tag, so drop its remaining attributes before reading the text.
+  const text = decode(assistantHtml.slice(assistantHtml.indexOf(">") + 1).replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ");
+  check(text.includes(expectedAssistantIntro.replace(/\s+/g, " ")), "#assistant intro paragraph from the content module is missing from the page");
+  check(text.includes(expectedAssistantClosing.replace(/\s+/g, " ")), "#assistant closing paragraph from the content module is missing from the page");
+  for (const [i, t] of expectedSafeguardTexts.entries()) check(text.includes(t.replace(/\s+/g, " ")), `#assistant safeguard ${i + 1} text from the content module is missing from the page`);
+  // Honesty: the verified facts by name, in the words the decision cards use (seven lookups, browser-tab chats, the
+  // "wrong join" reason); no vendor, model or product name, amount, currency, per-admin "daily limit", URL, path,
+  // file name, domain or link.
+  check(/\bseven\b/i.test(text), '#assistant must say "seven" lookups (the verified count, as the decision cards do)');
+  check(/\bread-only\b/i.test(text), '#assistant must say "read-only"');
+  check(/\btest\b/i.test(text), '#assistant must name the "test" that enforces the excluded fields');
+  check(/\boff switch\b/i.test(text), '#assistant must name the admin "off switch"');
+  check(/\blaunched\b/i.test(text), '#assistant must describe the assistant as "launched"');
+  check(/\bbrowser tab\b/i.test(text), '#assistant must say chats live in the "browser tab" (as the decision card does)');
+  check(/\bwrong join\b/i.test(text), '#assistant must give the "wrong join" reason for rejecting SQL (as the decision card does)');
+  check(/\ballergies\b/i.test(text) && /\bdate of birth\b/i.test(text) && /\bgender\b/i.test(text) && /\btax number\b/i.test(text), "#assistant must name the excluded fields: allergies, date of birth, gender and tax number");
+  check(/\bmonthly\b/i.test(text), "#assistant must describe the spend cap as monthly");
+  check(!/\b(?:Anthropic|Claude|OpenAI|GPT|Console|Gemini|Mistral|Llama|Sonnet|Opus|Haiku|Stripe|Supabase|Svelte|SvelteKit|tRPC|Postgres|PostgreSQL|Drizzle|Resend|AWS|TOConline)\b/i.test(text), "#assistant must not name a vendor, model or product (no Anthropic, Claude, OpenAI, GPT or Console, and none of the stack's vendors)");
+  check(!/[£$€]/.test(text) && !/\b(?:GBP|EUR|USD)\b/.test(text) && !/\b(?:pounds?|pence|dollars?|euros?|cents?)\b/i.test(text), "#assistant must not mention an amount or currency");
+  check(!/\d/.test(text), "#assistant must not contain a figure (the spend cap has no amount; counts are written out)");
+  check(!/\bdaily limit\b/i.test(text) && !/\bper[\s-]admin\b[^.]*\blimit\b/i.test(text) && !/\bdaily\b/i.test(text), '#assistant must not claim a per-admin "daily limit" (none exists)');
+  check(!/https?:\/\//i.test(text) && !/\bwww\./i.test(text), "#assistant must not contain a URL");
+  check(!/\b[a-z0-9-]+\.(?:com|co\.uk|io|app|dev|net|org)\b/i.test(text), "#assistant must not name a domain");
+  check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#assistant must not name a file path or file name");
+  check(!/\b[A-Za-z0-9]+_[A-Za-z0-9_]+\b/.test(text), "#assistant must not name a code identifier (snake_case table, column or lookup name)");
+  check(!/\b(?:bg|text|border)-success\b/.test(assistantHtml), "#assistant must not use the success colour");
+  check(!/\btext-text-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
 }
 
 // Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
@@ -402,6 +490,7 @@ sourceFiles.push(join(root, "src", "components", "sections", "DecisionsSection.t
 sourceFiles.push(join(root, "src", "components", "ui", "StateDiagram.tsx"));
 sourceFiles.push(join(root, "src", "components", "sections", "PaymentsSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "sections", "TestingSection.tsx"));
+sourceFiles.push(join(root, "src", "components", "sections", "AssistantSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
 for (const file of sourceFiles) {

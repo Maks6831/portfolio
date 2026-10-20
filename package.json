@@ -7,9 +7,9 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && next build && node scripts/check-budget.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs",
+    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && next build && node scripts/check-budget.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs",
     "start": "next start",
-    "lint": "eslint . && node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs",
+    "lint": "eslint . && node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs",
     "check:islands": "node scripts/check-islands.mjs",
     "check:dates": "node scripts/check-dates.mjs",
     "check:budget": "node scripts/check-budget.mjs",
@@ -17,7 +17,8 @@
     "check:case-study": "node scripts/check-case-study.mjs",
     "check:decisions": "node scripts/check-decisions.mjs",
     "check:payments": "node scripts/check-payments.mjs",
-    "check:testing": "node scripts/check-testing.mjs"
+    "check:testing": "node scripts/check-testing.mjs",
+    "check:assistant": "node scripts/check-assistant.mjs"
   },
   "dependencies": {
     "clsx": "^2.1.1",

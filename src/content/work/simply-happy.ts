@@ -151,6 +151,39 @@ export const simplyHappy = {
       "CI runs only on pull requests into develop and main: lint, type checks, the stories-coverage audit that fails when a component has no story, a production build and the Playwright integration tests on Chromium. The Storybook test runner, the opt-in UI tests and the shared package's unit suite run locally only, so a green pull request means the integration suite passed, not that every suite did.",
     ],
   },
+  // Story 2.5. Facts from epic-2-facts-decisions.md section A (A.1 the seven lookups, A.2 no SQL, A.3 browser-tab
+  // chats, A.4 the excluded fields and the test, A.5 the in-code bounds, the monthly cap and the off switch) and
+  // section D (purpose-built lookups over screen endpoints). Honesty rules: no vendor, model or product name, no
+  // amount or currency, no "daily limit" (none exists), no paths, file names or links. The lookup count, the
+  // browser-tab-only chats and the "wrong join looks right" reason match the three assistant decision cards above.
+  assistant: {
+    intro:
+      "The admin back office carries an AI assistant: a read-only help panel where an admin asks a plain question about bookings, arrivals, unpaid items or guests and gets an answer drawn from the live data. It is launched and in use by the client's admins from the back office. I designed it so that it cannot write, cannot see the sensitive fields, cannot remember, cannot run up an unbounded bill and can be switched off. The safeguards below are how.",
+    safeguards: [
+      {
+        title: "Read-only scope",
+        text: "The model can call seven fixed read-only lookups and nothing else: it receives only those seven tool definitions, and any other name is rejected. Each lookup checks that the caller is an admin before it reads anything, validates its input and selects an explicit list of columns, so the model only ever sees the fields I chose for it. Guest-written text is quoted to the model rather than trusted.",
+      },
+      {
+        title: "No stored chats",
+        text: "Conversations live in the browser tab only, in session storage. The server streams the answer and stores nothing, and a test asserts that neither the question nor the answer is logged. Closing the tab ends the conversation, so there is no archive of questions about guests to search, export or erase.",
+      },
+      {
+        title: "Fields that are never sent",
+        text: "Health data (allergies), date of birth, gender and tax number are among the fields never selected and never returned by any lookup, together with payment ids and guests' free-text answers. One test runs every lookup and asserts it never touches a forbidden table or returns a forbidden field, and the system prompt tells the model these fields are not available to it. The meals lookup returns only a count of bookings with dietary restrictions.",
+      },
+      {
+        title: "Spend bounds",
+        text: "Spend is bounded in code: five lookups per question, capped output for each answer, a bounded history sent with each turn and a cap on the length of a message. On top of that, a monthly spend cap set in the provider's configuration stops the assistant when it is reached, and the admin sees a plain message that the monthly limit has been hit.",
+      },
+      {
+        title: "Admin off switch",
+        text: "An admin can turn the assistant off from the back office, and off is the default. The setting is read before any model call, so a fresh deployment starts with the assistant disabled until an admin turns it on, and turning it off takes effect on the next question.",
+      },
+    ],
+    closing:
+      "I chose fixed lookups over read-only SQL because a wrong join looks right in a chat answer, and a free query could reach tokens and allergy data. A query that quietly pairs one guest's details with another guest's booking produces a confident, plausible reply, and an admin reading it has little way to spot the mistake. Seven lookups with fixed field lists are less flexible, but each one is testable and admin-checked, and the whole surface the model can reach is small enough to read in one sitting.",
+  },
   // Develop-preview captures against the repo's seed data (epic-2-owner-inputs.md, section 1), in the
   // manifest's order. Prices and names are seed values; every caption says "Test data".
   screenshotsNote:

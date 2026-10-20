@@ -31,13 +31,6 @@ export type Decision = {
   source?: string;
 };
 
-/** Reserved for Story 2.5: a titled block of prose paragraphs. */
-export type ProseSection = {
-  id: string;
-  heading: string;
-  paragraphs: string[];
-};
-
 /** One state in the StateDiagram. `state` is the pill label, `meaning` the line beneath it. */
 export type PaymentState = {
   state: string;
@@ -85,6 +78,20 @@ export type TestingSection = {
   paragraphs: string[];
 };
 
+/**
+ * Story 2.5: "Admin AI assistant (safety design)". One intro paragraph, the safeguard panels (rendered as
+ * CaseStudyPanel tiles, one h3 each) and one closing paragraph. The build gate counts `text:` inside the
+ * `assistant: {` block alone, the way reliability panels are counted inside `payments: {`.
+ */
+export type AssistantSection = {
+  /** What the assistant is, where it runs and that it is launched. */
+  intro: string;
+  /** One panel per safeguard: read-only scope, no stored chats, excluded fields, spend bounds, the off switch. */
+  safeguards: { title: string; text: string }[];
+  /** Why fixed lookups beat SQL; agrees with the decision card on the reason. */
+  closing: string;
+};
+
 export type CaseStudy = {
   /** URL segment under /work. */
   slug: string;
@@ -115,6 +122,6 @@ export type CaseStudy = {
   payments?: PaymentsSection;
   /** Story 2.4: rendered between Decisions and Screenshots. */
   testing?: TestingSection;
-  // Reserved for Story 2.5; the launch version does not render it.
-  assistant?: ProseSection;
+  /** Story 2.5: rendered between Testing and Screenshots. */
+  assistant?: AssistantSection;
 };

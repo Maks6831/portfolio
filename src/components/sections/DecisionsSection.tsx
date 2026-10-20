@@ -13,7 +13,8 @@ const DecisionsSection = ({ decisions }: Props) => {
     <section
       id="decisions"
       aria-labelledby="decisions-heading"
-      className="relative z-10 scroll-mt-24 pb-section-gap-mobile md:pb-section-gap"
+      tabIndex={-1}
+      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
       <h2 id="decisions-heading" className="text-subheading md:text-heading text-text-primary">
         Decisions and rejected alternatives

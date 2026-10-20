@@ -1,5 +1,6 @@
-// Shared plumbing for the component render tests (check-decisions, check-payments, check-testing, check-assistant):
-// transpile a few source files to plain ESM and render them with react-dom/server. No browser, no test framework.
+// Shared plumbing for the component render tests (check-decisions, check-payments, check-testing, check-assistant
+// and check-toc): transpile a few source files to plain ESM and render them with react-dom/server. No browser, no
+// test framework.
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -10,7 +11,8 @@ export const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..");
 /**
  * Transpile `files` ({ "src/path.tsx": "Emitted.js" }) into a cache folder under node_modules so `react`,
  * `clsx` and `tailwind-merge` resolve as usual. `@/` aliases are rewritten through `aliases` to sibling files;
- * type-only imports are elided by the transpiler. Returns a loader for the emitted modules' default exports.
+ * type-only imports are elided by the transpiler. Returns a loader for the emitted modules' exports: the default
+ * export unless another export is named.
  */
 export const compileComponents = ({ cacheName, aliases, files }) => {
   const outDir = join(root, "node_modules", ".cache", cacheName);
@@ -30,7 +32,7 @@ export const compileComponents = ({ cacheName, aliases, files }) => {
     writeFileSync(join(outDir, name), js);
   }
   return {
-    load: async (name) => (await import(pathToFileURL(join(outDir, name)).href)).default,
+    load: async (name, exportName = "default") => (await import(pathToFileURL(join(outDir, name)).href))[exportName],
   };
 };
 

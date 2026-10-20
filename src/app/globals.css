@@ -71,6 +71,12 @@
     * {
       @apply border-border !scroll-smooth;
     }
+    /* Anchor jumps are instant, not smooth, when the reader asks for reduced motion (EXPERIENCE.md). */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto !important;
+      }
+    }
     body {
       @apply bg-background text-foreground;
     }

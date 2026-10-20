@@ -17,7 +17,8 @@ const TestingSection = ({ testing }: Props) => {
     <section
       id="testing"
       aria-labelledby="testing-heading"
-      className="relative z-10 scroll-mt-24 pb-section-gap-mobile md:pb-section-gap"
+      tabIndex={-1}
+      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
       <h2 id="testing-heading" className="text-subheading md:text-heading text-text-primary">
         Testing and delivery

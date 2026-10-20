@@ -11,6 +11,8 @@
 // each) and one closing paragraph, and its honesty rules (seven read-only lookups, browser-tab chats, the tested excluded
 // fields, a monthly cap with no amount, an off switch; no vendor or model name, currency, "daily limit", URL, path, file
 // name, domain or link).
+// Story 2.7: the contents list between the <h1> and #summary: a closed small-screen disclosure and a sticky column,
+// both listing every <section id> in source order with the agreed labels; every section takes focus; no aria-current.
 import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -373,6 +375,83 @@ if (!hasAssistant) {
   check(!/\btext-text-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
 }
 
+// Contents (Story 2.7). Two <nav aria-label="Contents"> between the <h1> and #summary: the lg:hidden one holds a
+// closed <details> whose <summary> reads "Contents", the hidden lg:block lg:sticky one is the desktop column. Both
+// list one plain anchor per <section id> on the page, in source order, so a section dropped from the content module
+// drops its link too. Every target section takes focus (tabindex="-1") and the server HTML marks nothing current.
+const contentsLabels = {
+  summary: "Summary",
+  owned: "What I owned",
+  payments: "Booking and payments",
+  decisions: "Decisions",
+  testing: "Testing and delivery",
+  assistant: "Admin AI assistant",
+  screenshots: "Screenshots",
+};
+const sectionTags = html.match(/<section\b[^>]*>/g) ?? [];
+const sectionIds = sectionTags.map((tag) => /\sid="([^"]+)"/.exec(tag)?.[1]).filter(Boolean);
+check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id for the contents list to link to");
+for (const id of sectionIds) check(Object.hasOwn(contentsLabels, id), `<section id="${id}"> has no contents label in check-case-study's label map`);
+for (const tag of sectionTags) {
+  check(/\stabindex="-1"/.test(tag), `every contents target must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
+  // A jump lands the section 112px down, clear of the floating nav's bottom edge (about 102px).
+  check(/\sclass="[^"]*(?<=["\s])scroll-mt-28(?=[\s"])/.test(tag), `every contents target must land clear of the floating nav (scroll-mt-28): ${tag.slice(0, 120)}`);
+}
+const expectedContents = sectionIds.map((id) => ({ id, label: contentsLabels[id] }));
+const tocNavs = [...html.matchAll(/<nav\b[^>]*\saria-label="Contents"[^>]*>[\s\S]*?<\/nav>/g)].map((m) => ({ html: m[0], at: m.index, end: m.index + m[0].length }));
+check(tocNavs.length === 2, `expected two <nav aria-label="Contents"> (the disclosure and the sticky column), found ${tocNavs.length}`);
+const navClasses = (nav) => new Set((/^<nav\b[^>]*\sclass="([^"]*)"/.exec(nav.html)?.[1] ?? "").split(/\s+/).filter(Boolean));
+const isColumn = (nav) => { const c = navClasses(nav); return c.has("hidden") && c.has("lg:block") && c.has("lg:sticky"); };
+const isDisclosure = (nav) => { const c = navClasses(nav); return c.has("lg:hidden") && !c.has("hidden"); };
+const columns = tocNavs.filter(isColumn);
+const disclosures = tocNavs.filter(isDisclosure);
+check(columns.length === 1, `exactly one contents <nav> must be the sticky column ("hidden lg:block lg:sticky"), found ${columns.length}`);
+check(disclosures.length === 1, `exactly one contents <nav> must be the small-screen disclosure ("lg:hidden"), found ${disclosures.length}`);
+if (disclosures.length === 1) {
+  const nav = disclosures[0].html;
+  const detailsTags = nav.match(/<details\b[^>]*>/g) ?? [];
+  check(detailsTags.length === 1, `the contents disclosure must hold exactly one <details>, found ${detailsTags.length}`);
+  check(detailsTags.every((tag) => !/\sopen(?=[\s=>])/.test(tag)), "the contents <details> must be closed in the HTML (no open attribute)");
+  const summaryText = decode((/<summary\b[^>]*>([\s\S]*?)<\/summary>/.exec(nav)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
+  check(summaryText === "Contents", `the contents <summary> must read "Contents", found "${summaryText}"`);
+}
+if (columns.length === 1) check(/<p\b[^>]*>\s*On this page\s*<\/p>/.test(columns[0].html), 'the sticky contents column needs its "On this page" eyebrow as a <p>');
+for (const nav of tocNavs) {
+  const which = isColumn(nav) ? "sticky contents column" : isDisclosure(nav) ? "contents disclosure" : "contents nav";
+  check(!/<h[1-6]\b/.test(nav.html), `the ${which} must not hold a heading (the h2 order stays as it is)`);
+  const links = [...nav.html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+    href: /\shref="([^"]*)"/.exec(m[1])?.[1] ?? "",
+    label: decode(m[2].replace(/<[^>]+>/g, "")).trim(),
+  }));
+  check(links.length === expectedContents.length, `the ${which} should list ${expectedContents.length} links, one per <section id>, found ${links.length}`);
+  expectedContents.forEach(({ id, label }, i) => {
+    check(links[i]?.href === `#${id}`, `${which} link ${i + 1} should point at "#${id}", found "${links[i]?.href ?? "none"}"`);
+    check(links[i]?.label === label, `${which} link ${i + 1} label should read "${label}", found "${links[i]?.label ?? "none"}"`);
+  });
+}
+check(!tocNavs.some((nav) => /\saria-current=/.test(nav.html)), "the contents in the server HTML must not carry aria-current (without JavaScript nothing tracks the current section)");
+check(
+  tocNavs.length > 0 && tocNavs.every((nav) => nav.at > firstH1 && summaryStart !== -1 && nav.end <= summaryStart),
+  "the contents must come after the <h1> and before #summary",
+);
+
+// Reduced motion, as built (check-toc checks the source rule): a stylesheet the case study links must make every
+// scroll instant under prefers-reduced-motion, after the last smooth-scroll rule it overrides.
+const cssHrefs = [...html.matchAll(/<link\b[^>]*>/g)]
+  .map((m) => m[0])
+  .filter((tag) => /\srel="stylesheet"/.test(tag))
+  .map((tag) => /\shref="([^"]+)"/.exec(tag)?.[1] ?? "")
+  .filter((href) => href.startsWith("/_next/"));
+check(cssHrefs.length > 0, "the case study links no /_next/ stylesheet");
+const reduceRule = /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{\s*\*\s*\{\s*scroll-behavior:\s*auto\s*!important;?\s*\}\s*\}/;
+const builtReduce = cssHrefs.some((href) => {
+  const css = read(join(root, ".next", href.slice("/_next/".length).split("?")[0])) ?? "";
+  const smooth = [...css.matchAll(/scroll-behavior:\s*smooth\s*!important/g)].map((m) => m.index);
+  const reduce = reduceRule.exec(css);
+  return smooth.length > 0 && !!reduce && reduce.index > Math.max(...smooth);
+});
+check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth !important rule");
+
 // Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
 // one explicit check pins what the manifest lists today.
 const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
@@ -456,7 +535,7 @@ const islandsDir = join(root, "src", "components", "islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
   : [];
-const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx"];
+const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx", "TocHighlight.tsx"];
 check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
 
 // Metadata
@@ -493,6 +572,7 @@ sourceFiles.push(join(root, "src", "components", "sections", "TestingSection.tsx
 sourceFiles.push(join(root, "src", "components", "sections", "AssistantSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
+sourceFiles.push(join(root, "src", "components", "islands", "TocHighlight.tsx"));
 for (const file of sourceFiles) {
   const src = read(file);
   check(src !== null, `missing source file ${relative(root, file)}`);

@@ -15,7 +15,8 @@ const PaymentsSection = ({ payments }: Props) => {
     <section
       id="payments"
       aria-labelledby="payments-heading"
-      className="relative z-10 scroll-mt-24 pb-section-gap-mobile md:pb-section-gap"
+      tabIndex={-1}
+      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
       <h2 id="payments-heading" className="text-subheading md:text-heading text-text-primary">
         The booking and payments flow

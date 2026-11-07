@@ -59,7 +59,13 @@ export const proofTiles = [
     id: "safe",
     title: "Safe by design",
     body: "An admin AI assistant limited to seven fixed, read-only lookups. Health data is never sent, enforced by a test.",
-    chip: "Live",
+    chip: "Enforced",
+  },
+  {
+    id: "ai",
+    title: "Built with Claude Code, checked with tests",
+    body: "I build with Claude Code daily. Its output goes through the same Playwright and Vitest runs as mine, and I can explain any line it writes.",
+    chip: "Daily",
   },
 ];
 
@@ -106,12 +112,12 @@ export const supportingWork = {
     },
     {
       id: 2,
-      title: "Frontend Engineer",
+      title: "Staff Front End Engineer",
       company: "Royal College of Nursing",
       type: "Full-time",
       start: "2024-11",
       end: "2025-09",
-      location: "London Area, United Kingdom · Remote",
+      location: "London, UK",
       responsibilities: [
         "Developed and maintained the Clinical Topics feature using Next.js and TypeScript, integrating with Sitecore CMS for content delivery",
         "Debugged and resolved defects across the frontend codebase, focusing on stability and reliability of existing functionality",
@@ -123,30 +129,18 @@ export const supportingWork = {
     },
     {
       id: 3,
-      title: "Frontend Engineer",
-      company: "Faro",
-      type: "Full-time",
-      start: "2023",
-      end: "2024",
-      location: "Remote",
-      responsibilities: [
-        "Assisted in the development of a Chrome Bookmark Manager, built using Svelte"
-      ],
-      skills: ["Svelte"],
-      thumbnail: "/exp3.svg",
-    },
-    {
-      id: 4,
-      title: "Frontend Engineer",
+      title: "Front End Developer",
       company: "Developer Pro",
-      type: "Full-time",
-      start: "2022",
-      end: "2023",
+      type: "Mentorship",
+      start: "2023-12",
+      end: "2024-05",
       location: "Remote",
       responsibilities: [
-        "Contributed to a purpose-built tool for modern product development using MERN stack"
+        "Learned JavaScript fundamentals, TypeScript, React, Redux and Next.js through the mentorship",
+        "Built charts, graphs and tables for a cryptocurrency data aggregator using TypeScript, Chart.js and Tailwind CSS",
+        "Turned design docs and mock-ups into maintainable React and Redux web applications with a consistent UI"
       ],
-      skills: ["MongoDB", "Express", "React", "Node.js"],
+      skills: ["React", "Redux", "Next.js", "TypeScript"],
       thumbnail: "/exp4.svg",
     },
  
@@ -157,7 +151,7 @@ export const supportingWork = {
 
 export const contact = {
   heading: "Hiring for a full-stack role?",
-  line: "I'm available now.",
+  line: "Available from December 2026.",
   email,
   linkedin: "https://www.linkedin.com/in/muhammad-khan-464b80203/",
   github: "https://github.com/Maks6831",
@@ -168,7 +162,7 @@ export const contact = {
 export const siteMeta = {
   origin: "https://muhammadalikhan.co.uk",
   // ISO date of the last home-page content change; feeds the sitemap.
-  updated: "2026-10-20",
+  updated: "2026-11-07",
   name: siteName,
   role: siteRole,
   title: `${siteName} · ${siteRole}`,

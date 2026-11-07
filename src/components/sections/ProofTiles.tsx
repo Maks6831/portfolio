@@ -11,7 +11,7 @@ const ProofTiles = () => (
     <h2 id="proof-heading" className="mt-3 text-subheading md:text-heading text-text-primary">
       {proofSection.heading}
     </h2>
-    <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 lg:grid-cols-3 md:[&>li:last-child]:col-span-2 lg:[&>li:last-child]:col-span-1">
+    <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 lg:grid-cols-4">
       {proofTiles.map((t) => (
         <li key={t.id}>
           <ProofTile title={t.title} body={t.body} chip={t.chip} />

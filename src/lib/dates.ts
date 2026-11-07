@@ -16,13 +16,14 @@ function label(p: Parsed): string {
   return p.month === null ? String(p.year) : `${MONTHS[p.month - 1]} ${p.year}`;
 }
 
-/** Whole months from start to end, counting both calendar months. Null unless both are year-month. */
+/** Months elapsed from start to end (Nov 2024 to Sep 2025 is 10), never less than 1 for a valid range.
+ * Null unless both are year-month, or when end is before start. */
 export function monthsBetween(start: string, end: string, now: Date = new Date()): number | null {
   const s = parse(start);
   const e = end === "present" ? { year: now.getUTCFullYear(), month: now.getUTCMonth() + 1 } : parse(end);
   if (!s || !e || s.month === null || e.month === null) return null;
-  const n = (e.year - s.year) * 12 + (e.month - s.month) + 1;
-  return n > 0 ? n : null;
+  const n = (e.year - s.year) * 12 + (e.month - s.month);
+  return n < 0 ? null : Math.max(n, 1);
 }
 
 function formatDuration(months: number): string {

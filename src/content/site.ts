@@ -137,7 +137,6 @@ export const workExperience = [
         "Ongoing feature ownership including newsletter functionality, maintaining direct stakeholder marketing team communication throughout development lifecycle"
       ],
       skills: ["SvelteKit", "TypeScript", "tRPC", "PostgreSQL"],
-      thumbnail: "/exp1.svg",
     },
     {
       id: 2,
@@ -154,7 +153,6 @@ export const workExperience = [
         "Implemented design tokens from Figma specifications and documented component library using Storybook"
       ],
       skills: ["Next.js", "TypeScript", "Vue.js", "Sitecore CMS"],
-      thumbnail: "/exp2.svg",
     },
     {
       id: 3,
@@ -170,7 +168,6 @@ export const workExperience = [
         "Turned design docs and mock-ups into maintainable React and Redux web applications with a consistent UI"
       ],
       skills: ["React", "Redux", "Next.js", "TypeScript"],
-      thumbnail: "/exp4.svg",
     },
  
   ];

@@ -166,13 +166,13 @@
   /* The clock island (story 4) fills this box; its width is reserved so the label never shifts. */
   .hud-clock {
     display: inline-block;
-    min-inline-size: 8ch;
+    min-inline-size: calc(8 * (1ch + 0.1em)); /* 8 glyphs plus the HUD letter-spacing */
     margin-inline-start: 0.7em;
     color: theme("colors.accent.DEFAULT");
     font-variant-numeric: tabular-nums;
   }
   @media (prefers-reduced-motion: reduce) {
-    .hud-clock { min-inline-size: 5ch; }
+    .hud-clock { min-inline-size: calc(5 * (1ch + 0.1em)); }
   }
 
   /* Skip link: first focusable element, off screen until focused, then above the HUD strip. */

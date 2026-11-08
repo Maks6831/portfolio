@@ -591,7 +591,7 @@ const islandsDir = join(root, "src", "components", "islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
   : [];
-const expectedIslands = ["CopyEmail.tsx", "PillNav.tsx", "ScreenshotViewer.tsx", "TocHighlight.tsx"];
+const expectedIslands = ["CopyEmail.tsx", "LiveClock.tsx", "PillNav.tsx", "ScreenshotViewer.tsx", "TocHighlight.tsx"];
 check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
 
 // Metadata

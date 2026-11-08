@@ -1,6 +1,8 @@
 // HUD top labels (EXPERIENCE.md HUD label table). Server-rendered, no JS. At lg the strip is fixed and 32px tall;
-// below lg it is an in-flow row. The clock digits arrive with story 4: here the box is only reserved.
+// below lg it is an in-flow row. The clock island fills the reserved box.
 // The case study's name is the home link: a plain <a>, not next/link, so no router code joins the page's chunks.
+import LiveClock from "@/components/islands/LiveClock";
+
 export type Surface = "home" | "case-study" | "not-found";
 
 export default function HudStrip({ surface }: { surface: Surface }) {
@@ -25,7 +27,7 @@ export default function HudStrip({ surface }: { surface: Surface }) {
       <span>
         <span className="max-lg:sr-only">London, UK</span>
         <span aria-hidden="true" className="lg:hidden">LDN</span>
-        <span className="hud-clock" aria-hidden="true" />
+        <LiveClock />
       </span>
     </div>
   );

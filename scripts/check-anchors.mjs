@@ -7,6 +7,7 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { builtPages } from "./lib/pages.mjs";
+import { finish } from "./lib/staged.mjs";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const pages = builtPages(root);
@@ -42,6 +43,7 @@ const publicFile = (path) => {
 };
 
 const dead = [];
+const about = []; // v3: the #about section is gone, so no link may point at it (staged exceptions in scripts/lib/staged.mjs)
 const verified = new Map();
 let crossPage = 0;
 for (const [route, doc] of html) {
@@ -49,6 +51,9 @@ for (const [route, doc] of html) {
   for (const m of doc.matchAll(/<a\b[^>]*?\shref=(?:"([^"]*)"|'([^']*)')/g)) {
     const href = decode(m[1] ?? m[2]);
     const hash = href.indexOf("#");
+    if (hash !== -1 && decodeUri(href.slice(hash + 1)).toLowerCase() === "about") {
+      about.push({ key: `${route}|${href}`, msg: `${route}: link to ${href} (the #about section no longer exists)` });
+    }
     const path = hash === -1 ? href : href.slice(0, hash);
     const internal = path.startsWith("/") && !path.startsWith("//");
     if (path !== "" && !internal) continue; // external, mailto:, "//host"
@@ -79,8 +84,10 @@ if (dead.length || empty.length || crossPage === 0) {
   process.exit(1);
 }
 const total = [...verified.values()].reduce((a, b) => a + b, 0);
-console.log(
+const okMessage = (
   `check:anchors ok: ${total} fragment links verified across ${verified.size} pages, ${crossPage} of them cross-page (` +
     [...verified].map(([route, n]) => `${route} ${n}`).join(", ") +
-    "); every internal path is a built page or a public file",
+    "); every internal path is a built page or a public file"
 );
+
+finish("anchors", about, okMessage);

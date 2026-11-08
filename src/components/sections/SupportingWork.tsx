@@ -4,7 +4,8 @@ import { supportingWork } from "@/content/site";
 
 // Sheet 03 (#also): the assistant (featured, into the case study, with its captioned screenshot) and CoinFlow (out,
 // same tab). Titles are h3 with a stretched link; the arrow line is decorative. The screenshot is not a viewer trigger.
-const assistantSizes = "(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw";
+// The featured row is 1fr / 1.2fr from md, so the frame takes about 55% of the sheet; it measures 593px at 1920.
+const assistantSizes = "(min-width: 1024px) 600px, (min-width: 768px) 52vw, 100vw";
 
 const SupportingWork = () => (
   <Sheet n={3} id="also" labelledBy="h-also">

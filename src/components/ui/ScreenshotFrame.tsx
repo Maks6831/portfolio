@@ -24,7 +24,7 @@ type Props = {
 /**
  * DESIGN.md screenshot frame: a bezel panel with a line border, a 26px title bar (three 8px rings and the file name),
  * the image at its own ratio and a caption strip with an accent dot. The bezel keeps the box (and its ratio) if the
- * image fails, and the caption stays either way. Every caption begins "Test data." (the content type enforces it).
+ * image fails, and the caption stays either way. Every caption begins "Test data." (admin) or "Live site." (public pages); the content type enforces it.
  */
 const ScreenshotFrame = ({ src, width, height, alt, caption, sizes, image, wrapFrame, bleed }: Props) => {
   const filename = src.split("/").pop() ?? src;

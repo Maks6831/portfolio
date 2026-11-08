@@ -15,7 +15,7 @@ const AssistantSection = ({ assistant, trail, media }: Props) => {
   return (
     <SectionFrame id="assistant" title="Admin AI assistant (safety design)" trail={trail}>
       <p className="m-0 max-w-[68ch] text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">{assistant.intro}</p>
-      <div className="mt-6 md:grid md:grid-cols-[minmax(0,1fr)_46%] md:items-start md:gap-tile-gap lg:grid-cols-[minmax(0,1fr)_354px]">
+      <div className="mt-6">
         <ul role="list" className="m-0 list-none p-0">
           {assistant.safeguards.map((panel, i) => (
             <li key={`safeguard-${i}`} className="border-t border-line py-4">
@@ -24,7 +24,7 @@ const AssistantSection = ({ assistant, trail, media }: Props) => {
             </li>
           ))}
         </ul>
-        {media ? <div className="mt-6 md:mt-4">{media}</div> : null}
+        {media ? <div className="mt-6">{media}</div> : null}
       </div>
       <p className="m-0 mt-6 max-w-[68ch] border-t border-line pt-5 text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">
         {assistant.closing}

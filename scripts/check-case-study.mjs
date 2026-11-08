@@ -363,8 +363,8 @@ if (!hasAssistant) {
   const h3Texts = [...list.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
   check(JSON.stringify(h3Texts) === JSON.stringify(expectedSafeguardTitles), `#assistant panel headings should read ${expectedSafeguardTitles.join(" | ")}, found: ${h3Texts.join(" | ") || "none"}`);
   const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(assistantHtml)?.[1] ?? "";
-  check(!/\bgrid-cols-/.test(grid), "#assistant safeguards are one stacked column of rows (the capture sits beside them from md)");
-  check(/<div\b[^>]*class="[^"]*\bmd:grid-cols-\[[^"]*"[^>]*>\s*<ul\b/.test(assistantHtml), "#assistant rows sit in the two-column wrapper that holds the capture from md");
+  check(!/\bgrid-cols-/.test(grid), "#assistant safeguards are one stacked column of rows, with the capture below them");
+  check(!/\bmd:grid-cols-\[/.test(assistantHtml), "#assistant has no two-column wrapper: the capture sits below the rows at full media width");
   // One intro <p> between the h2 and the list and one closing <p> after it; the panels' own <p> bodies sit inside the list.
   const beforeList = ulStart === -1 ? assistantHtml : assistantHtml.slice(0, ulStart);
   const afterList = ulEnd === -1 ? "" : assistantHtml.slice(ulEnd);
@@ -491,13 +491,13 @@ check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced
 // There is no #screenshots section and no gallery note. The expected placement is pinned here from the IA table and the
 // content module must agree with it.
 const IA = {
-  "admin-reservations.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
-  "admin-events.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
-  "admin-supplies.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
-  "booking-rooms.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
-  "booking-checkout.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
+  "admin-reservations.png": { section: "owned", sizes: "(min-width: 90em) 1120px, (min-width: 80em) 896px, (min-width: 64em) 736px, 100vw" },
+  "admin-events.png": { section: "owned", sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw" },
+  "admin-supplies.png": { section: "owned", sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw" },
+  "booking-rooms.png": { section: "payments", sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw" },
+  "booking-checkout.png": { section: "payments", sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw" },
   "admin-events-mobile.png": { section: "testing", sizes: "(min-width: 1024px) 300px, (min-width: 768px) 384px, 100vw" },
-  "admin-calendar-assistant.png": { section: "assistant", sizes: "(min-width: 1024px) 354px, (min-width: 768px) 46vw, 100vw" },
+  "admin-calendar-assistant.png": { section: "assistant", sizes: "(min-width: 90em) 1120px, (min-width: 80em) 896px, (min-width: 64em) 736px, 100vw" },
 };
 const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
   src: m[1],
@@ -557,7 +557,7 @@ for (const [id, start] of trailIds.map((id) => [id, rawHtml.search(new RegExp(`<
     checkFrameImg(img, `#${id} ${e.file}`);
     check(decode(/\ssizes="([^"]*)"/.exec(img)?.[1] ?? "") === e.sizes, `#${id} ${e.file}: sizes should be "${e.sizes}"`);
     const cap = decode((/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/.exec(frame)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
-    check(cap.startsWith("Test data."), `#${id} ${e.file}: the caption must start "Test data.": "${cap}"`);
+    check(cap.startsWith("Test data.") || cap.startsWith("Live site."), `#${id} ${e.file}: the caption must start "Test data." (admin) or "Live site." (public pages): "${cap}"`);
     // Without JavaScript the frame is a link to the 1920w optimised image; the viewer island enhances it.
     const link = /<a\b[^>]*>/.exec(frame)?.[0] ?? "";
     const href = decode(/\shref="([^"]*)"/.exec(link)?.[1] ?? "");
@@ -622,7 +622,7 @@ check(!clientDomain.test(home), "home must not link to the client's site (simply
 const clientSite = /^https?:\/\/(?:[a-z0-9-]+\.)*simplyhappy\.pt(?:[/?#]|$)/i; // the client's domain and any subdomain
 const liveLinks = anchors(html).filter((a) => clientSite.test(a.href ?? ""));
 check(liveLinks.length === 1, `the case study should hold exactly one live-site link, found ${liveLinks.length}`);
-// The feature image is the test-data booking screenshot (next/image encodes the path as %2F in src and srcSet).
+// The feature image is the live booking screenshot (next/image encodes the path as %2F in src and srcSet).
 const featureImg = homeImgs[0] ?? "";
 check(/(?:\/|%2F)work(?:\/|%2F)simply-happy(?:\/|%2F)booking-rooms\.png/i.test(featureImg), `home feature <img> must be /work/simply-happy/booking-rooms.png: ${featureImg.slice(0, 160)}`);
 check(
@@ -631,7 +631,7 @@ check(
 );
 check(/\swidth="2880"/.test(featureImg) && /\sheight="1800"/.test(featureImg), "home feature <img> must declare 2880x1800, the PNG's intrinsic size");
 const homeCaption = decode((/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/.exec(homeWork)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
-check(homeCaption === "Test data. Room selection step of the booking flow, develop preview", `home feature caption mismatch: ${homeCaption}`);
+check(homeCaption === "Live site. Room selection step of the booking flow", `home feature caption mismatch: ${homeCaption}`);
 check(!existsSync(join(root, "public", "simplyhappy-screenshot.png")), "public/simplyhappy-screenshot.png should be deleted (nothing uses it)");
 // The file behind the feature image exists: next/image serves /_next/image?url=<encoded path>, so decode that path.
 const featureSrc = attr(featureImg, /\ssrc="([^"]*)"/) ?? "";

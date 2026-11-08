@@ -196,7 +196,7 @@ export const simplyHappy = {
       alt: "Admin reservations page with the booking rules panel: auto-confirm toggle and guest cancellation window",
       caption: "Test data. Rules for bookings paid on the site: auto-confirm and the cancellation window",
       section: "owned",
-      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
+      sizes: "(min-width: 90em) 1120px, (min-width: 80em) 896px, (min-width: 64em) 736px, 100vw",
     },
     {
       src: "/work/simply-happy/admin-events.png",
@@ -205,7 +205,7 @@ export const simplyHappy = {
       alt: "Admin events list with status, places and attendee actions per event",
       caption: "Test data. Admin events management, redesigned list",
       section: "owned",
-      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
+      sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw",
     },
     {
       src: "/work/simply-happy/admin-supplies.png",
@@ -214,25 +214,25 @@ export const simplyHappy = {
       alt: "Admin supplies list with stock on hand, low-stock flags, reorder points and record-delivery actions",
       caption: "Test data. Supplies: stock on hand, reorder points and deliveries",
       section: "owned",
-      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
+      sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw",
     },
     {
       src: "/work/simply-happy/booking-rooms.png",
       width: 2880,
       height: 1800,
       alt: "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
-      caption: "Test data. Room selection step of the booking flow",
+      caption: "Live site. Room selection step of the booking flow",
       section: "payments",
-      sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw",
+      sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw",
     },
     {
       src: "/work/simply-happy/booking-checkout.png",
       width: 2880,
       height: 1800,
-      alt: "The selected room with the summary box showing nights, discount code field and total before continuing to payment",
-      caption: "Test data. Checkout summary before Stripe",
+      alt: "The selected room above the Your stay summary: nights, discount code field and total before continuing to payment",
+      caption: "Live site. The stay summary before Stripe",
       section: "payments",
-      sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw",
+      sizes: "(min-width: 90em) 556px, (min-width: 80em) 444px, (min-width: 64em) 736px, (min-width: 48em) 46vw, 100vw",
     },
     {
       // Portrait phone capture, capped at 384px from md up.
@@ -251,7 +251,7 @@ export const simplyHappy = {
       alt: "The admin booking calendar by room with the read-only Ask panel open and its note that nothing is saved",
       caption: "Test data. Admin booking calendar with the assistant panel open",
       section: "assistant",
-      sizes: "(min-width: 1024px) 354px, (min-width: 768px) 46vw, 100vw",
+      sizes: "(min-width: 90em) 1120px, (min-width: 80em) 896px, (min-width: 64em) 736px, 100vw",
     },
   ],
 } satisfies CaseStudy;

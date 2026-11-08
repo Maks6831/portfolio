@@ -145,13 +145,13 @@ check(/addEventListener\(\s*"scroll"[^)]*\{\s*passive:\s*true\s*\}/.test(tocSrc)
 check(/preventScroll:\s*true/.test(tocSrc), "source: focusing the target section must not scroll (preventScroll: true)");
 
 // Matrix "Reduced motion": globals.css makes every scroll instant under prefers-reduced-motion, after the
-// !scroll-smooth base rule it overrides.
+// `html { scroll-behavior: smooth }` base rule it overrides (story 3 moved smooth scrolling from `*` to html).
 const css = readFileSync(join(root, "src", "app", "globals.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
-const smoothAt = css.indexOf("!scroll-smooth");
+const smoothAt = css.search(/html\s*\{\s*scroll-behavior:\s*smooth;?\s*\}/);
 const reduce = /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{\s*\*\s*\{\s*scroll-behavior:\s*auto\s*!important;?\s*\}\s*\}/.exec(css);
-check(smoothAt !== -1, "css: globals.css no longer applies !scroll-smooth; update this check with it");
+check(smoothAt !== -1, "css: globals.css no longer has html { scroll-behavior: smooth }; update this check with it");
 check(!!reduce, "css: globals.css needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }");
-check(!reduce || reduce.index > smoothAt, "css: the reduced-motion rule must come after the !scroll-smooth rule it overrides");
+check(!reduce || reduce.index > smoothAt, "css: the reduced-motion rule must come after the html smooth-scroll rule it overrides");
 
 if (failures.length) {
   console.error(`check:toc failed:\n - ${failures.join("\n - ")}`);

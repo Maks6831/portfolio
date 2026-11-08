@@ -2,6 +2,7 @@ import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
+import PageShell from "@/components/layout/PageShell";
 import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import TocHighlight from "@/components/islands/TocHighlight";
 import AssistantSection from "@/components/sections/AssistantSection";
@@ -83,6 +84,7 @@ export default async function CaseStudyPage({ params }: Props) {
   ];
 
   return (
+    <PageShell surface="case-study">
     <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <FloatingNav navItems={navItems} />
@@ -182,5 +184,6 @@ export default async function CaseStudyPage({ params }: Props) {
         <Footer />
       </div>
     </div>
+    </PageShell>
   );
 }

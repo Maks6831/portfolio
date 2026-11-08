@@ -448,11 +448,11 @@ check(cssHrefs.length > 0, "the case study links no /_next/ stylesheet");
 const reduceRule = /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{\s*\*\s*\{\s*scroll-behavior:\s*auto\s*!important;?\s*\}\s*\}/;
 const builtReduce = cssHrefs.some((href) => {
   const css = read(join(root, ".next", href.slice("/_next/".length).split("?")[0])) ?? "";
-  const smooth = [...css.matchAll(/scroll-behavior:\s*smooth\s*!important/g)].map((m) => m.index);
+  const smooth = [...css.matchAll(/scroll-behavior:\s*smooth(?:\s*!important)?/g)].map((m) => m.index);
   const reduce = reduceRule.exec(css);
   return smooth.length > 0 && !!reduce && reduce.index > Math.max(...smooth);
 });
-check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth !important rule");
+check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth rule");
 
 // Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
 // one explicit check pins what the manifest lists today.

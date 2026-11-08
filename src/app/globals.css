@@ -4,7 +4,11 @@
 
 @layer base {
   * {
-    @apply border-line !scroll-smooth;
+    @apply border-line;
+  }
+  /* Smooth anchor jumps on html only; <html data-scroll-behavior="smooth"> keeps route changes instant (Next 16). */
+  html {
+    scroll-behavior: smooth;
   }
   /* Anchor jumps are instant, not smooth, when the reader asks for reduced motion (EXPERIENCE.md). */
   @media (prefers-reduced-motion: reduce) {
@@ -21,6 +25,112 @@
   /* Keep the page where it was while a modal is open, so focus returns to a visible thumbnail. */
   body:has(dialog[open]) {
     overflow: hidden;
+  }
+}
+
+/* Layout modes (EXPERIENCE.md Responsive & Platform). Queries are in em so a larger default font raises the gate.
+   --sp-top / --sp-bottom feed html scroll-padding so anchor jumps and focus scrolling clear the chrome. Later rules win. */
+@layer base {
+  html {
+    --sp-top: 40px; /* below lg */
+    --sp-bottom: 96px;
+    scroll-padding-block: var(--sp-top) var(--sp-bottom);
+  }
+  @media (min-width: 64em) { /* lg flow */
+    html { --sp-top: 72px; --sp-bottom: 40px; }
+  }
+  @media (min-width: 64em) and (pointer: coarse) {
+    html { --sp-bottom: 52px; }
+  }
+  @media (min-width: 64em) and (prefers-reduced-motion: reduce) { /* lg reduced motion */
+    html { --sp-top: 40px; }
+  }
+  @media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) { /* stack */
+    html { --sp-top: 140px; }
+    html:has([data-surface="case-study"]) { --sp-top: 40px; }
+  }
+  @media (max-height: 31.25em) { /* short: nothing sticks */
+    html { --sp-top: 8px; --sp-bottom: 8px; }
+  }
+}
+
+@layer components {
+  /* HUD strip: fixed 32px at lg, an in-flow row below lg and in short viewports (DESIGN.md Layout, HUD strip). */
+  .hud-banner {
+    position: relative;
+    z-index: 4000;
+  }
+  .hud-strip {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    block-size: 40px;
+    padding-inline: theme("spacing.margin-mobile");
+    background: theme("colors.stage");
+    color: theme("colors.muted");
+    font: 400 11px/1.6 theme("fontFamily.mono");
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  @media (min-width: 48em) {
+    .hud-strip { padding-inline: theme("spacing.margin-tablet"); }
+  }
+  @media (min-width: 64em) {
+    .hud-strip { block-size: theme("spacing.hud-strip"); padding-inline: theme("spacing.hud-inset-x"); }
+  }
+  @media (min-width: 64em) and (not (max-height: 31.25em)) {
+    .hud-strip { position: fixed; inset: 0 0 auto 0; }
+  }
+  .hud-link {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: theme("spacing.target-floor");
+    block-size: 100%;
+    gap: 0.6ch;
+    color: inherit;
+    text-decoration: none;
+  }
+  .hud-link:focus-visible {
+    outline: 2px solid theme("colors.focus-ring");
+    outline-offset: -4px;
+  }
+  /* The clock island (story 4) fills this box; its width is reserved so the label never shifts. */
+  .hud-clock {
+    display: inline-block;
+    min-inline-size: 8ch;
+    margin-inline-start: 0.7em;
+    color: theme("colors.accent.DEFAULT");
+    font-variant-numeric: tabular-nums;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hud-clock { min-inline-size: 5ch; }
+  }
+
+  /* Skip link: first focusable element, off screen until focused, then above the HUD strip. */
+  .skip-link {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .skip-link:focus {
+    position: fixed;
+    inset: 8px auto auto theme("spacing.hud-inset-x");
+    z-index: 6000;
+    inline-size: auto;
+    block-size: auto;
+    overflow: visible;
+    clip-path: none;
+    padding: 12px 16px;
+    background: theme("colors.stage");
+    color: theme("colors.accent.DEFAULT");
+    border: 1px solid theme("colors.accent.DEFAULT");
+    border-radius: theme("borderRadius.DEFAULT");
+    font: 600 14px/1 theme("fontFamily.sans");
+    outline: 2px solid theme("colors.focus-ring");
+    outline-offset: 3px;
   }
 }
 

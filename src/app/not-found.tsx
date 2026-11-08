@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 // ButtonLinkBase, not ButtonLink: its links stay plain <a>, as before Story 2.9. Importing next/link here puts Link
 // in this page's client graph, and Turbopack then splits the chunk home shares with the case study (+0.6 kB on
 // home, over the 152.7 kB Story 2.9 holds it to). A 404 is usually a first load, so prefetch from it buys little.
+import PageShell from "@/components/layout/PageShell";
 import ButtonLink from "@/components/ui/ButtonLinkBase";
 import { siteMeta } from "@/content/site";
 import { getCaseStudy } from "@/content/work";
@@ -24,6 +25,7 @@ export default function NotFound() {
   const study = getCaseStudy("simply-happy");
 
   return (
+    <PageShell surface="not-found">
     <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <section className="pt-36 pb-section-gap-mobile md:pb-section-gap">
@@ -45,5 +47,6 @@ export default function NotFound() {
         </section>
       </div>
     </div>
+    </PageShell>
   );
 }

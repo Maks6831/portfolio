@@ -41,6 +41,8 @@ const config = {
       sans: ['ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
       mono: ['ui-monospace', '"SF Mono"', 'Menlo', 'Consolas', 'monospace'],
     },
+    // Layout-mode queries use em so a larger default font raises the gate (EXPERIENCE.md Responsive); same widths at 16px.
+    screens: { sm: "40em", md: "48em", lg: "64em", xl: "80em", "2xl": "96em" },
     extend: {
       fontSize: {
         display: ["56px", { lineHeight: "1.08", letterSpacing: "-0.02em", fontWeight: "700" }],

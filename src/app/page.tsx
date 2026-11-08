@@ -1,4 +1,5 @@
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
+import PageShell from "@/components/layout/PageShell";
 import Hero from "@/components/sections/Hero";
 import SimplyHappyFeature from "@/components/sections/SimplyHappyFeature";
 import ProofTiles from "@/components/sections/ProofTiles";
@@ -9,6 +10,7 @@ import { navItems } from "@/content/site";
 
 const Page = () => {
   return (
+    <PageShell surface="home">
     <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <FloatingNav navItems={navItems} />
@@ -20,6 +22,7 @@ const Page = () => {
         <Footer />
       </div>
     </div>
+    </PageShell>
   );
 };
 

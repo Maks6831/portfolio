@@ -45,9 +45,12 @@
   @media (min-width: 64em) and (prefers-reduced-motion: reduce) { /* lg reduced motion */
     html { --sp-top: 40px; }
   }
-  @media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) { /* stack */
-    html { --sp-top: 140px; }
+  @media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) { /* case-study stack */
     html:has([data-surface="case-study"]) { --sp-top: 40px; }
+  }
+  /* Home stacks from 56em tall (home.css): at 1280x800 with WCAG 1.4.12 spacing, sheets 01 and 03 outgrow the viewport. */
+  @media (min-width: 64em) and (min-height: 56em) and (prefers-reduced-motion: no-preference) { /* home stack */
+    html:not(:has([data-surface="case-study"])) { --sp-top: 140px; }
   }
   @media (max-height: 31.25em) { /* short: nothing sticks */
     html { --sp-top: 8px; --sp-bottom: 8px; }

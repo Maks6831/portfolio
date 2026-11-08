@@ -1,6 +1,7 @@
 /* Home page (stories 6-8): hero, laptop frame, sheets. Plain CSS with theme(); loaded only by the home route.
    Layout modes (EXPERIENCE.md Responsive), all in em:
-     stack     (min-width: 64em) and (min-height: 47.5em), motion allowed: hero and sheets stick and stack
+     stack     (min-width: 64em) and (min-height: 56em), motion allowed: hero and sheets stick and stack
+               (56em, not 47.5em: at 1280x800 with WCAG 1.4.12 text spacing sheets 01 and 03 outgrow the viewport)
      lg flow   (min-width: 64em) otherwise: normal flow, one tab sticks under the strip (static under reduced motion)
      below lg  the phone composition; one 32px tab sticks at top 0
      short     (max-height: 31.25em): nothing sticks
@@ -254,7 +255,7 @@
 .ctr b { font-weight: 400; color: theme("colors.accent.DEFAULT"); }
 
 /* ---------- stack mode: the hero and sheets stick and slide over one another, with zero JS ---------- */
-@media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 64em) and (min-height: 56em) and (prefers-reduced-motion: no-preference) {
   .hero { position: sticky; top: 0; z-index: 1; }
   .sheet { position: sticky; top: var(--top); min-height: calc(100svh - var(--top)); box-shadow: 0 -24px 48px theme("colors.shadow-sheet"); }
   .sheet-1 { --top: 32px; z-index: 2; }

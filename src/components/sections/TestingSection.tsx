@@ -1,7 +1,8 @@
+import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import type { TestingSection as TestingContent } from "@/content/work/types";
 import { formatDay } from "@/lib/dates";
 
-type Props = { testing?: TestingContent };
+type Props = { testing?: TestingContent; trail?: TrailPosition };
 
 /**
  * Story 2.4: "Testing and delivery": four count tiles under one "approx., as of" label, then three short
@@ -9,20 +10,12 @@ type Props = { testing?: TestingContent };
  * real text in a <dl>; no <article> and no <h3> (the gate counts articles as decision cards and h3s as panels).
  * Renders nothing when the case study has no testing content, so the heading order simply skips it.
  */
-const TestingSection = ({ testing }: Props) => {
+const TestingSection = ({ testing, trail }: Props) => {
   if (!testing) return null;
   // A malformed date renders no date at all (the gate then fails on the missing label) rather than a wrong one.
   const asOf = formatDay(testing.countsAsOf);
   return (
-    <section
-      id="testing"
-      aria-labelledby="testing-heading"
-      tabIndex={-1}
-      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
-    >
-      <h2 id="testing-heading" className="text-subheading md:text-heading text-text">
-        Testing and delivery
-      </h2>
+    <SectionFrame id="testing" title="Testing and delivery" trail={trail}>
       <p id="testing-asof" className="mt-6 text-caption text-muted">
         {asOf ? `approx., as of ${asOf}` : "approx."}
       </p>
@@ -40,7 +33,7 @@ const TestingSection = ({ testing }: Props) => {
           {paragraph}
         </p>
       ))}
-    </section>
+    </SectionFrame>
   );
 };
 

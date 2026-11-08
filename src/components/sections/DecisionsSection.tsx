@@ -1,24 +1,17 @@
+import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import DecisionCard from "@/components/ui/DecisionCard";
 import type { Decision } from "@/content/work/types";
 
-type Props = { decisions?: Decision[] };
+type Props = { decisions?: Decision[]; trail?: TrailPosition };
 
 /**
  * Story 2.3: "Decisions and rejected alternatives", one DecisionCard per entry, single column.
  * Renders nothing when the case study has no decisions, so the heading order simply skips it.
  */
-const DecisionsSection = ({ decisions }: Props) => {
+const DecisionsSection = ({ decisions, trail }: Props) => {
   if (!decisions?.length) return null;
   return (
-    <section
-      id="decisions"
-      aria-labelledby="decisions-heading"
-      tabIndex={-1}
-      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
-    >
-      <h2 id="decisions-heading" className="text-subheading md:text-heading text-text">
-        Decisions and rejected alternatives
-      </h2>
+    <SectionFrame id="decisions" title="Decisions and rejected alternatives" trail={trail}>
       <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0">
         {decisions.map((decision) => (
           <li key={decision.title}>
@@ -26,7 +19,7 @@ const DecisionsSection = ({ decisions }: Props) => {
           </li>
         ))}
       </ul>
-    </section>
+    </SectionFrame>
   );
 };
 

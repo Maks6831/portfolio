@@ -8,10 +8,12 @@ const { load } = compileComponents({
   cacheName: "check-decisions",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/components/ui/DecisionCard": "./DecisionCard.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/components/ui/DecisionCard.tsx": "DecisionCard.js",
     "src/components/sections/DecisionsSection.tsx": "DecisionsSection.js",
   },

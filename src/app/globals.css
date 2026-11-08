@@ -134,6 +134,128 @@
   }
 }
 
+/* Case-study reading trail (EXPERIENCE.md Component Patterns: Sheet tab; Responsive & Platform). Tabs and sections are
+   siblings in one `.trail` container, so a tab parks for the whole trail. `--n` is the section's 1-based position.
+   Layers, later rules win: below lg (one 32px tab at top 0) -> lg (left column, tabs under the strip) -> stack (tabs
+   at 32 + (n-1) x 36, heading blocks below them) -> reduced motion -> short viewports (nothing sticks). */
+@layer components {
+  .trail { position: relative; }
+  .trail-tab {
+    position: sticky;
+    top: 0;
+    z-index: calc(20 + var(--n, 1));
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    block-size: theme("spacing.sheet-tab-step-mobile");
+    padding-inline: theme("spacing.margin-mobile");
+    background: theme("colors.bezel");
+    border-block-end: 1px solid theme("colors.line");
+    color: theme("colors.muted");
+    font: 400 11px/1 theme("fontFamily.mono");
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .trail-tab b { font-weight: 400; color: theme("colors.accent.DEFAULT"); }
+  .trail-tab:hover { color: theme("colors.text.DEFAULT"); }
+  .trail-tab:focus-visible {
+    z-index: calc(30 + var(--n, 1));
+    outline: 2px solid theme("colors.focus-ring");
+    outline-offset: -4px;
+  }
+  .trail-tab-hint { margin-inline-start: auto; overflow: hidden; text-overflow: ellipsis; }
+  .trail-section {
+    padding: 22px theme("spacing.margin-mobile") 36px;
+  }
+  .trail-hb { margin-block-end: 12px; }
+  .trail-hb-top { display: none; }
+  .trail-up {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: theme("spacing.target-floor");
+    color: theme("colors.text.secondary");
+    text-decoration: none;
+  }
+  .trail-up:hover { color: theme("colors.accent.DEFAULT"); }
+  .trail-up:focus-visible { outline: 2px solid theme("colors.focus-ring"); outline-offset: 3px; }
+  @media (min-width: 48em) {
+    .trail-tab { padding-inline: theme("spacing.margin-tablet"); }
+    .trail-section { padding-inline: theme("spacing.margin-tablet"); }
+  }
+
+  .display-word {
+    color: theme("colors.accent.DEFAULT");
+    font: 800 clamp(48px, 16vw, 64px) / 0.84 theme("fontFamily.sans");
+    letter-spacing: -0.05em;
+    text-transform: uppercase;
+    -webkit-text-stroke: 2px theme("colors.stage");
+    paint-order: stroke fill;
+    pointer-events: none;
+  }
+  .display-word small {
+    margin: 0 0 14px 6px;
+    color: theme("colors.muted");
+    font: 400 12px/1.4 theme("fontFamily.mono");
+    letter-spacing: 0.12em;
+    -webkit-text-stroke: 0;
+  }
+
+  @media (min-width: 64em) { /* lg: tabs under the strip, section = 368px heading column + content */
+    .trail-tab {
+      top: theme("spacing.hud-strip");
+      inline-size: theme("spacing.toc-column");
+      block-size: theme("spacing.sheet-tab-step");
+      margin-inline-start: theme("spacing.margin-desktop");
+      padding-inline: 14px;
+      gap: 16px;
+      border: 1px solid theme("colors.line");
+      border-block-end: 0;
+      box-shadow: 0 -10px 24px theme("colors.shadow-tab");
+    }
+    .trail-section {
+      display: grid;
+      grid-template-columns: theme("spacing.toc-column") minmax(0, 1fr);
+      column-gap: theme("spacing.gutter");
+      margin-inline: theme("spacing.margin-desktop");
+      padding: 0;
+      border-block-start: 1px solid theme("colors.line");
+    }
+    .trail-hb { margin-block-end: 0; padding-block: 28px 32px; background: theme("colors.stage"); }
+    .trail-hb-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-block-end: 14px;
+      font: 400 11px/1.6 theme("fontFamily.mono");
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .trail-body { max-inline-size: theme("spacing.measure-content"); padding-block: 34px 88px; }
+  }
+  @media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) { /* stack */
+    .trail-tab { top: calc(theme("spacing.hud-strip") + (var(--n, 1) - 1) * theme("spacing.sheet-tab-step")); }
+    .trail-hb {
+      position: sticky;
+      top: calc(theme("spacing.hud-strip") + var(--n, 1) * theme("spacing.sheet-tab-step"));
+    }
+    /* html scroll-padding is 40px here and the strip is 32px: 8px less than n x 36 lands tab n exactly on its parked spot. */
+    .trail-section { scroll-margin-top: calc(var(--n, 1) * theme("spacing.sheet-tab-step") - 8px); }
+  }
+  @media (prefers-reduced-motion: reduce) { .trail-tab { position: static; } }
+  @media (min-width: 64em) and (prefers-reduced-motion: reduce) {
+    .trail-hb { position: sticky; top: theme("spacing.hud-strip"); }
+  }
+  @media (min-width: 64em) {
+    .display-word { font-size: min(150px, 12.5vw); white-space: nowrap; }
+    .display-word { margin-inline-start: -6px; }
+  }
+  @media (max-height: 31.25em) { /* short: nothing sticks */
+    .trail-tab, .trail-hb { position: static; }
+  }
+}
+
 @layer utilities {
   .heading {
     @apply font-bold text-4xl md:text-5xl text-center;

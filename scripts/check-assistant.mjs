@@ -8,10 +8,12 @@ const { load } = compileComponents({
   cacheName: "check-assistant",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/components/ui/CaseStudyPanel": "./CaseStudyPanel.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/components/ui/CaseStudyPanel.tsx": "CaseStudyPanel.js",
     "src/components/sections/AssistantSection.tsx": "AssistantSection.js",
   },

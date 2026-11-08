@@ -1,7 +1,8 @@
+import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import type { AssistantSection as AssistantContent } from "@/content/work/types";
 
-type Props = { assistant?: AssistantContent };
+type Props = { assistant?: AssistantContent; trail?: TrailPosition };
 
 /**
  * Story 2.5: "Admin AI assistant (safety design)": one intro paragraph, one CaseStudyPanel per safeguard (an <h3>
@@ -9,18 +10,10 @@ type Props = { assistant?: AssistantContent };
  * SQL. Server-rendered, no <article> (the gate treats articles as decision cards), no links and no muted text.
  * Renders nothing when the case study has no assistant content, so the heading order simply skips it.
  */
-const AssistantSection = ({ assistant }: Props) => {
+const AssistantSection = ({ assistant, trail }: Props) => {
   if (!assistant) return null;
   return (
-    <section
-      id="assistant"
-      aria-labelledby="assistant-heading"
-      tabIndex={-1}
-      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
-    >
-      <h2 id="assistant-heading" className="text-subheading md:text-heading text-text">
-        Admin AI assistant (safety design)
-      </h2>
+    <SectionFrame id="assistant" title="Admin AI assistant (safety design)" trail={trail}>
       <p className="mt-6 max-w-[68ch] text-body text-text-secondary">{assistant.intro}</p>
       <ul role="list" className="m-0 mt-8 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
         {assistant.safeguards.map((panel, i) => (
@@ -30,7 +23,7 @@ const AssistantSection = ({ assistant }: Props) => {
         ))}
       </ul>
       <p className="mt-8 max-w-[68ch] text-body text-text-secondary">{assistant.closing}</p>
-    </section>
+    </SectionFrame>
   );
 };
 

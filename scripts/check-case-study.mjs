@@ -88,17 +88,23 @@ check(expectedOwned > 0, "content module defines no owned areas (no `body:` entr
 check(!hasPayments || (expectedPanels > 0 && expectedFlow > 0), "content module has payment states but no reliability panels or flow paragraphs");
 
 // Page structure
-const html = read(join(workDir, "simply-happy.html")) ?? "";
+const rawHtml = read(join(workDir, "simply-happy.html")) ?? "";
+// The sticky heading blocks carry an aria-hidden counter ("04 / 07") and an "On this page" link. They are decoration
+// for sighted readers, so the content checks below (no figures, no links, no digits in the assistant section) read the
+// page without them; the trail checks read rawHtml.
+const html = rawHtml
+  .replace(/<span\b[^>]*data-trail-counter[^>]*>[\s\S]*?<\/span>/g, "")
+  .replace(/<a\b[^>]*data-trail-up[^>]*>[\s\S]*?<\/a>/g, "");
 const h1s = html.match(/<h1\b/g) ?? [];
 check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
 const firstH2 = html.search(/<h2\b/);
 check(firstH1 !== -1 && firstH2 > firstH1, "the first <h2> must come after the single <h1>");
-// 2 summary panels (Before, After) + the "What I owned" areas + one reliability panel each + one title per decision card
-// + one assistant safeguard panel each.
-const expectedH3s = 2 + expectedOwned + expectedPanels + expectedDecisions + expectedSafeguards;
+// The "What I owned" areas + one reliability panel each + one title per decision card + one assistant safeguard panel
+// each. The summary rows (Before, After) are a <dl>, not headings.
+const expectedH3s = expectedOwned + expectedPanels + expectedDecisions + expectedSafeguards;
 const h3Count = (html.match(/<h3\b/g) ?? []).length;
-check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions + ${expectedSafeguards} safeguards), found ${h3Count}`);
+check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions + ${expectedSafeguards} safeguards), found ${h3Count}`);
 check(html.includes('id="summary"'), 'missing <section id="summary">');
 check(html.includes('id="owned"'), 'missing <section id="owned">');
 check(html.includes('<main id="main"'), "root layout <main id=\"main\"> must wrap the page");
@@ -114,18 +120,23 @@ check((stackList.match(/<li\b/g) ?? []).length === 6, "stack list should hold 6 
 
 const summaryStart = html.indexOf('id="summary"');
 const ownedStart = html.indexOf('id="owned"');
-const summary = summaryStart !== -1 && ownedStart > summaryStart ? html.slice(summaryStart, ownedStart) : "";
-const live = /<a\b[^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/.exec(summary);
-check(!!live, "summary must contain the live-site link opening in a new tab");
+// v3: the live-site link sits in the header's meta row, between the <h1> and the On this page nav.
+const headerMeta = firstH1 !== -1 && summaryStart > firstH1 ? html.slice(firstH1, summaryStart) : "";
+const live = /<a\b[^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/.exec(headerMeta);
+check(!!live, "the header must contain the live-site link opening in a new tab");
 if (live) {
   check(/rel="noopener noreferrer"/.test(live[0]), 'live-site link needs rel="noopener noreferrer"');
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
+check(/Updated \d{1,2} [A-Z][a-z]{2} \d{4}/.test(decode(headerMeta.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ")), 'the header meta row needs "Updated D Mon YYYY"');
 
 // Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions, Testing and delivery, Admin AI
 // assistant (each only when the content has any), Screenshots, then the contact footer. The content order is now
 // complete: 2.7 adds the contents list and 2.9 rewires home, neither adds a section.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+const siteSrc = read(join(root, "src", "content", "site.ts")) ?? "";
+const contactHeading = /export const contact = \{\s*heading:\s*"([^"]*)"/.exec(siteSrc)?.[1] ?? "";
+check(contactHeading !== "", "could not read contact.heading from site.ts");
 const expectedH2s = [
   "Summary",
   "What I owned",
@@ -133,11 +144,12 @@ const expectedH2s = [
   ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
   ...(hasTesting ? ["Testing and delivery"] : []),
   ...(hasAssistant ? ["Admin AI assistant (safety design)"] : []),
+  contactHeading,
   "Screenshots (test data)",
 ];
 check(
-  h2s.length === expectedH2s.length + 1 && expectedH2s.every((t, i) => h2s[i] === t),
-  `h2 order should be ${expectedH2s.join(" > ")} > contact, found: ${h2s.join(" > ") || "none"}`,
+  h2s.length === expectedH2s.length && expectedH2s.every((t, i) => h2s[i] === t),
+  `h2 order should be ${expectedH2s.join(" > ")}, found: ${h2s.join(" > ") || "none"}`,
 );
 
 // Payments (Story 2.2). Four paragraphs, a <figure> holding the state diagram as one ordered list (states and
@@ -377,65 +389,76 @@ if (!hasAssistant) {
   check(!/\btext-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
 }
 
-// Contents (Story 2.7). Two <nav aria-label="Contents"> between the <h1> and #summary: the lg:hidden one holds a
-// closed <details> whose <summary> reads "Contents", the hidden lg:block lg:sticky one is the desktop column. Both
-// list one plain anchor per <section id> on the page, in source order, so a section dropped from the content module
-// drops its link too. Every target section takes focus (tabindex="-1") and the server HTML marks nothing current.
-const contentsLabels = {
+const rawFirstH1 = rawHtml.search(/<h1\b/);
+const rawSummaryStart = rawHtml.indexOf('id="summary"');
+// Reading trail (v3 CAP-8). Seven sections in the agreed order, each a focusable target with a tab sibling before it, a
+// counter and an "On this page" link that are decoration (aria-hidden counter), and one nav aria-label="On this page"
+// listing them: seven anchors for lg and the same seven in a closed disclosure. No script marks anything current.
+const trailIds = ["summary", "owned", "payments", "decisions", "testing", "assistant", "contact"].filter((id) => {
+  if (id === "payments") return hasPayments;
+  if (id === "decisions") return expectedDecisions > 0;
+  if (id === "testing") return hasTesting;
+  if (id === "assistant") return hasAssistant;
+  return true;
+});
+const trailLabels = {
   summary: "Summary",
   owned: "What I owned",
-  payments: "Booking and payments",
-  decisions: "Decisions",
+  payments: "Booking and payments flow",
+  decisions: "Decisions and rejected alternatives",
   testing: "Testing and delivery",
   assistant: "Admin AI assistant",
-  screenshots: "Screenshots",
+  contact: "Contact",
 };
-const sectionTags = html.match(/<section\b[^>]*>/g) ?? [];
+const sectionTags = rawHtml.match(/<section\b[^>]*>/g) ?? [];
 const sectionIds = sectionTags.map((tag) => /\sid="([^"]+)"/.exec(tag)?.[1]).filter(Boolean);
-check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id for the contents list to link to");
-for (const id of sectionIds) check(Object.hasOwn(contentsLabels, id), `<section id="${id}"> has no contents label in check-case-study's label map`);
-for (const tag of sectionTags) {
-  check(/\stabindex="-1"/.test(tag), `every contents target must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
-  // A jump lands the section 112px down, clear of the floating nav's bottom edge (about 102px).
-  check(/\sclass="[^"]*(?<=["\s])scroll-mt-28(?=[\s"])/.test(tag), `every contents target must land clear of the floating nav (scroll-mt-28): ${tag.slice(0, 120)}`);
+check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id");
+check(JSON.stringify(sectionIds.filter((id) => id !== "screenshots")) === JSON.stringify(trailIds), `sections should run ${trailIds.join(" ")} in that order, found: ${sectionIds.join(" ")}`);
+for (const tag of sectionTags) check(/\stabindex="-1"/.test(tag), `every section must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
+for (const tag of sectionTags.filter((t) => !/\sid="screenshots"/.test(t))) {
+  check(/\sclass="[^"]*\btrail-section\b/.test(tag) && /\sstyle="--n:\d+"/.test(tag), `a trail section needs class trail-section and its --n position: ${tag.slice(0, 140)}`);
 }
-const expectedContents = sectionIds.map((id) => ({ id, label: contentsLabels[id] }));
-const tocNavs = [...html.matchAll(/<nav\b[^>]*\saria-label="Contents"[^>]*>[\s\S]*?<\/nav>/g)].map((m) => ({ html: m[0], at: m.index, end: m.index + m[0].length }));
-check(tocNavs.length === 2, `expected two <nav aria-label="Contents"> (the disclosure and the sticky column), found ${tocNavs.length}`);
-const navClasses = (nav) => new Set((/^<nav\b[^>]*\sclass="([^"]*)"/.exec(nav.html)?.[1] ?? "").split(/\s+/).filter(Boolean));
-const isColumn = (nav) => { const c = navClasses(nav); return c.has("hidden") && c.has("lg:block") && c.has("lg:sticky"); };
-const isDisclosure = (nav) => { const c = navClasses(nav); return c.has("lg:hidden") && !c.has("hidden"); };
-const columns = tocNavs.filter(isColumn);
-const disclosures = tocNavs.filter(isDisclosure);
-check(columns.length === 1, `exactly one contents <nav> must be the sticky column ("hidden lg:block lg:sticky"), found ${columns.length}`);
-check(disclosures.length === 1, `exactly one contents <nav> must be the small-screen disclosure ("lg:hidden"), found ${disclosures.length}`);
-if (disclosures.length === 1) {
-  const nav = disclosures[0].html;
-  const detailsTags = nav.match(/<details\b[^>]*>/g) ?? [];
-  check(detailsTags.length === 1, `the contents disclosure must hold exactly one <details>, found ${detailsTags.length}`);
-  check(detailsTags.every((tag) => !/\sopen(?=[\s=>])/.test(tag)), "the contents <details> must be closed in the HTML (no open attribute)");
-  const summaryText = decode((/<summary\b[^>]*>([\s\S]*?)<\/summary>/.exec(nav)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
-  check(summaryText === "Contents", `the contents <summary> must read "Contents", found "${summaryText}"`);
-}
-if (columns.length === 1) check(/<p\b[^>]*>\s*On this page\s*<\/p>/.test(columns[0].html), 'the sticky contents column needs its "On this page" eyebrow as a <p>');
-for (const nav of tocNavs) {
-  const which = isColumn(nav) ? "sticky contents column" : isDisclosure(nav) ? "contents disclosure" : "contents nav";
-  check(!/<h[1-6]\b/.test(nav.html), `the ${which} must not hold a heading (the h2 order stays as it is)`);
-  const links = [...nav.html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+// Tabs: one link per section, a sibling placed directly before it (never inside it), counter "0n / 0N".
+const tabs = [...rawHtml.matchAll(/<a\b[^>]*class="trail-tab"[^>]*>[\s\S]*?<\/a>/g)].map((m) => ({ html: m[0], at: m.index }));
+check(tabs.length === trailIds.length, `expected ${trailIds.length} tabs (class trail-tab), found ${tabs.length}`);
+trailIds.forEach((id, i) => {
+  const tab = tabs[i];
+  const secAt = rawHtml.search(new RegExp(`<section\\b[^>]*\\sid="${id}"`));
+  check(tab && new RegExp(`^<a\\b[^>]*href="#${id}"`).test(tab.html), `tab ${i + 1} must link to #${id}`);
+  check(!!tab && secAt > tab.at && rawHtml.slice(tab.at + tab.html.length, secAt).trim() === "", `tab ${i + 1} must sit directly before the #${id} section as its sibling`);
+  const counter = decode(/<b>([\s\S]*?)<\/b>/.exec(tab?.html ?? "")?.[1] ?? "").replace(/<[^>]+>/g, "");
+  check(counter === `0${i + 1} / 0${trailIds.length}`, `tab ${i + 1} counter should read "0${i + 1} / 0${trailIds.length}", found "${counter}"`);
+  // The heading block repeats the counter, aria-hidden, with the way back to On this page.
+  const sec = secAt === -1 ? "" : rawHtml.slice(secAt, rawHtml.indexOf("</section>", secAt));
+  check(new RegExp(`<span\\b[^>]*aria-hidden="true"[^>]*data-trail-counter[^>]*>\\s*0${i + 1}\\s*/\\s*0${trailIds.length}\\s*</span>`).test(sec.replace(/<!--\s*-->/g, "")), `#${id}: the heading block needs the aria-hidden counter "0${i + 1} / 0${trailIds.length}"`);
+  check(/<a\b[^>]*href="#on-this-page"[^>]*data-trail-up/.test(sec), `#${id}: the heading block needs the "On this page" link`);
+});
+const onPageNavs = [...rawHtml.matchAll(/<nav\b[^>]*\saria-label="On this page"[^>]*>[\s\S]*?<\/nav>/g)].map((m) => m[0]);
+check(onPageNavs.length === 1, `expected exactly one <nav aria-label="On this page">, found ${onPageNavs.length}`);
+const onPage = onPageNavs[0] ?? "";
+check(/\sid="on-this-page"/.test(onPage.slice(0, 200)), 'the On this page nav needs id="on-this-page"');
+check(!/aria-label="Contents"/.test(rawHtml), 'no "Contents" nav may survive (TocHighlight is gone)');
+check((onPage.match(/<details\b/g) ?? []).length === 1 && !/<details\b[^>]*\sopen(?=[\s=>])/.test(onPage), "On this page needs one closed <details> for small screens");
+const lists = onPage.match(/<ol\b[\s\S]*?<\/ol>/g) ?? [];
+check(lists.length === 2, `On this page should hold two lists (disclosure and lg row), found ${lists.length}`);
+for (const list of lists) {
+  const links = [...list.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
     href: /\shref="([^"]*)"/.exec(m[1])?.[1] ?? "",
-    label: decode(m[2].replace(/<[^>]+>/g, "")).trim(),
+    label: decode(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim(),
   }));
-  check(links.length === expectedContents.length, `the ${which} should list ${expectedContents.length} links, one per <section id>, found ${links.length}`);
-  expectedContents.forEach(({ id, label }, i) => {
-    check(links[i]?.href === `#${id}`, `${which} link ${i + 1} should point at "#${id}", found "${links[i]?.href ?? "none"}"`);
-    check(links[i]?.label === label, `${which} link ${i + 1} label should read "${label}", found "${links[i]?.label ?? "none"}"`);
+  check(links.length === trailIds.length, `an On this page list should hold ${trailIds.length} links, found ${links.length}`);
+  trailIds.forEach((id, i) => {
+    check(links[i]?.href === `#${id}`, `On this page link ${i + 1} should point at "#${id}", found "${links[i]?.href ?? "none"}"`);
+    check(links[i]?.label === `0${i + 1} ${trailLabels[id]}`, `On this page link ${i + 1} should read "0${i + 1} ${trailLabels[id]}", found "${links[i]?.label ?? "none"}"`);
   });
 }
-check(!tocNavs.some((nav) => /\saria-current=/.test(nav.html)), "the contents in the server HTML must not carry aria-current (without JavaScript nothing tracks the current section)");
+check(!/\saria-current=/.test(onPage), "On this page must not mark anything current");
 check(
-  tocNavs.length > 0 && tocNavs.every((nav) => nav.at > firstH1 && summaryStart !== -1 && nav.end <= summaryStart),
-  "the contents must come after the <h1> and before #summary",
+  onPageNavs.length === 1 && rawHtml.indexOf(onPage) > rawFirstH1 && rawHtml.indexOf(onPage) < rawSummaryStart,
+  "On this page must come after the <h1> and before #summary",
 );
+// The display word closes the header: aria-hidden and not a heading or link.
+check(/<div\b[^>]*aria-hidden="true"[^>]*class="display-word[^"]*"[\s\S]*?<\/div>/.test(rawHtml), "the header needs the aria-hidden display word");
 
 // Reduced motion, as built (check-toc checks the source rule): a stylesheet the case study links must make every
 // scroll instant under prefers-reduced-motion, after the last smooth-scroll rule it overrides.
@@ -485,8 +508,8 @@ for (const { src, width, height } of shotEntries) {
 
 check(html.includes('id="screenshots"'), 'missing <section id="screenshots">');
 const shotsStart = html.indexOf('id="screenshots"');
-const contactStart = html.indexOf('id="contact"');
-const shots = shotsStart !== -1 && contactStart > shotsStart ? html.slice(shotsStart, contactStart) : "";
+const shotsEnd = shotsStart !== -1 ? html.indexOf("</section>", shotsStart) : -1;
+const shots = shotsStart !== -1 && shotsEnd > shotsStart ? html.slice(shotsStart, shotsEnd) : "";
 check(ownedStart !== -1 && shotsStart > ownedStart, "#screenshots must come after #owned");
 // Every figure is either a screenshot frame inside #screenshots or the one payments diagram inside #payments.
 const expectedFigures = expectedShots + (hasPayments ? 1 : 0);
@@ -591,7 +614,7 @@ const islandsDir = join(root, "src", "components", "islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
   : [];
-const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx", "TocHighlight.tsx"];
+const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx"];
 check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
 
 // Metadata
@@ -628,7 +651,9 @@ sourceFiles.push(join(root, "src", "components", "sections", "TestingSection.tsx
 sourceFiles.push(join(root, "src", "components", "sections", "AssistantSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
-sourceFiles.push(join(root, "src", "components", "islands", "TocHighlight.tsx"));
+for (const f of ["SectionFrame", "TrailTab", "OnThisPage", "SummarySection", "OwnedSection", "ContactSection", "CaseFooter"]) {
+  sourceFiles.push(join(root, "src", "components", "case-study", `${f}.tsx`));
+}
 for (const file of sourceFiles) {
   const src = read(file);
   check(src !== null, `missing source file ${relative(root, file)}`);

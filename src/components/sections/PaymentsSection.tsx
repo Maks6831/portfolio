@@ -1,26 +1,19 @@
+import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import StateDiagram from "@/components/ui/StateDiagram";
 import type { PaymentsSection as PaymentsContent } from "@/content/work/types";
 
-type Props = { payments?: PaymentsContent };
+type Props = { payments?: PaymentsContent; trail?: TrailPosition };
 
 /**
  * Story 2.2: "The booking and payments flow": four short paragraphs, the pending-to-confirmed state diagram and
  * the two reliability panels. Server-rendered, no <article> (the gate treats articles as decision cards).
  * Renders nothing when the case study has no payments content, so the heading order simply skips it.
  */
-const PaymentsSection = ({ payments }: Props) => {
+const PaymentsSection = ({ payments, trail }: Props) => {
   if (!payments) return null;
   return (
-    <section
-      id="payments"
-      aria-labelledby="payments-heading"
-      tabIndex={-1}
-      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
-    >
-      <h2 id="payments-heading" className="text-subheading md:text-heading text-text">
-        The booking and payments flow
-      </h2>
+    <SectionFrame id="payments" title="The booking and payments flow" trail={trail}>
       {payments.flow.map((paragraph, i) => (
         <p key={`flow-${i}`} className="mt-6 max-w-[68ch] text-body text-text-secondary">
           {paragraph}
@@ -35,7 +28,7 @@ const PaymentsSection = ({ payments }: Props) => {
           </li>
         ))}
       </ul>
-    </section>
+    </SectionFrame>
   );
 };
 

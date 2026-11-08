@@ -8,10 +8,12 @@ const { load } = compileComponents({
   cacheName: "check-testing",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/lib/dates": "./dates.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/lib/dates.ts": "dates.js",
     "src/components/sections/TestingSection.tsx": "TestingSection.js",
   },

@@ -32,10 +32,10 @@ export const simplyHappyFeature = {
 };
 
 export const navItems = [
-    { name: "About", link: "#about" },
-    { name: "Work", link: "#work" },
-    { name: "Contact", link: "#contact" },
-  ];
+  { name: "Work", link: "#work" },
+  { name: "Profile", link: "#profile" },
+  { name: "Connect", link: "#contact" },
+];
 
 export const proofSection = {
   eyebrow: "Proof",

@@ -1,7 +1,6 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
-import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import PageShell from "@/components/layout/PageShell";
 import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import TocHighlight from "@/components/islands/TocHighlight";
@@ -24,13 +23,6 @@ export const dynamicParams = false;
 export function generateStaticParams() {
   return caseStudySlugs.map((slug) => ({ slug }));
 }
-
-// Home-absolute links so the nav works from a nested route; #contact is on this page.
-const navItems = [
-  { name: "About", link: "/#about" },
-  { name: "Work", link: "/#work" },
-  { name: "Contact", link: "#contact" },
-];
 
 export async function generateMetadata(
   { params }: Props,
@@ -87,8 +79,6 @@ export default async function CaseStudyPage({ params }: Props) {
     <PageShell surface="case-study">
     <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
-        <FloatingNav navItems={navItems} />
-
         <header className="pt-36 pb-section-gap-mobile md:pb-section-gap">
           <p className="text-eyebrow uppercase text-accent">{study.eyebrow}</p>
           <h1 className="mt-4 max-w-[68ch] text-display-mobile md:text-display text-text">

@@ -5,7 +5,7 @@ import { formatRange } from "@/lib/dates";
 
 const Experience = () => {
   return (
-    <div className="py-20 w-full">
+    <div id="profile" className="py-20 w-full scroll-mt-24">
       <h2 className="heading">
         My <span className="text-accent">work experience</span>
       </h2>

@@ -1,46 +1,50 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
-type Status = "idle" | "copied" | "failed";
-
+// "Copy email" (EXPERIENCE.md Copy-email status). The <button> is not rendered until hydration (the "Email me" mailto
+// covers no-JS). The role="status" line is in the DOM, empty at load, and set after copying; a repeat press clears it
+// first so it re-announces. If the Clipboard API fails the address text is selected and the status says so. No toast,
+// no timeout.
 export default function CopyEmail({ email }: { email: string }) {
-  const [status, setStatus] = useState<Status>("idle");
-  const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  // false on the server and during hydration, true afterwards: the button is not rendered before its island hydrates.
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const [msg, setMsg] = useState("");
+  if (!ready) return null;
 
-  useEffect(() => () => clearTimeout(timer.current), []);
-
-  const handleCopy = async () => {
-    clearTimeout(timer.current);
+  const say = (text: string) => {
+    setMsg("");
+    setTimeout(() => setMsg(text), 60);
+  };
+  const copy = async () => {
     try {
       await navigator.clipboard.writeText(email);
-      setStatus("copied");
-      clearTimeout(timer.current);
-      timer.current = setTimeout(() => setStatus("idle"), 2000);
+      say(`Email copied · ${email}`);
     } catch {
-      setStatus("failed");
+      const el = document.getElementById("contact-email");
+      if (el) {
+        const r = document.createRange();
+        r.selectNodeContents(el);
+        const s = window.getSelection();
+        s?.removeAllRanges();
+        s?.addRange(r);
+      }
+      say("Address selected, press Ctrl+C or Cmd+C to copy");
     }
   };
 
   return (
-    <div className="flex flex-col items-center gap-2">
-      <button
-        type="button"
-        onClick={handleCopy}
-        className="inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded border border-accent px-7 text-sm font-semibold text-accent transition-colors hover:border-accent-pressed hover:text-accent-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring motion-reduce:transition-none"
-      >
-        {status === "copied" ? "Email copied" : "Copy email"}
+    <>
+      <button type="button" onClick={copy} className="inline-flex min-h-[44px] items-center justify-center gap-2 rounded border border-accent px-5 py-3.5 text-sm font-semibold leading-none text-accent hover:border-accent-pressed hover:text-accent-pressed focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-focus-ring">
+        Copy email
       </button>
-      {status === "failed" && (
-        <span className="select-all text-sm text-text-secondary">{email}</span>
-      )}
-      <span role="status" aria-live="polite" className="sr-only">
-        {status === "copied"
-          ? "Email copied"
-          : status === "failed"
-            ? "Copy failed. The address is shown below to copy by hand."
-            : ""}
+      <span role="status" className="order-last block min-h-[1.5em] basis-full font-mono text-xs tracking-[0.06em] text-accent">
+        {msg}
       </span>
-    </div>
+    </>
   );
 }

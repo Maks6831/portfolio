@@ -3,11 +3,11 @@ import { cn } from "@/app/lib/utils";
 
 type Props = { children: ReactNode; className?: string };
 
-/** Pill chip for stack and status labels (DESIGN.md chip). */
+/** Static text chip (DESIGN.md chip): never a link or filter. */
 const Chip = ({ children, className }: Props) => (
   <span
     className={cn(
-      "inline-flex items-center rounded-full border border-line bg-bezel px-3.5 py-1.5 text-caption text-text-secondary",
+      "inline-flex items-center rounded-sm border border-line px-[9px] py-[5px] font-mono text-[11px] leading-none tracking-[0.04em] text-accent",
       className
     )}
   >

@@ -1,24 +1,22 @@
 import ProofTile from "@/components/ui/ProofTile";
+import Sheet from "@/components/ui/Sheet";
 import { proofSection, proofTiles } from "@/content/site";
 
+// Sheet 02 (#proof): four tiles, 2 x 2.
 const ProofTiles = () => (
-  <section
-    id="about"
-    aria-labelledby="proof-heading"
-    className="relative z-10 scroll-mt-24 pt-0 pb-section-gap-mobile md:pb-section-gap"
-  >
-    <p className="text-eyebrow uppercase text-accent">{proofSection.eyebrow}</p>
-    <h2 id="proof-heading" className="mt-3 text-subheading md:text-heading text-text">
-      {proofSection.heading}
-    </h2>
-    <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 lg:grid-cols-4">
+  <Sheet n={2} id="proof" labelledBy="h-proof">
+    <div>
+      <p className="eyebrow">{proofSection.eyebrow}</p>
+      <h2 id="h-proof">{proofSection.heading}</h2>
+    </div>
+    <ul role="list" className="tiles">
       {proofTiles.map((t) => (
         <li key={t.id}>
-          <ProofTile title={t.title} body={t.body} chip={t.chip} />
+          <ProofTile title={t.title} body={t.body} chip={t.chip} link={"link" in t ? t.link : undefined} />
         </li>
       ))}
     </ul>
-  </section>
+  </Sheet>
 );
 
 export default ProofTiles;

@@ -5,23 +5,22 @@ import SimplyHappyFeature from "@/components/sections/SimplyHappyFeature";
 import ProofTiles from "@/components/sections/ProofTiles";
 import SupportingWork from "@/components/sections/SupportingWork";
 import Experience from "@/components/sections/Experience";
-import Footer from "@/components/sections/Footer";
+import ContactSection from "@/components/sections/ContactSection";
+import SiteFooter from "@/components/sections/SiteFooter";
 
-const Page = () => {
-  return (
-    <PageShell surface="home">
+// Hero, sheets 01-03, then Experience and Contact (flow sections that slide over the stack) in one container, so the
+// sticky hero and sheets stay stuck until the end. The wrapper's overflow-x: clip is the only clipping.
+const Page = () => (
+  <PageShell surface="home" footer={<SiteFooter />}>
     <div className="home">
-        <Hero />
-        <div className="mx-auto max-w-7xl px-5 sm:px-10">
-          <SimplyHappyFeature />
-          <ProofTiles />
-          <SupportingWork />
-          <Experience />
-          <Footer />
-        </div>
+      <Hero />
+      <SimplyHappyFeature />
+      <ProofTiles />
+      <SupportingWork />
+      <Experience />
+      <ContactSection />
     </div>
-    </PageShell>
-  );
-};
+  </PageShell>
+);
 
 export default Page;

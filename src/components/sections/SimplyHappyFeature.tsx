@@ -1,47 +1,47 @@
-import ButtonLink from "@/components/ui/ButtonLink";
+import Image from "next/image";
 import Chip from "@/components/ui/Chip";
-import ScreenshotFrame from "@/components/ui/ScreenshotFrame";
+import LaptopFrame from "@/components/ui/LaptopFrame";
+import Sheet from "@/components/ui/Sheet";
+import { heroSizes } from "@/components/sections/Hero";
 import { simplyHappyFeature as f } from "@/content/site";
 
+// Sheet 01. The case-study link is a stretched <a> on the h2 (its name is the h2); "Read the case study →" is the
+// visible, aria-hidden line. The screenshot reuses the hero's download: same src and sizes, lazy.
 const SimplyHappyFeature = () => (
-  <section id="work" aria-labelledby="headline-work" className="relative z-10 scroll-mt-24 py-section-gap-mobile md:py-section-gap">
-    <p className="text-eyebrow uppercase text-accent">{f.eyebrow}</p>
-    <h2 id="headline-work" className="mt-3 text-subheading md:text-heading text-text">
-      {f.heading}
-    </h2>
-
-    <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2 md:items-start">
-      <div className="flex flex-col gap-6">
-        <div className="rounded-md border border-line bg-stage p-7">
-          <p className="text-eyebrow uppercase text-muted">Before</p>
-          <p className="mt-2 text-body text-text-secondary">{f.before}</p>
-        </div>
-        <div className="rounded-md border border-line bg-stage p-7">
-          <p className="text-eyebrow uppercase text-accent">After</p>
-          <p className="mt-2 text-body text-text">{f.after}</p>
-        </div>
-        <ul role="list" className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Technologies used">
-          {f.chips.map((chip) => (
-            <li key={chip}>
-              <Chip>{chip}</Chip>
-            </li>
-          ))}
-        </ul>
-        <div>
-          <ButtonLink href={f.link.href} variant="secondary">
-            {f.link.label}
-          </ButtonLink>
-        </div>
+  <Sheet n={1} id="work" labelledBy="h-work">
+    <div className="pos">
+      <p className="eyebrow">{f.eyebrow}</p>
+      <h2 id="h-work">
+        <a className="stretch" href={f.link.href}>
+          {f.heading}
+        </a>
+      </h2>
+      <div className="ba">
+        <b>Before</b>
+        <p>{f.before}</p>
       </div>
-      <ScreenshotFrame
-        src={f.image.src}
-        width={f.image.width}
-        height={f.image.height}
-        alt={f.image.alt}
-        caption={f.image.caption}
-      />
+      <div className="ba">
+        <b>After</b>
+        <p>{f.after}</p>
+      </div>
+      <ul role="list" className="chips" aria-label="Technologies used">
+        {f.chips.map((chip) => (
+          <li key={chip}>
+            <Chip>{chip}</Chip>
+          </li>
+        ))}
+      </ul>
+      <span className="link" aria-hidden="true">
+        {f.link.label} →
+      </span>
     </div>
-  </section>
+    <figure className="frame m-0">
+      <LaptopFrame>
+        <Image src={f.image.src} width={f.image.width} height={f.image.height} alt={f.image.alt} sizes={heroSizes} loading="lazy" />
+      </LaptopFrame>
+      <figcaption className="cap">{f.image.caption}</figcaption>
+    </figure>
+  </Sheet>
 );
 
 export default SimplyHappyFeature;

@@ -19,7 +19,7 @@ function itemsFor(surface: Surface) {
 
 // The banner (HUD strip + the one Sections nav) and <main> for every route. `data-surface` lets globals.css pick the
 // per-mode scroll-padding for the home page vs the case study without any script.
-export default function PageShell({ surface, children }: { surface: Surface; children: React.ReactNode }) {
+export default function PageShell({ surface, children, footer }: { surface: Surface; children: React.ReactNode; footer?: React.ReactNode }) {
   return (
     <>
       <header className="hud-banner">
@@ -29,6 +29,7 @@ export default function PageShell({ surface, children }: { surface: Surface; chi
       <main id="main" data-surface={surface} tabIndex={-1} className="focus:outline-none">
         {children}
       </main>
+      {footer}
     </>
   );
 }

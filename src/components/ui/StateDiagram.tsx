@@ -27,9 +27,9 @@ const StateDiagram = ({ id, states, transitions, caption, className }: Props) =>
           const items = [
             <li
               key={`state-${i}`}
-              className="rounded-card border border-border bg-surface-raised p-5 md:flex-1"
+              className="rounded-md border border-line bg-bezel p-5 md:flex-1"
             >
-              <span className="block text-body font-semibold text-text-primary">{entry.state}</span>
+              <span className="block text-body font-semibold text-text">{entry.state}</span>
               <span className="mt-1 block text-caption text-text-secondary">{entry.meaning}</span>
             </li>,
           ];
@@ -37,7 +37,7 @@ const StateDiagram = ({ id, states, transitions, caption, className }: Props) =>
             items.push(
               <li
                 key={`transition-${i}`}
-                className="flex items-center gap-2 pl-5 text-caption text-text-muted md:max-w-[14ch] md:flex-col md:justify-center md:self-center md:px-0 md:text-center"
+                className="flex items-center gap-2 pl-5 text-caption text-muted md:max-w-[14ch] md:flex-col md:justify-center md:self-center md:px-0 md:text-center"
               >
                 <span aria-hidden="true" className="rotate-90 text-body leading-none md:rotate-0">
                   &rarr;
@@ -49,7 +49,7 @@ const StateDiagram = ({ id, states, transitions, caption, className }: Props) =>
           return items;
         })}
       </ol>
-      <figcaption id={captionId} className="mt-4 max-w-[68ch] text-caption text-text-muted">
+      <figcaption id={captionId} className="mt-4 max-w-[68ch] text-caption text-muted">
         {caption}
       </figcaption>
     </figure>

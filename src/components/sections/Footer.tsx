@@ -1,6 +1,3 @@
-import { FaGithub, FaLinkedin } from "react-icons/fa6";
-import { IoMail, IoDocumentTextOutline } from "react-icons/io5";
-
 import { contact } from "@/content/site";
 import ButtonLink from "@/components/ui/ButtonLink";
 import CopyEmail from "@/components/islands/CopyEmail";
@@ -13,7 +10,7 @@ const Footer = () => {
         <h2 className="heading lg:max-w-[45vw]">{contact.heading}</h2>
         <p className="my-5 text-text-secondary md:mt-8">{contact.line}</p>
         <div className="flex flex-col items-center gap-4 sm:flex-row">
-          <ButtonLink href={`mailto:${contact.email}`} icon={<IoMail aria-hidden="true" />}>
+          <ButtonLink href={`mailto:${contact.email}`}>
             Email me
           </ButtonLink>
           <CopyEmail email={contact.email} />
@@ -23,7 +20,6 @@ const Footer = () => {
             variant="secondary"
             href={contact.linkedin}
             external
-            icon={<FaLinkedin aria-hidden="true" />}
           >
             LinkedIn
           </ButtonLink>
@@ -31,7 +27,6 @@ const Footer = () => {
             variant="secondary"
             href={contact.github}
             external
-            icon={<FaGithub aria-hidden="true" />}
           >
             GitHub
           </ButtonLink>
@@ -39,13 +34,12 @@ const Footer = () => {
             href={contact.cv.href}
             variant="secondary"
             download
-            icon={<IoDocumentTextOutline aria-hidden="true" />}
           >
             {contact.cv.label}
           </ButtonLink>
         </div>
       </div>
-      <p className="mt-16 text-center text-sm text-text-muted">
+      <p className="mt-16 text-center text-sm text-muted">
         Copyright © {year} {contact.name}
       </p>
     </footer>

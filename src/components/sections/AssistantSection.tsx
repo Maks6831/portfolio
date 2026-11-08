@@ -18,7 +18,7 @@ const AssistantSection = ({ assistant }: Props) => {
       tabIndex={-1}
       className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
-      <h2 id="assistant-heading" className="text-subheading md:text-heading text-text-primary">
+      <h2 id="assistant-heading" className="text-subheading md:text-heading text-text">
         Admin AI assistant (safety design)
       </h2>
       <p className="mt-6 max-w-[68ch] text-body text-text-secondary">{assistant.intro}</p>

@@ -24,10 +24,10 @@ export default function NotFound() {
   const study = getCaseStudy("simply-happy");
 
   return (
-    <div className="relative bg-black-100 w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
+    <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <section className="pt-36 pb-section-gap-mobile md:pb-section-gap">
-          <h1 className="max-w-[68ch] text-display-mobile md:text-display text-text-primary">
+          <h1 className="max-w-[68ch] text-display-mobile md:text-display text-text">
             Page not found
           </h1>
           <p className="mt-6 max-w-[68ch] text-body text-text-secondary">

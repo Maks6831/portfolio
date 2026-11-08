@@ -95,7 +95,7 @@ check(!/(?:^|[\s":])(?:min-)?w-\[|whitespace-nowrap/.test(section), "section: no
 check(count(section, /aria-hidden="true"/g) === payments.diagram.transitions.length, "section: the connector glyphs must be the only aria-hidden elements");
 check(!/\boverflow-x-(?:auto|scroll)\b/.test(section), "section: no horizontal scroll container");
 check(!/\b(?:bg-|text-|border-)success\b/.test(section), "section: the success colour is reserved for shipped, live or passing-test indicators");
-const mutedUses = [...section.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-text-muted\b[^"]*"/g)].map((m) => m[1]);
+const mutedUses = [...section.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-muted\b[^"]*"/g)].map((m) => m[1]);
 check(mutedUses.every((tag) => tag === "figcaption" || tag === "li"), `section: text-muted only on the caption and transition labels, found on: ${mutedUses.join(", ")}`);
 
 if (failures.length) {

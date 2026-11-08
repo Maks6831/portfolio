@@ -51,7 +51,7 @@ export const FloatingNav = ({
       aria-label="Primary"
       inert={!visible}
       className={cn(
-        "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-white/10 shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4 transition-[transform,opacity,visibility] duration-200 motion-reduce:transition-none",
+        "flex max-w-fit md:min-w-[70vw] lg:min-w-fit fixed z-[5000] top-10 inset-x-0 mx-auto px-10 py-5 rounded-lg border border-line bg-scrim shadow-[0px_2px_3px_-1px_rgba(0,0,0,0.1),0px_1px_0px_0px_rgba(25,28,33,0.02),0px_0px_0px_1px_rgba(25,28,33,0.08)] items-center justify-center space-x-4 transition-[transform,opacity,visibility] duration-200 motion-reduce:transition-none",
         visible
           ? "translate-y-0 opacity-100"
           : "invisible -translate-y-24 opacity-0",
@@ -59,7 +59,6 @@ export const FloatingNav = ({
       )}
       style={{
         backdropFilter: "blur(16px) saturate(180%)",
-        backgroundColor: "rgba(17, 25, 40, 0.75)",
         borderRadius: "12px",
       }}
     >
@@ -67,7 +66,7 @@ export const FloatingNav = ({
         <Link
           key={navItem.link}
           href={navItem.link}
-          className="relative flex items-center text-sm text-neutral-50 hover:text-neutral-300"
+          className="relative flex items-center text-sm text-text hover:text-text-secondary"
         >
           {navItem.name}
         </Link>

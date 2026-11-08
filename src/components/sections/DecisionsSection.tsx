@@ -16,7 +16,7 @@ const DecisionsSection = ({ decisions }: Props) => {
       tabIndex={-1}
       className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
-      <h2 id="decisions-heading" className="text-subheading md:text-heading text-text-primary">
+      <h2 id="decisions-heading" className="text-subheading md:text-heading text-text">
         Decisions and rejected alternatives
       </h2>
       <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0">

@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState, type MouseEvent } from "react";
-import { IoClose } from "react-icons/io5";
 
 import ScreenshotFrame, { defaultScreenshotSizes } from "@/components/ui/ScreenshotFrame";
 
@@ -33,7 +32,7 @@ function Shot({
       <div
         role="img"
         aria-label={`${alt} (image unavailable)`}
-        className="flex w-full items-center justify-center bg-surface p-4 text-center text-caption text-text-muted"
+        className="flex w-full items-center justify-center bg-stage p-4 text-center text-caption text-muted"
         style={{ aspectRatio: `${width} / ${height}` }}
       >
         Image unavailable
@@ -140,7 +139,7 @@ export default function ScreenshotViewer({ src, width, height, alt, caption, siz
         onPointerDown={onPointerDown}
         onClick={onClick}
         onClose={onClose}
-        className="m-auto max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] rounded border border-border bg-surface p-0 text-text-primary backdrop:bg-background/80"
+        className="m-auto max-h-[calc(100vh-2rem)] max-w-[calc(100vw-2rem)] rounded border border-line bg-stage p-0 text-text backdrop:bg-scrim"
       >
         {open ? (
           <div className="flex flex-col gap-4 p-4 md:p-6">
@@ -149,13 +148,13 @@ export default function ScreenshotViewer({ src, width, height, alt, caption, siz
                 type="button"
                 aria-label="Close"
                 onClick={close}
-                className={`inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-border text-text-primary transition-colors hover:border-accent motion-reduce:transition-none ${focusRing}`}
+                className={`inline-flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-full border border-line text-text transition-colors hover:border-accent motion-reduce:transition-none ${focusRing}`}
               >
-                <IoClose aria-hidden="true" className="h-5 w-5" />
+                <span aria-hidden="true" className="text-xl leading-none">×</span>
               </button>
             </div>
             <div
-              className="bg-surface"
+              className="bg-stage"
               style={{
                 aspectRatio: `${width} / ${height}`,
                 // Fit the whole image on screen: inside the dialog's own max width, padding and border,
@@ -173,7 +172,7 @@ export default function ScreenshotViewer({ src, width, height, alt, caption, siz
                 sizes="100vw"
               />
             </div>
-            <p className="max-w-[68ch] text-caption text-text-muted">{caption}</p>
+            <p className="max-w-[68ch] text-caption text-muted">{caption}</p>
           </div>
         ) : null}
       </dialog>

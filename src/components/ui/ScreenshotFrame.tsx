@@ -20,16 +20,16 @@ type Props = {
 /** Browser-chrome frame around a screenshot. The surface background keeps the box (and aspect ratio) if the image fails. */
 const ScreenshotFrame = ({ src, width, height, alt, caption, sizes, image, wrapFrame }: Props) => {
   const frame = (
-    <div className="overflow-hidden rounded border border-border bg-surface">
+    <div className="overflow-hidden rounded border border-line bg-stage">
       <div
         aria-hidden="true"
-        className="flex items-center gap-1.5 border-b border-border bg-surface-raised px-3 py-2.5"
+        className="flex items-center gap-1.5 border-b border-line bg-bezel px-3 py-2.5"
       >
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
-        <span className="h-2.5 w-2.5 rounded-full bg-border" />
+        <span className="h-2.5 w-2.5 rounded-full bg-line" />
+        <span className="h-2.5 w-2.5 rounded-full bg-line" />
+        <span className="h-2.5 w-2.5 rounded-full bg-line" />
       </div>
-      <div className="bg-surface" style={{ aspectRatio: `${width} / ${height}` }}>
+      <div className="bg-stage" style={{ aspectRatio: `${width} / ${height}` }}>
         {image ?? (
           <Image
             src={src}
@@ -46,7 +46,7 @@ const ScreenshotFrame = ({ src, width, height, alt, caption, sizes, image, wrapF
   return (
     <figure className="m-0">
       {wrapFrame ? wrapFrame(frame) : frame}
-      <figcaption className="mt-3 text-caption text-text-muted">{caption}</figcaption>
+      <figcaption className="mt-3 text-caption text-muted">{caption}</figcaption>
     </figure>
   );
 };

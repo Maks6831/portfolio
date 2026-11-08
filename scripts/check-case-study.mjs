@@ -170,15 +170,15 @@ if (!hasPayments) {
   const expectedTransitions = expectedStates - 1;
   check(items.length === expectedStates + expectedTransitions, `#payments diagram should list ${expectedStates} states and ${expectedTransitions} transitions (${expectedStates + expectedTransitions} <li>), found ${items.length}`);
   // The pills carry the raised surface; the labels between them carry an aria-hidden connector glyph.
-  check((figure.match(/<li\b[^>]*bg-surface-raised/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state pills`);
+  check((figure.match(/<li\b[^>]*bg-bezel/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state pills`);
   check((figure.match(/aria-hidden="true"/g) ?? []).length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} aria-hidden connector glyphs, one per transition`);
   // Every transition item must carry a visible label once the glyph is removed; an undefined label renders an empty span.
-  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*bg-surface-raised)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
+  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*bg-bezel)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
     decode(m[1].replace(/<span\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, " ")).trim(),
   );
   check(transitionItems.length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} transition items, found ${transitionItems.length}`);
   transitionItems.forEach((label, i) => check(label.length > 0, `#payments diagram transition ${i + 1} has no label text`));
-  const pills = [...figure.matchAll(/<li\b[^>]*bg-surface-raised[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
+  const pills = [...figure.matchAll(/<li\b[^>]*bg-bezel[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
   check(pills[0] === "Pending" && pills[pills.length - 1] === "Confirmed", `#payments diagram must run from Pending to Confirmed, found: ${pills.join(" > ") || "none"}`);
   // Panels: one <h3> per reliability entry, under an eyebrow that is not a heading, in a grid that stacks first.
   check((paymentsHtml.match(/<h3\b/g) ?? []).length === expectedPanels, `#payments should hold exactly ${expectedPanels} <h3>, one per reliability panel`);
@@ -309,7 +309,7 @@ if (!hasTesting) {
   check(!/\b(?:src|apps|packages|supabase|lib|app|components|tests|\.github|\.githooks)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md|mjs|sh)\b/.test(text), "#testing must not name a file path or file name");
   check(!/\b(?:bg|text|border)-success\b/.test(testingHtml), "#testing must not use the success colour");
   // text-muted is for the as-of label and the tile detail lines only.
-  const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-text-muted\b[^"]*"/g)].map((m) => m[1]);
+  const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-muted\b[^"]*"/g)].map((m) => m[1]);
   check(muted.every((tag) => tag === "p" || tag === "dd") && muted.filter((t) => t === "p").length === 1, `#testing text-muted is for the as-of <p> and detail <dd> only, found on: ${muted.join(", ") || "none"}`);
 }
 
@@ -374,7 +374,7 @@ if (!hasAssistant) {
   check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#assistant must not name a file path or file name");
   check(!/\b[A-Za-z0-9]+_[A-Za-z0-9_]+\b/.test(text), "#assistant must not name a code identifier (snake_case table, column or lookup name)");
   check(!/\b(?:bg|text|border)-success\b/.test(assistantHtml), "#assistant must not use the success colour");
-  check(!/\btext-text-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
+  check(!/\btext-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
 }
 
 // Contents (Story 2.7). Two <nav aria-label="Contents"> between the <h1> and #summary: the lg:hidden one holds a

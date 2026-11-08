@@ -8,7 +8,7 @@ const ProofTiles = () => (
     className="relative z-10 scroll-mt-24 pt-0 pb-section-gap-mobile md:pb-section-gap"
   >
     <p className="text-eyebrow uppercase text-accent">{proofSection.eyebrow}</p>
-    <h2 id="proof-heading" className="mt-3 text-subheading md:text-heading text-text-primary">
+    <h2 id="proof-heading" className="mt-3 text-subheading md:text-heading text-text">
       {proofSection.heading}
     </h2>
     <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 lg:grid-cols-4">

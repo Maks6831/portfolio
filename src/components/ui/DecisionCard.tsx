@@ -10,8 +10,8 @@ type Props = Decision & { className?: string };
  * words, never a path or a link.
  */
 const DecisionCard = ({ title, chose, rejected, source, className }: Props) => (
-  <article className={cn("h-full rounded-card border border-border bg-surface p-7", className)}>
-    <h3 className="text-body font-semibold text-text-primary">{title}</h3>
+  <article className={cn("h-full rounded-md border border-line bg-stage p-7", className)}>
+    <h3 className="text-body font-semibold text-text">{title}</h3>
     <dl className="m-0 mt-5 grid grid-cols-1 gap-6 md:grid-cols-2">
       <div>
         <dt className="text-eyebrow uppercase text-accent">Chose</dt>
@@ -22,7 +22,7 @@ const DecisionCard = ({ title, chose, rejected, source, className }: Props) => (
         <dd className="m-0 mt-2 max-w-[68ch] text-body text-text-secondary">{rejected}</dd>
       </div>
     </dl>
-    {source ? <p className="mt-6 text-caption text-text-muted">Where this lives: {source}</p> : null}
+    {source ? <p className="mt-6 text-caption text-muted">Where this lives: {source}</p> : null}
   </article>
 );
 

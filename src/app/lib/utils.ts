@@ -2,7 +2,7 @@ import { ClassValue, clsx } from "clsx";
 import { extendTailwindMerge } from "tailwind-merge";
 
 // DESIGN.md font sizes are custom `text-*` utilities; tell tailwind-merge they are
-// sizes, not colors, so `text-body text-white` keeps both.
+// sizes, not colors, so `text-body text-text` keeps both.
 const twMerge = extendTailwindMerge({
   extend: {
     classGroups: {

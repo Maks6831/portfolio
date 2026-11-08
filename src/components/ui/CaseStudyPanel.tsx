@@ -22,13 +22,13 @@ const CaseStudyPanel = ({
   tone = "secondary",
   className,
 }: Props) => (
-  <div className={cn("h-full rounded-card border border-border bg-surface p-7", className)}>
+  <div className={cn("h-full rounded-md border border-line bg-stage p-7", className)}>
     {eyebrow ? <p className="text-eyebrow uppercase text-accent">{eyebrow}</p> : null}
-    <Heading className={cn("text-body font-semibold text-text-primary", eyebrow && "mt-2")}>{heading}</Heading>
+    <Heading className={cn("text-body font-semibold text-text", eyebrow && "mt-2")}>{heading}</Heading>
     <p
       className={cn(
         "mt-3 max-w-[68ch] text-body",
-        tone === "primary" ? "text-text-primary" : "text-text-secondary"
+        tone === "primary" ? "text-text" : "text-text-secondary"
       )}
     >
       {children}

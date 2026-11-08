@@ -6,19 +6,19 @@ import { simplyHappyFeature as f } from "@/content/site";
 const SimplyHappyFeature = () => (
   <section id="work" aria-labelledby="headline-work" className="relative z-10 scroll-mt-24 py-section-gap-mobile md:py-section-gap">
     <p className="text-eyebrow uppercase text-accent">{f.eyebrow}</p>
-    <h2 id="headline-work" className="mt-3 text-subheading md:text-heading text-text-primary">
+    <h2 id="headline-work" className="mt-3 text-subheading md:text-heading text-text">
       {f.heading}
     </h2>
 
     <div className="mt-10 grid grid-cols-1 gap-10 md:grid-cols-2 md:items-start">
       <div className="flex flex-col gap-6">
-        <div className="rounded-card border border-border bg-surface p-7">
-          <p className="text-eyebrow uppercase text-text-muted">Before</p>
+        <div className="rounded-md border border-line bg-stage p-7">
+          <p className="text-eyebrow uppercase text-muted">Before</p>
           <p className="mt-2 text-body text-text-secondary">{f.before}</p>
         </div>
-        <div className="rounded-card border border-border bg-surface p-7">
+        <div className="rounded-md border border-line bg-stage p-7">
           <p className="text-eyebrow uppercase text-accent">After</p>
-          <p className="mt-2 text-body text-text-primary">{f.after}</p>
+          <p className="mt-2 text-body text-text">{f.after}</p>
         </div>
         <ul role="list" className="m-0 flex list-none flex-wrap gap-2 p-0" aria-label="Technologies used">
           {f.chips.map((chip) => (

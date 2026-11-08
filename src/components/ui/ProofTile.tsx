@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { cn, isRoute } from "@/app/lib/utils";
-import { FaLocationArrow } from "react-icons/fa6";
 import Chip from "@/components/ui/Chip";
 
 type Props = {
@@ -15,18 +14,18 @@ type Props = {
 };
 
 const tileClass =
-  "block h-full rounded-card border border-border bg-surface p-7 transition-colors duration-200";
+  "block h-full rounded-md border border-line bg-stage p-7 transition-colors duration-200";
 const linkClass =
   "hover:border-accent focus-visible:border-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus-ring";
 
 const Content = ({ title, body, chip, linked, external }: Pick<Props, "title" | "body" | "chip"> & { linked?: boolean; external?: boolean }): ReactNode => (
   <>
     {chip ? (
-      <Chip className="mb-4 text-success">{chip}</Chip>
+      <Chip className="mb-4 text-accent">{chip}</Chip>
     ) : null}
-    <h3 className="text-subheading text-text-primary">{title}</h3>
+    <h3 className="text-subheading text-text">{title}</h3>
     <p className="mt-3 text-caption text-text-secondary">{body}</p>
-    {linked ? <FaLocationArrow aria-hidden="true" className="mt-4 text-accent" /> : null}
+    {linked ? <span aria-hidden="true" className="mt-4 block text-accent">→</span> : null}
     {external ? <span className="sr-only"> (opens in a new tab)</span> : null}
   </>
 );

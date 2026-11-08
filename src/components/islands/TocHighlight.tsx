@@ -13,7 +13,7 @@ type Props = {
 // a second client importer would split that helper out of the chunk the home page loads and grow its first-load JS.
 const focusRing =
   "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
-const linkClass = `flex min-h-11 items-center border-l pl-3.5 text-caption hover:text-text-primary ${focusRing}`;
+const linkClass = `flex min-h-11 items-center border-l pl-3.5 text-caption hover:text-text ${focusRing}`;
 
 // A section is current once its top reaches a third of the viewport height. The line never sits above where a
 // contents jump lands a section (scroll-mt-28, 112px): on a short viewport the section just jumped to would otherwise
@@ -60,7 +60,7 @@ export function ContentsList({
               href={`#${id}`}
               aria-current={isCurrent ? "location" : undefined}
               onClick={(event) => onNavigate(event, id)}
-              className={`${linkClass} ${isCurrent ? "border-accent text-text-primary" : "border-border text-text-secondary"}`}
+              className={`${linkClass} ${isCurrent ? "border-accent text-text" : "border-line text-text-secondary"}`}
             >
               {label}
             </a>
@@ -144,12 +144,12 @@ export default function TocHighlight({ items }: Props) {
   return (
     <div>
       <nav aria-label="Contents" className="lg:hidden">
-        <details ref={detailsRef} className="group mb-10 rounded-card border border-border bg-surface">
+        <details ref={detailsRef} className="group mb-10 rounded-md border border-line bg-stage">
           <summary
-            className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-card px-5 text-caption text-text-primary [&::-webkit-details-marker]:hidden ${focusRing}`}
+            className={`flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 rounded-md px-5 text-caption text-text [&::-webkit-details-marker]:hidden ${focusRing}`}
           >
             Contents
-            {/* Inline rather than from react-icons, whose icons are bundled into a chunk the home page loads too. */}
+            {/* Inline SVG: no icon library is bundled. */}
             <svg
               aria-hidden="true"
               viewBox="0 0 20 20"

@@ -62,7 +62,7 @@ const detailsTags = disclosure.match(/<details\b[^>]*>/g) ?? [];
 check(detailsTags.length === 1, `disclosure: exactly one <details>, found ${detailsTags.length}`);
 const detailsTag = detailsTags[0] ?? "";
 check(!/\sopen(?=[\s=>])/.test(detailsTag), "disclosure: the <details> must be closed in the HTML (no open attribute)");
-check(hasAll(classes(detailsTag), ["rounded-card", "border", "border-border", "bg-surface"]), "disclosure: the <details> is a tile (rounded-card border border-border bg-surface)");
+check(hasAll(classes(detailsTag), ["rounded-md", "border", "border-line", "bg-stage"]), "disclosure: the <details> is a tile (rounded-md border border-line bg-stage)");
 check(/<details\b[^>]*>\s*<summary\b/.test(disclosure), "disclosure: <summary> must be the first child of <details>");
 const summaryTag = /<summary\b[^>]*>/.exec(disclosure)?.[0] ?? "";
 const summaryText = text(/<summary\b[^>]*>([\s\S]*?)<\/summary>/.exec(disclosure)?.[1] ?? "");
@@ -95,7 +95,7 @@ for (const [name, nav] of [["disclosure", disclosure], ["column", column]]) {
     check(!/\s(?:target|rel|role|tabindex|aria-current)=/.test(attrs), `${name} link ${i + 1}: a plain in-page anchor (no target, rel, role, tabindex or aria-current)`);
     check(hasAll(cls, linkTokens), `${name} link ${i + 1}: needs ${linkTokens.join(" ")} (a 44px target with a left rule)`);
     check(hasAll(cls, focusRing), `${name} link ${i + 1}: needs the ScreenshotViewer focus ring`);
-    check(cls.has("text-text-secondary") && cls.has("border-border") && !cls.has("text-text-primary") && !cls.has("border-accent"), `${name} link ${i + 1}: not current, so text-text-secondary with a border-border rule`);
+    check(cls.has("text-text-secondary") && cls.has("border-line") && !cls.has("text-text") && !cls.has("border-accent"), `${name} link ${i + 1}: not current, so text-text-secondary with a border-line rule`);
   });
 }
 
@@ -116,10 +116,10 @@ markedLinks.forEach((tag, i) => {
   const cls = classes(tag);
   if (items[i].id === "second") {
     check(/\saria-current="location"/.test(tag), "list: the current section's link carries aria-current=\"location\"");
-    check(hasAll(cls, ["border-accent", "text-text-primary"]) && !cls.has("border-border") && !cls.has("text-text-secondary"), "list: the current link is border-accent text-text-primary");
+    check(hasAll(cls, ["border-accent", "text-text"]) && !cls.has("border-line") && !cls.has("text-text-secondary"), "list: the current link is border-accent text-text");
   } else {
     check(!/\saria-current=/.test(tag), `list: link ${i + 1} is not current, so no aria-current`);
-    check(hasAll(cls, ["border-border", "text-text-secondary"]) && !cls.has("border-accent") && !cls.has("text-text-primary"), `list: link ${i + 1} keeps border-border text-text-secondary`);
+    check(hasAll(cls, ["border-line", "text-text-secondary"]) && !cls.has("border-accent") && !cls.has("text-text"), `list: link ${i + 1} keeps border-line text-text-secondary`);
   }
 });
 check(markedLinks.length === items.length, `list: one link per item (${items.length}), found ${markedLinks.length}`);
@@ -129,7 +129,7 @@ check(!/\saria-current=/.test(html), "island: the server HTML must not carry ari
 check(!/<button\b/.test(html), "island: links are anchors, never buttons");
 check(!/<h[1-6]\b/.test(html), "island: no headings inside the contents list (the h2 order stays as it is)");
 check(![...html.matchAll(/\stabindex="(-?\d+)"/g)].some((m) => Number(m[1]) > 0), "island: no positive tabindex");
-check(!/\btext-text-muted\b/.test(html), "tokens: text-muted is for captions and metadata, not the contents list");
+check(!/\btext-muted\b/.test(html), "tokens: text-muted is for captions and metadata, not the contents list");
 check(!/#[0-9a-f]{3,8}\b/i.test(html.replace(/\shref="#[^"]*"/g, "")), "tokens: no raw hex colours");
 
 // The island's own rules: client-only file with plain props, plain anchors, no scroll-jacking.

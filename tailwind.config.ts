@@ -1,12 +1,5 @@
 import type { Config } from "tailwindcss";
 
-const svgToDataUri = require("mini-svg-data-uri");
-
-const colors = require("tailwindcss/colors");
-const {
-  default: flattenColorPalette,
-} = require("tailwindcss/lib/util/flattenColorPalette");
-
 const config = {
   darkMode: ["class"],
   content: [
@@ -17,75 +10,38 @@ const config = {
   ],
   prefix: "",
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
+    // DESIGN.md (ux-portfolio-2026-11-07) "Conservatory": the colour set is replaced, not extended. The site is dark
+    // only, one hue (accent), and the v2 navy and lavender tokens are gone.
+    colors: {
+      transparent: "transparent",
+      current: "currentColor",
+      inherit: "inherit",
+      stage: "#0A1410",
+      bezel: "#122119",
+      screen: "#06100B",
+      line: "#1F3329",
+      text: {
+        DEFAULT: "#E6F2EB",
+        secondary: "#AFC7B9",
       },
+      muted: "#86A393",
+      accent: {
+        DEFAULT: "#B9F0D3",
+        pressed: "#86D4AE",
+      },
+      "focus-ring": "#B9F0D3",
+      "ring-glow": "#B9F0D333",
+      scrim: "#0A1410F0",
+      "shadow-sheet": "#00000073",
+      "shadow-laptop": "#00000099",
+      "shadow-tab": "#00000066",
+    },
+    // Two system stacks, no web font (DESIGN.md Typography).
+    fontFamily: {
+      sans: ['ui-sans-serif', 'system-ui', '-apple-system', '"Segoe UI"', 'Helvetica', 'Arial', 'sans-serif'],
+      mono: ['ui-monospace', '"SF Mono"', 'Menlo', 'Consolas', 'monospace'],
     },
     extend: {
-      colors: {
-        black: {
-          DEFAULT: "#000",
-          100: "#000319",
-          200: "rgba(17, 25, 40, 0.75)",
-          300: "rgba(255, 255, 255, 0.125)",
-        },
-        white: {
-          DEFAULT: "#FFF",
-          100: "#BEC1DD",
-          200: "#C1C2D3",
-        },
-        blue: {
-          "100": "#E4ECFF",
-        },
-        purple: "#CBACF9",
-        // DESIGN.md tokens (single source). `background`, `border` and
-        // `accent` take the DESIGN.md values; shadcn `foreground` etc. stay.
-        background: "#000319",
-        surface: "#0A0D26",
-        "surface-raised": "#11152F",
-        border: "rgba(255, 255, 255, 0.125)",
-        "text-primary": "#FFFFFF",
-        "text-secondary": "#BEC1DD",
-        "text-muted": "#8E92B5",
-        "accent-strong": "#393BB2",
-        "accent-glow": "#E2CBFF",
-        success: "#7DD3A8",
-        "focus-ring": "#E2CBFF",
-        input: "hsl(var(--input))",
-        ring: "hsl(var(--ring))",
-        foreground: "hsl(var(--foreground))",
-        primary: {
-          DEFAULT: "hsl(var(--primary))",
-          foreground: "hsl(var(--primary-foreground))",
-        },
-        secondary: {
-          DEFAULT: "hsl(var(--secondary))",
-          foreground: "hsl(var(--secondary-foreground))",
-        },
-        destructive: {
-          DEFAULT: "hsl(var(--destructive))",
-          foreground: "hsl(var(--destructive-foreground))",
-        },
-        muted: {
-          DEFAULT: "hsl(var(--muted))",
-          foreground: "hsl(var(--muted-foreground))",
-        },
-        accent: {
-          DEFAULT: "#CBACF9",
-          foreground: "hsl(var(--accent-foreground))",
-        },
-        popover: {
-          DEFAULT: "hsl(var(--popover))",
-          foreground: "hsl(var(--popover-foreground))",
-        },
-        card: {
-          DEFAULT: "hsl(var(--card))",
-          foreground: "hsl(var(--card-foreground))",
-        },
-      },
       fontSize: {
         display: ["56px", { lineHeight: "1.08", letterSpacing: "-0.02em", fontWeight: "700" }],
         "display-mobile": ["36px", { lineHeight: "1.12", letterSpacing: "-0.02em", fontWeight: "700" }],
@@ -97,127 +53,42 @@ const config = {
         code: ["14px", { lineHeight: "1.6" }],
       },
       spacing: {
-        gutter: "24px",
+        unit: "4px",
+        "margin-desktop": "64px",
+        "margin-tablet": "40px",
         "margin-mobile": "20px",
-        "margin-desktop": "40px",
-        "section-gap": "112px",
-        "section-gap-mobile": "72px",
+        gutter: "48px",
+        "tile-gap": "14px",
+        "hud-strip": "32px",
+        "hud-inset-x": "24px",
+        "hud-inset-y": "18px",
+        "sheet-tab-step": "36px",
+        "sheet-tab-step-mobile": "32px",
+        "toc-column": "368px",
+        "hero-min-height": "720px",
+        "chrome-min-height": "500px",
+        "measure-hero-copy": "580px",
+        "measure-copy": "520px",
+        "measure-lede-case-study": "620px",
+        "measure-content": "736px",
+        "frame-max": "1140px",
+        "sheet-body-padding-top": "44px",
+        "sheet-body-padding-bottom": "64px",
+        "section-gap": "72px",
+        "section-gap-mobile": "32px",
+        "target-min": "44px",
+        "target-floor": "24px",
       },
       borderRadius: {
-        DEFAULT: "12px",
-        card: "20px",
-        lg: "var(--radius)",
-        md: "calc(var(--radius) - 2px)",
-        sm: "calc(var(--radius) - 4px)",
-      },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        shimmer: {
-          from: {
-            backgroundPosition: "0 0",
-          },
-          to: {
-            backgroundPosition: "-200% 0",
-          },
-        },
-        moveHorizontal: {
-          "0%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
-          "50%": {
-            transform: "translateX(50%) translateY(10%)",
-          },
-          "100%": {
-            transform: "translateX(-50%) translateY(-10%)",
-          },
-        },
-        moveInCircle: {
-          "0%": {
-            transform: "rotate(0deg)",
-          },
-          "50%": {
-            transform: "rotate(180deg)",
-          },
-          "100%": {
-            transform: "rotate(360deg)",
-          },
-        },
-        moveVertical: {
-          "0%": {
-            transform: "translateY(-50%)",
-          },
-          "50%": {
-            transform: "translateY(50%)",
-          },
-          "100%": {
-            transform: "translateY(-50%)",
-          },
-        },
-        scroll: {
-          to: {
-            transform: "translate(calc(-50% - 0.5rem))",
-          },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        shimmer: "shimmer 2s linear infinite",
-        "shimmer-slow": "shimmer 4s linear infinite",
-        first: "moveVertical 30s ease infinite",
-        second: "moveInCircle 20s reverse infinite",
-        third: "moveInCircle 40s linear infinite",
-        fourth: "moveHorizontal 40s ease infinite",
-        fifth: "moveInCircle 20s ease infinite",
-        scroll:
-          "scroll var(--animation-duration, 40s) var(--animation-direction, forwards) linear infinite",
+        sm: "3px",
+        DEFAULT: "4px",
+        md: "6px",
+        lg: "12px",
+        full: "9999px",
       },
     },
   },
-  plugins: [
-    require("tailwindcss-animate"),
-    addVariablesForColors,
-    function ({ matchUtilities, theme }: any) {
-      matchUtilities(
-        {
-          "bg-grid": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="100" height="100" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-grid-small": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="8" height="8" fill="none" stroke="${value}"><path d="M0 .5H31.5V32"/></svg>`
-            )}")`,
-          }),
-          "bg-dot": (value: any) => ({
-            backgroundImage: `url("${svgToDataUri(
-              `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="16" height="16" fill="none"><circle fill="${value}" id="pattern-circle" cx="10" cy="10" r="1.6257413380501518"></circle></svg>`
-            )}")`,
-          }),
-        },
-        { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
-      );
-    },
-  ],
+  plugins: [],
 } satisfies Config;
-
-function addVariablesForColors({ addBase, theme }: any) {
-  let allColors = flattenColorPalette(theme("colors"));
-  let newVars = Object.fromEntries(
-    Object.entries(allColors).map(([key, val]) => [`--${key}`, val])
-  );
-
-  addBase({
-    ":root": newVars,
-  });
-}
 
 export default config;

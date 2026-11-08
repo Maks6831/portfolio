@@ -7,7 +7,7 @@ type Props = { children: ReactNode; className?: string };
 const Chip = ({ children, className }: Props) => (
   <span
     className={cn(
-      "inline-flex items-center rounded-full border border-border bg-surface-raised px-3.5 py-1.5 text-caption text-text-secondary",
+      "inline-flex items-center rounded-full border border-line bg-bezel px-3.5 py-1.5 text-caption text-text-secondary",
       className
     )}
   >

@@ -20,18 +20,18 @@ const TestingSection = ({ testing }: Props) => {
       tabIndex={-1}
       className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
     >
-      <h2 id="testing-heading" className="text-subheading md:text-heading text-text-primary">
+      <h2 id="testing-heading" className="text-subheading md:text-heading text-text">
         Testing and delivery
       </h2>
-      <p id="testing-asof" className="mt-6 text-caption text-text-muted">
+      <p id="testing-asof" className="mt-6 text-caption text-muted">
         {asOf ? `approx., as of ${asOf}` : "approx."}
       </p>
       <dl aria-describedby="testing-asof" className="mt-4 grid grid-cols-2 gap-4 md:grid-cols-4">
         {testing.counts.map((tile, i) => (
-          <div key={`tile-${i}`} className="rounded-card border border-border bg-surface p-5">
+          <div key={`tile-${i}`} className="rounded-md border border-line bg-stage p-5">
             <dt className="text-caption text-text-secondary">{tile.label}</dt>
-            <dd className="mt-2 text-subheading text-text-primary">{tile.value}</dd>
-            {tile.detail ? <dd className="mt-2 text-caption text-text-muted">{tile.detail}</dd> : null}
+            <dd className="mt-2 text-subheading text-text">{tile.value}</dd>
+            {tile.detail ? <dd className="mt-2 text-caption text-muted">{tile.detail}</dd> : null}
           </div>
         ))}
       </dl>

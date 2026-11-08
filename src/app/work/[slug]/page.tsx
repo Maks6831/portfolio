@@ -83,13 +83,13 @@ export default async function CaseStudyPage({ params }: Props) {
   ];
 
   return (
-    <div className="relative bg-black-100 w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
+    <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
       <div className="max-w-7xl w-full">
         <FloatingNav navItems={navItems} />
 
         <header className="pt-36 pb-section-gap-mobile md:pb-section-gap">
           <p className="text-eyebrow uppercase text-accent">{study.eyebrow}</p>
-          <h1 className="mt-4 max-w-[68ch] text-display-mobile md:text-display text-text-primary">
+          <h1 className="mt-4 max-w-[68ch] text-display-mobile md:text-display text-text">
             {study.title}
           </h1>
           <p className="mt-6 max-w-[68ch] text-body text-text-secondary">{study.lede}</p>
@@ -104,7 +104,7 @@ export default async function CaseStudyPage({ params }: Props) {
               tabIndex={-1}
               className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
             >
-              <h2 id="summary-heading" className="text-subheading md:text-heading text-text-primary">
+              <h2 id="summary-heading" className="text-subheading md:text-heading text-text">
                 Summary
               </h2>
               <div className="mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 md:items-stretch">
@@ -133,7 +133,7 @@ export default async function CaseStudyPage({ params }: Props) {
               tabIndex={-1}
               className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
             >
-              <h2 id="owned-heading" className="text-subheading md:text-heading text-text-primary">
+              <h2 id="owned-heading" className="text-subheading md:text-heading text-text">
                 What I owned
               </h2>
               <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 xl:grid-cols-3">
@@ -160,7 +160,7 @@ export default async function CaseStudyPage({ params }: Props) {
                 tabIndex={-1}
                 className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
               >
-                <h2 id="screenshots-heading" className="text-subheading md:text-heading text-text-primary">
+                <h2 id="screenshots-heading" className="text-subheading md:text-heading text-text">
                   Screenshots (test data)
                 </h2>
                 {study.screenshotsNote ? (

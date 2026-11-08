@@ -81,7 +81,7 @@ check(!/\boverflow-x-(?:auto|scroll)\b/.test(section), "layout: no horizontal sc
 check(count(section, /aria-hidden="true"/g) === 0, "layout: nothing is aria-hidden; every panel is read out");
 check(!/<(?:img|svg|picture|canvas)\b/.test(section), "layout: real text only, no images or SVG");
 check(!/\b(?:bg-|text-|border-)success\b/.test(section), "tokens: the success colour is reserved for shipped, live or passing-test indicators");
-check(!/\btext-text-muted\b/.test(section), "tokens: text-muted is for captions and metadata; this section has neither");
+check(!/\btext-muted\b/.test(section), "tokens: text-muted is for captions and metadata; this section has neither");
 check(!/#[0-9a-f]{3,8}\b/i.test(section), "tokens: no raw hex colours");
 check(strip(section).includes("Intro paragraph. First safeguard First safeguard text. Second safeguard"), "section: text reads intro, then each panel's title and body in order");
 check(strip(section).endsWith("Fifth safeguard text. Closing paragraph."), "section: the closing paragraph is the last text");

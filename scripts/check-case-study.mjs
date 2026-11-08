@@ -88,17 +88,27 @@ check(expectedOwned > 0, "content module defines no owned areas (no `body:` entr
 check(!hasPayments || (expectedPanels > 0 && expectedFlow > 0), "content module has payment states but no reliability panels or flow paragraphs");
 
 // Page structure
-const html = read(join(workDir, "simply-happy.html")) ?? "";
+const rawHtml = read(join(workDir, "simply-happy.html")) ?? "";
+// The sticky heading blocks carry an aria-hidden counter ("04 / 07") and an "On this page" link. They are decoration
+// for sighted readers, so the content checks below (no figures, no links, no digits in the assistant section) read the
+// page without them; the trail checks read rawHtml.
+const html = rawHtml
+  .replace(/<span\b[^>]*data-trail-counter[^>]*>[\s\S]*?<\/span>/g, "")
+  .replace(/<a\b[^>]*data-trail-up[^>]*>[\s\S]*?<\/a>/g, "")
+  // The inline screenshot frames and their viewer dialogs are checked on their own below (rawHtml).
+  .replace(/<ul\b[^>]*data-shots[\s\S]*?<\/ul>/g, "")
+  .replace(/<figure\b[^>]*data-shot[\s\S]*?<\/figure>/g, "")
+  .replace(/<dialog\b[\s\S]*?<\/dialog>/g, "");
 const h1s = html.match(/<h1\b/g) ?? [];
 check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
 const firstH2 = html.search(/<h2\b/);
 check(firstH1 !== -1 && firstH2 > firstH1, "the first <h2> must come after the single <h1>");
-// 2 summary panels (Before, After) + the "What I owned" areas + one reliability panel each + one title per decision card
-// + one assistant safeguard panel each.
-const expectedH3s = 2 + expectedOwned + expectedPanels + expectedDecisions + expectedSafeguards;
+// The "What I owned" areas + one reliability panel each + one title per decision card + one assistant safeguard panel
+// each. The summary rows (Before, After) are a <dl>, not headings.
+const expectedH3s = expectedOwned + expectedPanels + expectedDecisions + expectedSafeguards;
 const h3Count = (html.match(/<h3\b/g) ?? []).length;
-check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (2 summary + ${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions + ${expectedSafeguards} safeguards), found ${h3Count}`);
+check(h3Count === expectedH3s, `expected exactly ${expectedH3s} <h3> (${expectedOwned} owned + ${expectedPanels} reliability + ${expectedDecisions} decisions + ${expectedSafeguards} safeguards), found ${h3Count}`);
 check(html.includes('id="summary"'), 'missing <section id="summary">');
 check(html.includes('id="owned"'), 'missing <section id="owned">');
 check(html.includes('<main id="main"'), "root layout <main id=\"main\"> must wrap the page");
@@ -114,18 +124,23 @@ check((stackList.match(/<li\b/g) ?? []).length === 6, "stack list should hold 6 
 
 const summaryStart = html.indexOf('id="summary"');
 const ownedStart = html.indexOf('id="owned"');
-const summary = summaryStart !== -1 && ownedStart > summaryStart ? html.slice(summaryStart, ownedStart) : "";
-const live = /<a\b[^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/.exec(summary);
-check(!!live, "summary must contain the live-site link opening in a new tab");
+// v3: the live-site link sits in the header's meta row, between the <h1> and the On this page nav.
+const headerMeta = firstH1 !== -1 && summaryStart > firstH1 ? html.slice(firstH1, summaryStart) : "";
+const live = /<a\b[^>]*target="_blank"[^>]*>([\s\S]*?)<\/a>/.exec(headerMeta);
+check(!!live, "the header must contain the live-site link opening in a new tab");
 if (live) {
   check(/rel="noopener noreferrer"/.test(live[0]), 'live-site link needs rel="noopener noreferrer"');
   check(live[1].includes("(opens in a new tab)"), 'live-site link needs the "(opens in a new tab)" hint');
 }
+check(/Updated \d{1,2} [A-Z][a-z]{2} \d{4}/.test(decode(headerMeta.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ")), 'the header meta row needs "Updated D Mon YYYY"');
 
 // Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions, Testing and delivery, Admin AI
-// assistant (each only when the content has any), Screenshots, then the contact footer. The content order is now
+// assistant (each only when the content has any), then the contact heading. There is no gallery. The content order is now
 // complete: 2.7 adds the contents list and 2.9 rewires home, neither adds a section.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
+const siteSrc = read(join(root, "src", "content", "site.ts")) ?? "";
+const contactHeading = /export const contact = \{[^}]*?\bheading:\s*"([^"]*)"/.exec(siteSrc)?.[1] ?? "";
+check(contactHeading !== "", "could not read contact.heading from site.ts");
 const expectedH2s = [
   "Summary",
   "What I owned",
@@ -133,11 +148,11 @@ const expectedH2s = [
   ...(expectedDecisions > 0 ? ["Decisions and rejected alternatives"] : []),
   ...(hasTesting ? ["Testing and delivery"] : []),
   ...(hasAssistant ? ["Admin AI assistant (safety design)"] : []),
-  "Screenshots (test data)",
+  contactHeading,
 ];
 check(
-  h2s.length === expectedH2s.length + 1 && expectedH2s.every((t, i) => h2s[i] === t),
-  `h2 order should be ${expectedH2s.join(" > ")} > contact, found: ${h2s.join(" > ") || "none"}`,
+  h2s.length === expectedH2s.length && expectedH2s.every((t, i) => h2s[i] === t),
+  `h2 order should be ${expectedH2s.join(" > ")}, found: ${h2s.join(" > ") || "none"}`,
 );
 
 // Payments (Story 2.2). Four paragraphs, a <figure> holding the state diagram as one ordered list (states and
@@ -157,11 +172,16 @@ if (!hasPayments) {
   check(screenshotsAt === -1 || screenshotsAt > paymentsStart, "#payments must come before #screenshots");
   check(/<h2\b[^>]*>\s*The booking and payments flow\s*<\/h2>/.test(paymentsHtml), '#payments h2 must read exactly "The booking and payments flow"');
   check(!/<article\b/.test(paymentsHtml), "#payments must not contain <article> (articles are decision cards)");
-  const figureAt = paymentsHtml.indexOf("<figure");
-  check(figureAt !== -1, "#payments must contain the state-diagram <figure>");
-  check((paymentsHtml.match(/<figure\b/g) ?? []).length === 1, "#payments must hold exactly one <figure>");
-  check((paymentsHtml.slice(0, figureAt === -1 ? undefined : figureAt).match(/<p\b/g) ?? []).length === expectedFlow, `#payments should hold ${expectedFlow} flow paragraphs (<p>) before the diagram`);
-  const figure = /<figure\b[\s\S]*?<\/figure>/.exec(paymentsHtml)?.[0] ?? "";
+  // v3: the flow is four numbered steps, then the captures and the reliability cards; the state diagram ends #decisions.
+  check(!/<figure\b/.test(paymentsHtml), "#payments must hold no <figure> (the state diagram ends #decisions; the captures are checked below)");
+  const eyebrowAt = paymentsHtml.search(/<p\b[^>]*>\s*Reliability decisions\s*<\/p>/);
+  check((paymentsHtml.slice(0, eyebrowAt === -1 ? undefined : eyebrowAt).match(/<p\b/g) ?? []).length === expectedFlow, `#payments should hold ${expectedFlow} flow paragraphs (<p>) before the reliability cards`);
+  check((paymentsHtml.match(/<ol\b[^>]*role="list"/g) ?? []).length === 1, "#payments must hold the flow as one <ol role=\"list\">");
+  const decStart = html.indexOf('id="decisions"');
+  const decEnd = decStart === -1 ? -1 : html.indexOf("</section>", decStart);
+  const decisionsSlice = decStart === -1 ? "" : html.slice(decStart, decEnd === -1 ? undefined : decEnd);
+  check((decisionsSlice.match(/<figure\b/g) ?? []).length === 1 && decisionsSlice.lastIndexOf("</ul>") < decisionsSlice.indexOf("<figure"), "#decisions must hold the one state-diagram <figure>, after the decision cards");
+  const figure = /<figure\b[\s\S]*?<\/figure>/.exec(decisionsSlice)?.[0] ?? "";
   const labelledBy = /<figure\b[^>]*aria-labelledby="([^"]+)"/.exec(figure)?.[1];
   check(!!labelledBy && new RegExp(`<figcaption\\b[^>]*\\sid="${labelledBy}"`).test(figure), "#payments figure must be named by its figcaption");
   check(/<ol\b[^>]*role="list"/.test(figure), '#payments diagram must be an <ol role="list">');
@@ -170,21 +190,22 @@ if (!hasPayments) {
   const expectedTransitions = expectedStates - 1;
   check(items.length === expectedStates + expectedTransitions, `#payments diagram should list ${expectedStates} states and ${expectedTransitions} transitions (${expectedStates + expectedTransitions} <li>), found ${items.length}`);
   // The pills carry the raised surface; the labels between them carry an aria-hidden connector glyph.
-  check((figure.match(/<li\b[^>]*bg-surface-raised/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state pills`);
+  check((figure.match(/<li\b[^>]*border-accent/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state boxes`);
   check((figure.match(/aria-hidden="true"/g) ?? []).length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} aria-hidden connector glyphs, one per transition`);
   // Every transition item must carry a visible label once the glyph is removed; an undefined label renders an empty span.
-  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*bg-surface-raised)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
+  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*border-accent)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
     decode(m[1].replace(/<span\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, " ")).trim(),
   );
   check(transitionItems.length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} transition items, found ${transitionItems.length}`);
   transitionItems.forEach((label, i) => check(label.length > 0, `#payments diagram transition ${i + 1} has no label text`));
-  const pills = [...figure.matchAll(/<li\b[^>]*bg-surface-raised[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
+  const pills = [...figure.matchAll(/<li\b[^>]*border-accent[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
   check(pills[0] === "Pending" && pills[pills.length - 1] === "Confirmed", `#payments diagram must run from Pending to Confirmed, found: ${pills.join(" > ") || "none"}`);
   // Panels: one <h3> per reliability entry, under an eyebrow that is not a heading, in a grid that stacks first.
   check((paymentsHtml.match(/<h3\b/g) ?? []).length === expectedPanels, `#payments should hold exactly ${expectedPanels} <h3>, one per reliability panel`);
   check(/<p\b[^>]*>\s*Reliability decisions\s*<\/p>/.test(paymentsHtml), '#payments needs the "Reliability decisions" eyebrow as a <p>, not a heading');
   const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(paymentsHtml)?.[1] ?? "";
   check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#payments panel grid must be grid-cols-1 md:grid-cols-2");
+  // The panel list is the last <ul> before the section ends; the flow is the <ol>.
   // Honesty and confidentiality: "a daily job" and the verified 30-day threshold; no time of day or schedule, no
   // currency, URL, path, file name or link, and stays are never described as webhook-only.
   const text = decode(paymentsHtml.replace(/<[^>]+>/g, " "));
@@ -309,7 +330,7 @@ if (!hasTesting) {
   check(!/\b(?:src|apps|packages|supabase|lib|app|components|tests|\.github|\.githooks)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md|mjs|sh)\b/.test(text), "#testing must not name a file path or file name");
   check(!/\b(?:bg|text|border)-success\b/.test(testingHtml), "#testing must not use the success colour");
   // text-muted is for the as-of label and the tile detail lines only.
-  const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-text-muted\b[^"]*"/g)].map((m) => m[1]);
+  const muted = [...testingHtml.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-muted\b[^"]*"/g)].map((m) => m[1]);
   check(muted.every((tag) => tag === "p" || tag === "dd") && muted.filter((t) => t === "p").length === 1, `#testing text-muted is for the as-of <p> and detail <dd> only, found on: ${muted.join(", ") || "none"}`);
 }
 
@@ -342,7 +363,8 @@ if (!hasAssistant) {
   const h3Texts = [...list.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
   check(JSON.stringify(h3Texts) === JSON.stringify(expectedSafeguardTitles), `#assistant panel headings should read ${expectedSafeguardTitles.join(" | ")}, found: ${h3Texts.join(" | ") || "none"}`);
   const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(assistantHtml)?.[1] ?? "";
-  check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#assistant panel grid must be grid-cols-1 md:grid-cols-2");
+  check(!/\bgrid-cols-/.test(grid), "#assistant safeguards are one stacked column of rows (the capture sits beside them from md)");
+  check(/<div\b[^>]*class="[^"]*\bmd:grid-cols-\[[^"]*"[^>]*>\s*<ul\b/.test(assistantHtml), "#assistant rows sit in the two-column wrapper that holds the capture from md");
   // One intro <p> between the h2 and the list and one closing <p> after it; the panels' own <p> bodies sit inside the list.
   const beforeList = ulStart === -1 ? assistantHtml : assistantHtml.slice(0, ulStart);
   const afterList = ulEnd === -1 ? "" : assistantHtml.slice(ulEnd);
@@ -374,68 +396,79 @@ if (!hasAssistant) {
   check(!/\b(?:src|apps|packages|supabase|lib|app|components)\//.test(text) && !/\.(?:tsx?|jsx?|json|svelte|sql|md)\b/.test(text), "#assistant must not name a file path or file name");
   check(!/\b[A-Za-z0-9]+_[A-Za-z0-9_]+\b/.test(text), "#assistant must not name a code identifier (snake_case table, column or lookup name)");
   check(!/\b(?:bg|text|border)-success\b/.test(assistantHtml), "#assistant must not use the success colour");
-  check(!/\btext-text-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
+  check(!/\btext-muted\b/.test(assistantHtml), "#assistant must not use text-muted (it is for captions and metadata)");
 }
 
-// Contents (Story 2.7). Two <nav aria-label="Contents"> between the <h1> and #summary: the lg:hidden one holds a
-// closed <details> whose <summary> reads "Contents", the hidden lg:block lg:sticky one is the desktop column. Both
-// list one plain anchor per <section id> on the page, in source order, so a section dropped from the content module
-// drops its link too. Every target section takes focus (tabindex="-1") and the server HTML marks nothing current.
-const contentsLabels = {
+const rawFirstH1 = rawHtml.search(/<h1\b/);
+const rawSummaryStart = rawHtml.indexOf('id="summary"');
+// Reading trail (v3 CAP-8). Seven sections in the agreed order, each a focusable target with a tab sibling before it, a
+// counter and an "On this page" link that are decoration (aria-hidden counter), and one nav aria-label="On this page"
+// listing them: seven anchors for lg and the same seven in a closed disclosure. No script marks anything current.
+const trailIds = ["summary", "owned", "payments", "decisions", "testing", "assistant", "contact"].filter((id) => {
+  if (id === "payments") return hasPayments;
+  if (id === "decisions") return expectedDecisions > 0;
+  if (id === "testing") return hasTesting;
+  if (id === "assistant") return hasAssistant;
+  return true;
+});
+const trailLabels = {
   summary: "Summary",
   owned: "What I owned",
-  payments: "Booking and payments",
-  decisions: "Decisions",
+  payments: "Booking and payments flow",
+  decisions: "Decisions and rejected alternatives",
   testing: "Testing and delivery",
   assistant: "Admin AI assistant",
-  screenshots: "Screenshots",
+  contact: "Contact",
 };
-const sectionTags = html.match(/<section\b[^>]*>/g) ?? [];
+const sectionTags = rawHtml.match(/<section\b[^>]*>/g) ?? [];
 const sectionIds = sectionTags.map((tag) => /\sid="([^"]+)"/.exec(tag)?.[1]).filter(Boolean);
-check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id for the contents list to link to");
-for (const id of sectionIds) check(Object.hasOwn(contentsLabels, id), `<section id="${id}"> has no contents label in check-case-study's label map`);
+check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id");
+check(JSON.stringify(sectionIds) === JSON.stringify(trailIds), `sections should run ${trailIds.join(" ")} in that order, found: ${sectionIds.join(" ")}`);
+for (const tag of sectionTags) check(/\stabindex="-1"/.test(tag), `every section must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
 for (const tag of sectionTags) {
-  check(/\stabindex="-1"/.test(tag), `every contents target must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
-  // A jump lands the section 112px down, clear of the floating nav's bottom edge (about 102px).
-  check(/\sclass="[^"]*(?<=["\s])scroll-mt-28(?=[\s"])/.test(tag), `every contents target must land clear of the floating nav (scroll-mt-28): ${tag.slice(0, 120)}`);
+  check(/\sclass="[^"]*\btrail-section\b/.test(tag) && /\sstyle="--n:\d+"/.test(tag), `a trail section needs class trail-section and its --n position: ${tag.slice(0, 140)}`);
 }
-const expectedContents = sectionIds.map((id) => ({ id, label: contentsLabels[id] }));
-const tocNavs = [...html.matchAll(/<nav\b[^>]*\saria-label="Contents"[^>]*>[\s\S]*?<\/nav>/g)].map((m) => ({ html: m[0], at: m.index, end: m.index + m[0].length }));
-check(tocNavs.length === 2, `expected two <nav aria-label="Contents"> (the disclosure and the sticky column), found ${tocNavs.length}`);
-const navClasses = (nav) => new Set((/^<nav\b[^>]*\sclass="([^"]*)"/.exec(nav.html)?.[1] ?? "").split(/\s+/).filter(Boolean));
-const isColumn = (nav) => { const c = navClasses(nav); return c.has("hidden") && c.has("lg:block") && c.has("lg:sticky"); };
-const isDisclosure = (nav) => { const c = navClasses(nav); return c.has("lg:hidden") && !c.has("hidden"); };
-const columns = tocNavs.filter(isColumn);
-const disclosures = tocNavs.filter(isDisclosure);
-check(columns.length === 1, `exactly one contents <nav> must be the sticky column ("hidden lg:block lg:sticky"), found ${columns.length}`);
-check(disclosures.length === 1, `exactly one contents <nav> must be the small-screen disclosure ("lg:hidden"), found ${disclosures.length}`);
-if (disclosures.length === 1) {
-  const nav = disclosures[0].html;
-  const detailsTags = nav.match(/<details\b[^>]*>/g) ?? [];
-  check(detailsTags.length === 1, `the contents disclosure must hold exactly one <details>, found ${detailsTags.length}`);
-  check(detailsTags.every((tag) => !/\sopen(?=[\s=>])/.test(tag)), "the contents <details> must be closed in the HTML (no open attribute)");
-  const summaryText = decode((/<summary\b[^>]*>([\s\S]*?)<\/summary>/.exec(nav)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
-  check(summaryText === "Contents", `the contents <summary> must read "Contents", found "${summaryText}"`);
-}
-if (columns.length === 1) check(/<p\b[^>]*>\s*On this page\s*<\/p>/.test(columns[0].html), 'the sticky contents column needs its "On this page" eyebrow as a <p>');
-for (const nav of tocNavs) {
-  const which = isColumn(nav) ? "sticky contents column" : isDisclosure(nav) ? "contents disclosure" : "contents nav";
-  check(!/<h[1-6]\b/.test(nav.html), `the ${which} must not hold a heading (the h2 order stays as it is)`);
-  const links = [...nav.html.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
+// Tabs: one link per section, a sibling placed directly before it (never inside it), counter "0n / 0N".
+const tabs = [...rawHtml.matchAll(/<a\b[^>]*class="trail-tab"[^>]*>[\s\S]*?<\/a>/g)].map((m) => ({ html: m[0], at: m.index }));
+check(tabs.length === trailIds.length, `expected ${trailIds.length} tabs (class trail-tab), found ${tabs.length}`);
+trailIds.forEach((id, i) => {
+  const tab = tabs[i];
+  const secAt = rawHtml.search(new RegExp(`<section\\b[^>]*\\sid="${id}"`));
+  check(tab && new RegExp(`^<a\\b[^>]*href="#${id}"`).test(tab.html), `tab ${i + 1} must link to #${id}`);
+  check(!!tab && secAt > tab.at && rawHtml.slice(tab.at + tab.html.length, secAt).trim() === "", `tab ${i + 1} must sit directly before the #${id} section as its sibling`);
+  const counter = decode(/<b>([\s\S]*?)<\/b>/.exec(tab?.html ?? "")?.[1] ?? "").replace(/<[^>]+>/g, "");
+  check(counter === `0${i + 1} / 0${trailIds.length}`, `tab ${i + 1} counter should read "0${i + 1} / 0${trailIds.length}", found "${counter}"`);
+  // The heading block repeats the counter, aria-hidden, with the way back to On this page.
+  const sec = secAt === -1 ? "" : rawHtml.slice(secAt, rawHtml.indexOf("</section>", secAt));
+  check(new RegExp(`<span\\b[^>]*aria-hidden="true"[^>]*data-trail-counter[^>]*>\\s*0${i + 1}\\s*/\\s*0${trailIds.length}\\s*</span>`).test(sec.replace(/<!--\s*-->/g, "")), `#${id}: the heading block needs the aria-hidden counter "0${i + 1} / 0${trailIds.length}"`);
+  check(/<a\b[^>]*href="#on-this-page"[^>]*data-trail-up/.test(sec), `#${id}: the heading block needs the "On this page" link`);
+});
+const onPageNavs = [...rawHtml.matchAll(/<nav\b[^>]*\saria-label="On this page"[^>]*>[\s\S]*?<\/nav>/g)].map((m) => m[0]);
+check(onPageNavs.length === 1, `expected exactly one <nav aria-label="On this page">, found ${onPageNavs.length}`);
+const onPage = onPageNavs[0] ?? "";
+check(/\sid="on-this-page"/.test(onPage.slice(0, 200)), 'the On this page nav needs id="on-this-page"');
+check(!/aria-label="Contents"/.test(rawHtml), 'no "Contents" nav may survive (TocHighlight is gone)');
+check((onPage.match(/<details\b/g) ?? []).length === 1 && !/<details\b[^>]*\sopen(?=[\s=>])/.test(onPage), "On this page needs one closed <details> for small screens");
+const lists = onPage.match(/<ol\b[\s\S]*?<\/ol>/g) ?? [];
+check(lists.length === 2, `On this page should hold two lists (disclosure and lg row), found ${lists.length}`);
+for (const list of lists) {
+  const links = [...list.matchAll(/<a\b([^>]*)>([\s\S]*?)<\/a>/g)].map((m) => ({
     href: /\shref="([^"]*)"/.exec(m[1])?.[1] ?? "",
-    label: decode(m[2].replace(/<[^>]+>/g, "")).trim(),
+    label: decode(m[2].replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ").trim(),
   }));
-  check(links.length === expectedContents.length, `the ${which} should list ${expectedContents.length} links, one per <section id>, found ${links.length}`);
-  expectedContents.forEach(({ id, label }, i) => {
-    check(links[i]?.href === `#${id}`, `${which} link ${i + 1} should point at "#${id}", found "${links[i]?.href ?? "none"}"`);
-    check(links[i]?.label === label, `${which} link ${i + 1} label should read "${label}", found "${links[i]?.label ?? "none"}"`);
+  check(links.length === trailIds.length, `an On this page list should hold ${trailIds.length} links, found ${links.length}`);
+  trailIds.forEach((id, i) => {
+    check(links[i]?.href === `#${id}`, `On this page link ${i + 1} should point at "#${id}", found "${links[i]?.href ?? "none"}"`);
+    check(links[i]?.label === `0${i + 1} ${trailLabels[id]}`, `On this page link ${i + 1} should read "0${i + 1} ${trailLabels[id]}", found "${links[i]?.label ?? "none"}"`);
   });
 }
-check(!tocNavs.some((nav) => /\saria-current=/.test(nav.html)), "the contents in the server HTML must not carry aria-current (without JavaScript nothing tracks the current section)");
+check(!/\saria-current=/.test(onPage), "On this page must not mark anything current");
 check(
-  tocNavs.length > 0 && tocNavs.every((nav) => nav.at > firstH1 && summaryStart !== -1 && nav.end <= summaryStart),
-  "the contents must come after the <h1> and before #summary",
+  onPageNavs.length === 1 && rawHtml.indexOf(onPage) > rawFirstH1 && rawHtml.indexOf(onPage) < rawSummaryStart,
+  "On this page must come after the <h1> and before #summary",
 );
+// The display word closes the header: aria-hidden and not a heading or link.
+check(/<div\b[^>]*aria-hidden="true"[^>]*class="display-word[^"]*"[\s\S]*?<\/div>/.test(rawHtml), "the header needs the aria-hidden display word");
 
 // Reduced motion, as built (check-toc checks the source rule): a stylesheet the case study links must make every
 // scroll instant under prefers-reduced-motion, after the last smooth-scroll rule it overrides.
@@ -448,24 +481,41 @@ check(cssHrefs.length > 0, "the case study links no /_next/ stylesheet");
 const reduceRule = /@media\s*\(\s*prefers-reduced-motion:\s*reduce\s*\)\s*\{\s*\*\s*\{\s*scroll-behavior:\s*auto\s*!important;?\s*\}\s*\}/;
 const builtReduce = cssHrefs.some((href) => {
   const css = read(join(root, ".next", href.slice("/_next/".length).split("?")[0])) ?? "";
-  const smooth = [...css.matchAll(/scroll-behavior:\s*smooth\s*!important/g)].map((m) => m.index);
+  const smooth = [...css.matchAll(/scroll-behavior:\s*smooth(?:\s*!important)?/g)].map((m) => m.index);
   const reduce = reduceRule.exec(css);
   return smooth.length > 0 && !!reduce && reduce.index > Math.max(...smooth);
 });
-check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth !important rule");
+check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth rule");
 
-// Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
-// one explicit check pins what the manifest lists today.
+// Screenshots (v3 CAP-9). Each capture sits in the section the IA table in EXPERIENCE.md names, with that slot's `sizes`.
+// There is no #screenshots section and no gallery note. The expected placement is pinned here from the IA table and the
+// content module must agree with it.
+const IA = {
+  "admin-reservations.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "admin-events.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "admin-supplies.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "booking-rooms.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
+  "booking-checkout.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
+  "admin-events-mobile.png": { section: "testing", sizes: "(min-width: 1024px) 300px, (min-width: 768px) 384px, 100vw" },
+  "admin-calendar-assistant.png": { section: "assistant", sizes: "(min-width: 1024px) 354px, (min-width: 768px) 46vw, 100vw" },
+};
 const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
   src: m[1],
+  file: m[1].split("/").pop(),
   width: Number(/\bwidth:\s*(\d+)/.exec(m[2])?.[1]),
   height: Number(/\bheight:\s*(\d+)/.exec(m[2])?.[1]),
+  section: /\bsection:\s*"([^"]+)"/.exec(m[2])?.[1],
+  sizes: /\bsizes:\s*"([^"]+)"/.exec(m[2])?.[1],
 }));
 const srcs = shotEntries.map((e) => e.src);
 check(new Set(srcs).size === srcs.length, "content module references the same screenshot twice");
 const expectedShots = new Set(srcs).size;
-check(expectedShots > 0, "content module references no screenshots under /work/simply-happy/");
-check(expectedShots === 7, `manifest currently lists 7 screenshots; content module references ${expectedShots}`);
+check(expectedShots === Object.keys(IA).length, `the IA table lists ${Object.keys(IA).length} captures; content module references ${expectedShots}`);
+check(!/screenshotsNote/.test(contentSrc), "screenshotsNote is removed with the gallery");
+for (const e of shotEntries) {
+  check(IA[e.file]?.section === e.section, `${e.file} belongs in "${IA[e.file]?.section}" (IA table); content module says "${e.section}"`);
+  check(IA[e.file]?.sizes === e.sizes, `${e.file} sizes should be "${IA[e.file]?.sizes}", content module has "${e.sizes}"`);
+}
 
 // Every referenced file exists under public/ and the declared intrinsic size matches the PNG header (IHDR).
 const pngSize = (file) => {
@@ -483,42 +533,49 @@ for (const { src, width, height } of shotEntries) {
   );
 }
 
-check(html.includes('id="screenshots"'), 'missing <section id="screenshots">');
-const shotsStart = html.indexOf('id="screenshots"');
-const contactStart = html.indexOf('id="contact"');
-const shots = shotsStart !== -1 && contactStart > shotsStart ? html.slice(shotsStart, contactStart) : "";
-check(ownedStart !== -1 && shotsStart > ownedStart, "#screenshots must come after #owned");
-// Every figure is either a screenshot frame inside #screenshots or the one payments diagram inside #payments.
+check(!rawHtml.includes('id="screenshots"') && !/Screenshots \(test data\)/.test(rawHtml), "there must be no #screenshots section or gallery heading");
+// Every figure is a screenshot frame (data-shot) or the one payments diagram.
 const expectedFigures = expectedShots + (hasPayments ? 1 : 0);
-const figures = html.match(/<figure\b/g) ?? [];
-check(figures.length === expectedFigures, `expected exactly ${expectedFigures} <figure> on the case study (${expectedShots} screenshots${hasPayments ? " + the payments diagram" : ""}), found ${figures.length}`);
-check((shots.match(/<figure\b/g) ?? []).length === expectedShots, `all ${expectedShots} screenshot figures must sit inside #screenshots`);
-check(!/<h3\b/.test(shots), "no <h3> inside #screenshots unless a figure heading is added deliberately");
-const allCaptions = html.match(/<figcaption\b/g) ?? [];
-check(allCaptions.length === expectedFigures, `expected ${expectedFigures} <figcaption> on the page, found ${allCaptions.length}`);
-const captions = [...shots.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
-check(captions.length === expectedShots, `expected ${expectedShots} <figcaption> inside #screenshots, found ${captions.length}`);
-for (const c of captions) check(c.startsWith("Test data"), `figcaption must start with "Test data": ${c}`);
-const thumbs = shots.match(/<button\b[^>]*aria-haspopup="dialog"/g) ?? [];
-check(thumbs.length === expectedShots, `expected ${expectedShots} thumbnail buttons with aria-haspopup="dialog", found ${thumbs.length}`);
-const dialogs = shots.match(/<dialog\b[^>]*>/g) ?? [];
-check(
-  dialogs.length === expectedShots && dialogs.every((d) => /\saria-label="Larger view: Test data/.test(d)),
-  `expected ${expectedShots} <dialog> in #screenshots, each with aria-label starting "Larger view: Test data", found ${dialogs.length}`,
-);
+check((rawHtml.match(/<figure\b/g) ?? []).length === expectedFigures, `expected exactly ${expectedFigures} <figure> on the case study (${expectedShots} screenshots${hasPayments ? " + the payments diagram" : ""}), found ${(rawHtml.match(/<figure\b/g) ?? []).length}`);
+check((rawHtml.match(/<figcaption\b/g) ?? []).length === expectedFigures, `expected ${expectedFigures} <figcaption> on the page`);
+check(!/<button\b[^>]*aria-haspopup/.test(rawHtml), "the frame is a link, not a button with aria-haspopup");
 // The same <img> requirements apply to every ScreenshotFrame image, on this page and on the home feature.
 const checkFrameImg = (img, where) => {
   check(/\salt="[^"]+"/.test(img), `${where} <img> needs non-empty alt: ${img.slice(0, 120)}`);
   check(/\sloading="lazy"/.test(img) && !/fetchpriority="high"/i.test(img), `${where} <img> must be lazy, none is the LCP: ${img.slice(0, 120)}`);
   check(/\swidth="\d+"/.test(img) && /\sheight="\d+"/.test(img) && /\ssizes="/.test(img), `${where} <img> needs width, height and sizes: ${img.slice(0, 120)}`);
 };
-const shotImgs = shots.match(/<img\b[^>]*>/g) ?? [];
-check(shotImgs.length === expectedShots, `expected ${expectedShots} <img> in #screenshots (dialog bodies mount only when open), found ${shotImgs.length}`);
-for (const img of shotImgs) checkFrameImg(img, "screenshot");
+for (const [id, start] of trailIds.map((id) => [id, rawHtml.search(new RegExp(`<section\\b[^>]*\\sid="${id}"`))])) {
+  const sec = start === -1 ? "" : rawHtml.slice(start, rawHtml.indexOf("</section>", start));
+  const want = shotEntries.filter((e) => e.section === id);
+  const frames = sec.match(/<figure\b[^>]*data-shot[\s\S]*?<\/figure>/g) ?? [];
+  check(frames.length === want.length, `#${id} should hold ${want.length} screenshot frames, found ${frames.length}`);
+  want.forEach((e, i) => {
+    const frame = frames[i] ?? "";
+    const img = /<img\b[^>]*>/.exec(frame)?.[0] ?? "";
+    check(frame.includes(encodeURIComponent(e.src)) || frame.includes(e.src), `#${id} frame ${i + 1} should show ${e.file}`);
+    checkFrameImg(img, `#${id} ${e.file}`);
+    check(decode(/\ssizes="([^"]*)"/.exec(img)?.[1] ?? "") === e.sizes, `#${id} ${e.file}: sizes should be "${e.sizes}"`);
+    const cap = decode((/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/.exec(frame)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
+    check(cap.startsWith("Test data."), `#${id} ${e.file}: the caption must start "Test data.": "${cap}"`);
+    // Without JavaScript the frame is a link to the 1920w optimised image; the viewer island enhances it.
+    const link = /<a\b[^>]*>/.exec(frame)?.[0] ?? "";
+    const href = decode(/\shref="([^"]*)"/.exec(link)?.[1] ?? "");
+    check(href === `/_next/image?url=${encodeURIComponent(e.src)}&w=1920&q=75`, `#${id} ${e.file}: the frame link should be the 1920w optimised image, found "${href}"`);
+    check(/\saria-label="Open larger view: /.test(link), `#${id} ${e.file}: the frame link needs the accessible name "Open larger view: <alt>"`);
+    check(/<div\b[^>]*style="[^"]*aspect-ratio:\s*\d+\s*\/\s*\d+/.test(frame), `#${id} ${e.file}: the frame must reserve its aspect ratio`);
+  });
+  // The captures come after the section's own copy, so the dialog (one per frame) is the viewer's: closed, empty.
+  const dialogs = sec.match(/<dialog\b[^>]*>[\s\S]*?<\/dialog>/g) ?? [];
+  check(dialogs.length === want.length, `#${id} should hold ${want.length} viewer dialogs, found ${dialogs.length}`);
+  for (const d of dialogs) check(/\saria-labelledby="/.test(d) && !/<img\b/.test(d), `#${id}: a closed viewer dialog is named by its caption and holds no image`);
+}
+const shotImgCount = (rawHtml.match(/<img\b[^>]*data-nimg|<img\b[^>]*>/g) ?? []).length;
+check(shotImgCount === expectedShots, `expected ${expectedShots} <img> on the case study (dialog bodies mount only when open), found ${shotImgCount}`);
 // Next encodes the path in preload hrefs and imageSrcSet (%2Fwork%2Fsimply-happy%2F), so match both spellings.
 const shotPath = /(?:\/|%2F)work(?:\/|%2F)simply-happy(?:\/|%2F)/i;
-for (const tag of html.match(/<link\b[^>]*>/g) ?? []) {
-  if (/\srel="preload"/.test(tag) && /\sas="image"/.test(tag)) check(!shotPath.test(tag), `no screenshot may be preloaded: ${tag.slice(0, 160)}`);
+for (const tag of rawHtml.match(/<link\b[^>]*>/g) ?? []) {
+  if (/\srel="preload"/.test(tag) && /\sas="image"/.test(tag)) check(!shotPath.test(tag), `no image may be preloaded on the case study (its LCP is text): ${tag.slice(0, 160)}`);
 }
 
 // Home page: the ScreenshotFrame default image branch must still render inside the Simply Happy feature.
@@ -551,8 +608,14 @@ const heroStart = home.search(/<h1\b/);
 const homeHero = heroStart !== -1 && workStart > heroStart ? home.slice(heroStart, workStart) : "";
 check(homeHero !== "", "home: could not find the hero between the <h1> and #work");
 checkInternal(anchors(homeHero).filter((a) => a.href === "/work/simply-happy"), "home hero", "/work/simply-happy", "Read the Simply Happy case study");
-checkInternal(anchors(homeWork).filter((a) => a.href === "/work/simply-happy"), "home #work feature", "/work/simply-happy", "Read the case study");
-checkInternal(anchors(home).filter((a) => a.href === "/work/simply-happy#assistant"), "home assistant tile", "/work/simply-happy#assistant", "Admin AI assistant");
+// v3: sheet 01's link is a stretched <a> on the h2, so its name is the heading (the "Read the case study" line is aria-hidden decoration).
+checkInternal(anchors(homeWork).filter((a) => a.href === "/work/simply-happy"), "home #work feature", "/work/simply-happy", "Simply Happy: retreat booking and payments");
+// v3: two links into #assistant: the "Safe by design" proof tile and the Also shipped assistant item.
+const assistantLinks = anchors(home).filter((a) => a.href === "/work/simply-happy#assistant");
+check(assistantLinks.length === 2, `home should link to /work/simply-happy#assistant twice (Safe by design tile, assistant item), found ${assistantLinks.length}`);
+for (const [label, a] of [["Safe by design", assistantLinks[0]], ["Admin AI assistant", assistantLinks[1]]]) {
+  check(!!a && a.text.startsWith(label) && !/\starget=/.test(a.attrs), `home #assistant link should read "${label}" and open in place`);
+}
 check(ids.has("assistant"), 'the case study needs id="assistant" for the home assistant tile to land on');
 const clientDomain = /\shref="[^"]*simplyhappy\.pt/i;
 check(!clientDomain.test(home), "home must not link to the client's site (simplyhappy.pt); only the case study does");
@@ -575,23 +638,21 @@ const featureSrc = attr(featureImg, /\ssrc="([^"]*)"/) ?? "";
 let featurePath = featureSrc;
 try { featurePath = decodeURIComponent(new URL(featureSrc, "http://x").searchParams.get("url") ?? featureSrc); } catch {}
 check(featurePath.startsWith("/") && existsSync(join(root, "public", featurePath)), `home feature image file missing under public/: ${featurePath || "(no src)"}`);
-// Links that stay plain <a> (Story 2.9): the footer CV keeps download on both pages; the CoinFlow tile opens a new tab.
+// Links that stay plain <a> (Story 2.9): the CV link keeps download on both pages.
 for (const [name, doc] of [["home", home], ["case study", html]]) {
   const cv = anchors(doc).filter((a) => a.href === "/Muhammad-Ali-Khan-CV.pdf");
   check(cv.length === 1 && /\sdownload(?:=|\s|$)/.test(cv[0].attrs), `${name}: the footer CV link (/Muhammad-Ali-Khan-CV.pdf) needs a download attribute`);
 }
+// v3: CoinFlow opens in the same tab (EXPERIENCE.md Also shipped item); the "↗" is decorative.
 const coinflow = anchors(home).filter((a) => a.href === "https://coinflow.netlify.app");
-check(
-  coinflow.length === 1 && /\starget="_blank"/.test(coinflow[0].attrs) && /\srel="noopener noreferrer"/.test(coinflow[0].attrs) && coinflow[0].text.includes("(opens in a new tab)"),
-  'home: the CoinFlow tile needs target="_blank", rel="noopener noreferrer" and the "(opens in a new tab)" hint',
-);
+check(coinflow.length === 1 && !/\starget=/.test(coinflow[0].attrs), "home: the CoinFlow item must open in the same tab (no target)");
 
 // Exactly the expected islands (source files only); "use client" placement itself is enforced by check-islands.
 const islandsDir = join(root, "src", "components", "islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
   : [];
-const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx", "TocHighlight.tsx"];
+const expectedIslands = ["CopyEmail.tsx", "LiveClock.tsx", "PillNav.tsx", "ScreenshotViewer.tsx"];
 check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
 
 // Metadata
@@ -628,7 +689,9 @@ sourceFiles.push(join(root, "src", "components", "sections", "TestingSection.tsx
 sourceFiles.push(join(root, "src", "components", "sections", "AssistantSection.tsx"));
 sourceFiles.push(join(root, "src", "components", "ui", "ScreenshotFrame.tsx"));
 sourceFiles.push(join(root, "src", "components", "islands", "ScreenshotViewer.tsx"));
-sourceFiles.push(join(root, "src", "components", "islands", "TocHighlight.tsx"));
+for (const f of ["SectionFrame", "TrailTab", "OnThisPage", "SummarySection", "OwnedSection", "ContactSection", "CaseFooter"]) {
+  sourceFiles.push(join(root, "src", "components", "case-study", `${f}.tsx`));
+}
 for (const file of sourceFiles) {
   const src = read(file);
   check(src !== null, `missing source file ${relative(root, file)}`);

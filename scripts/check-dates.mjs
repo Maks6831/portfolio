@@ -12,12 +12,15 @@ const { formatDay, formatRange, monthsBetween } = await import(
 );
 
 const now = new Date(Date.UTC(2026, 0, 15)); // Jan 2026
-assert.equal(formatRange("2025-08", "present", now), "Aug 2025 – Present · 6 mos");
-assert.equal(formatRange("2024-11", "2025-09", now), "Nov 2024 – Sep 2025 · 11 mos");
+// durations are elapsed months, so Nov 2024 to Sep 2025 reads 10 mos (not 11)
+assert.equal(formatRange("2025-08", "present", now), "Aug 2025 – Present · 5 mos");
+assert.equal(formatRange("2024-11", "2025-09", now), "Nov 2024 – Sep 2025 · 10 mos");
 assert.equal(formatRange("2023", "2024", now), "2023 – 2024");
 assert.equal(formatRange("2023", "present", now), "2023 – Present");
-assert.equal(formatRange("2024-01", "2025-12", now), "Jan 2024 – Dec 2025 · 2 yrs");
+assert.equal(formatRange("2024-01", "2026-01", now), "Jan 2024 – Jan 2026 · 2 yrs");
+assert.equal(formatRange("2024-01", "2025-12", now), "Jan 2024 – Dec 2025 · 1 yr 11 mos");
 assert.equal(formatRange("2025-01", "2025-01", now), "Jan 2025 – Jan 2025 · 1 mo");
+assert.equal(formatRange("2023-12", "2024-05", now), "Dec 2023 – May 2024 · 5 mos");
 assert.equal(monthsBetween("2023", "2024-05", now), null);
 assert.equal(monthsBetween("2025-05", "2025-01", now), null);
 // malformed input renders nothing instead of a wrong date

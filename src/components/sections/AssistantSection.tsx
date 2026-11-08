@@ -1,7 +1,8 @@
-import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
+import type { ReactNode } from "react";
+import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import type { AssistantSection as AssistantContent } from "@/content/work/types";
 
-type Props = { assistant?: AssistantContent };
+type Props = { assistant?: AssistantContent; trail?: TrailPosition; media?: ReactNode };
 
 /**
  * Story 2.5: "Admin AI assistant (safety design)": one intro paragraph, one CaseStudyPanel per safeguard (an <h3>
@@ -9,28 +10,26 @@ type Props = { assistant?: AssistantContent };
  * SQL. Server-rendered, no <article> (the gate treats articles as decision cards), no links and no muted text.
  * Renders nothing when the case study has no assistant content, so the heading order simply skips it.
  */
-const AssistantSection = ({ assistant }: Props) => {
+const AssistantSection = ({ assistant, trail, media }: Props) => {
   if (!assistant) return null;
   return (
-    <section
-      id="assistant"
-      aria-labelledby="assistant-heading"
-      tabIndex={-1}
-      className="relative z-10 scroll-mt-28 pb-section-gap-mobile focus:outline-none md:pb-section-gap"
-    >
-      <h2 id="assistant-heading" className="text-subheading md:text-heading text-text-primary">
-        Admin AI assistant (safety design)
-      </h2>
-      <p className="mt-6 max-w-[68ch] text-body text-text-secondary">{assistant.intro}</p>
-      <ul role="list" className="m-0 mt-8 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
-        {assistant.safeguards.map((panel, i) => (
-          <li key={`safeguard-${i}`}>
-            <CaseStudyPanel heading={panel.title}>{panel.text}</CaseStudyPanel>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-8 max-w-[68ch] text-body text-text-secondary">{assistant.closing}</p>
-    </section>
+    <SectionFrame id="assistant" title="Admin AI assistant (safety design)" trail={trail}>
+      <p className="m-0 max-w-[68ch] text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">{assistant.intro}</p>
+      <div className="mt-6 md:grid md:grid-cols-[minmax(0,1fr)_46%] md:items-start md:gap-tile-gap lg:grid-cols-[minmax(0,1fr)_354px]">
+        <ul role="list" className="m-0 list-none p-0">
+          {assistant.safeguards.map((panel, i) => (
+            <li key={`safeguard-${i}`} className="border-t border-line py-4">
+              <h3 className="m-0 text-[18px] font-semibold leading-tight tracking-[-0.01em] text-text">{panel.title}</h3>
+              <p className="m-0 mt-2 max-w-[68ch] text-[14px] leading-[1.45] text-text-secondary">{panel.text}</p>
+            </li>
+          ))}
+        </ul>
+        {media ? <div className="mt-6 md:mt-4">{media}</div> : null}
+      </div>
+      <p className="m-0 mt-6 max-w-[68ch] border-t border-line pt-5 text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">
+        {assistant.closing}
+      </p>
+    </SectionFrame>
   );
 };
 

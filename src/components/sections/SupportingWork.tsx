@@ -1,22 +1,53 @@
-import ProofTile from "@/components/ui/ProofTile";
+import ScreenshotFrame from "@/components/ui/ScreenshotFrame";
+import Sheet from "@/components/ui/Sheet";
 import { supportingWork } from "@/content/site";
 
+// Sheet 03 (#also): the assistant (featured, into the case study, with its captioned screenshot) and CoinFlow (out,
+// same tab). Titles are h3 with a stretched link; the arrow line is decorative. The screenshot is not a viewer trigger.
+const assistantSizes = "(min-width: 1024px) 400px, (min-width: 768px) 50vw, 100vw";
+
 const SupportingWork = () => (
-  <section
-    aria-labelledby="supporting-heading"
-    className="relative z-10 pb-section-gap-mobile md:pb-section-gap"
-  >
-    <h2 id="supporting-heading" className="text-subheading md:text-heading text-text-primary">
-      {supportingWork.heading}
-    </h2>
-    <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2 lg:grid-cols-3">
-      {supportingWork.items.map((t) => (
-        <li key={t.id} className={"featured" in t && t.featured ? "lg:col-span-2" : undefined}>
-          <ProofTile title={t.title} body={t.body} href={t.href} />
-        </li>
-      ))}
+  <Sheet n={3} id="also" labelledBy="h-also">
+    <div>
+      <p className="eyebrow">{supportingWork.eyebrow}</p>
+      <h2 id="h-also">{supportingWork.heading}</h2>
+      <p className="sub">{supportingWork.sub}</p>
+    </div>
+    <ul role="list" className="also">
+      {supportingWork.items.map((t) => {
+        const featured = "featured" in t && t.featured;
+        const external = t.href?.startsWith("http");
+        return (
+          <li key={t.id} className={featured ? "it it-ft" : "it"}>
+            <div className="it-txt">
+              <span className="kicker">
+                <i>{t.kicker[0]}</i> · {t.kicker[1]}
+              </span>
+              <h3>
+                <a className="stretch" href={t.href}>
+                  {t.title}
+                </a>
+              </h3>
+              <p>{t.body}</p>
+              <span className="link" aria-hidden="true">
+                {t.linkLabel} {external ? "↗" : "→"}
+              </span>
+            </div>
+            {"image" in t && t.image ? (
+              <ScreenshotFrame
+                src={t.image.src}
+                width={t.image.width}
+                height={t.image.height}
+                alt={t.image.alt}
+                caption={t.image.caption}
+                sizes={assistantSizes}
+              />
+            ) : null}
+          </li>
+        );
+      })}
     </ul>
-  </section>
+  </Sheet>
 );
 
 export default SupportingWork;

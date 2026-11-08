@@ -2,15 +2,15 @@ import Image from "next/image";
 import ButtonLink from "@/components/ui/ButtonLink";
 import LaptopFrame from "@/components/ui/LaptopFrame";
 import Counter from "@/components/ui/Counter";
-import { hero, simplyHappyFeature } from "@/content/site";
+import { hero } from "@/content/site";
 
 // The hero image is the LCP element: the only preloaded image on the site (EXPERIENCE.md hero image rule). One
-// <Image> whose box moves by CSS between the laptop screen (lg) and the full-bleed phone slot. `sizes` is shared with
-// sheet 01 so both ask for the same optimised candidate.
+// <Image> whose box moves by CSS between the laptop screen (lg) and the full-bleed phone slot. It shows the live
+// simplyhappy.pt home page; sheet 01 shows the booking flow and reuses `heroSizes` for its own slot.
 export const heroSizes = "(min-width: 1024px) 58vw, 100vw";
 
 const Hero = () => {
-  const img = simplyHappyFeature.image;
+  const img = hero.image;
   return (
     <section className="hero" aria-label="Introduction">
       <div className="hero-copy">
@@ -36,6 +36,7 @@ const Hero = () => {
           height={img.height}
           alt=""
           sizes={heroSizes}
+          quality={60}
           preload
           loading="eager"
           fetchPriority="high"

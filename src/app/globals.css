@@ -305,6 +305,10 @@
       text-transform: uppercase;
     }
     .trail-body { max-inline-size: theme("spacing.measure-content"); padding-block: 34px 88px; }
+    /* Landscape captures are whole desktop pages: let them run past the text measure into the empty right side, up
+       to 1120px. 560px = both page margins (128) + the TOC column (368) + the gutter (48) + 16 for a classic scrollbar.
+       Keep in step with the `sizes` strings in src/content/work/*.ts. */
+    .trail-body [data-shots][data-wide] { inline-size: min(1120px, 100vw - 560px); max-inline-size: none; }
   }
   @media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) { /* stack */
     .trail-tab { top: calc(theme("spacing.hud-strip") + (var(--n, 1) - 1) * theme("spacing.sheet-tab-step")); }

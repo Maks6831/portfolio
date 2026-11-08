@@ -11,8 +11,11 @@ export type Screenshot = {
   height: number;
   /** Describes what the screenshot demonstrates. */
   alt: string;
-  /** Must start with "Test data" so nobody mistakes it for real customers. */
-  caption: `Test data${string}`;
+  /**
+   * "Test data" for captures of the admin (seed data on the develop preview, so nobody mistakes it for real
+   * customers); "Live site" for captures of the public pages on simplyhappy.pt, which show no customer data.
+   */
+  caption: `Test data${string}` | `Live site${string}`;
   /** The case-study section the capture illustrates (EXPERIENCE.md IA table); array order is the order inside it. */
   section: ScreenshotSection;
   sizes?: string;

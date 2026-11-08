@@ -72,12 +72,11 @@ for (const [name, cls] of [["intro", intro], ["closing", closing]]) {
 }
 
 // Matrix: "Narrow viewport" -> panels stack by default, two columns only from md:, nothing hidden, no fixed widths.
-// v3: the safeguards are rows in one column (h3 over body under a hairline); the section's capture sits beside them from
-// md, so the wrapper is a single column until md and two columns after it.
+// v3: the safeguards are rows in one column (h3 over body under a hairline); the section's capture sits below them at
+// the full media width (a desktop page beside the rows was too small to read), so nothing here goes two-column.
 const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(section)?.[1] ?? "";
 check(!/\bgrid\b/.test(grid) && !/\bgrid-cols-/.test(grid), "layout: the safeguard rows are one stacked column (no grid on the list)");
-const wrapper = /<div\b[^>]*class="([^"]*\bmd:grid-cols-\[[^"]*)"/.exec(section)?.[1] ?? "";
-check(!!wrapper && !/(^|\s)grid(\s|$)/.test(wrapper) && /\bmd:grid\b/.test(wrapper), "layout: the rows and the capture sit in a wrapper that is a plain block until md (md:grid md:grid-cols-[...])");
+check(!/\bmd:grid-cols-\[/.test(section), "layout: no two-column wrapper; the capture sits below the rows");
 check(/(^|\s)border-t\b/.test(/<li\b[^>]*class="([^"]*)"/.exec(section)?.[1] ?? ""), "layout: each safeguard row sits under a hairline (border-t)");
 const classAttrs = [...section.matchAll(/\sclass="([^"]*)"/g)].map((m) => m[1]);
 check(!classAttrs.some((c) => /(?:^|\s)(?:[a-z-]+:)*(?:hidden|sr-only|invisible)(?:\s|$)/.test(c)) && !/<details\b/.test(section), "layout: nothing may be hidden behind disclosure or utility classes");

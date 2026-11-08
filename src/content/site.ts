@@ -14,6 +14,8 @@ export const hero = {
   word: ["Simply", "Happy"],
   primaryCta: { label: "Read the Simply Happy case study", href: caseStudyHref },
   secondaryCta: { label: "Get in touch", href: "#contact" },
+  // The laptop screen: the live simplyhappy.pt home page (1440x900 @2x). Decorative there (alt=""), and the LCP image.
+  image: { src: "/work/simply-happy/home-hero.jpg", width: 2880, height: 1800 },
 };
 
 export const simplyHappyFeature = {
@@ -28,7 +30,7 @@ export const simplyHappyFeature = {
     width: 2880,
     height: 1800,
     alt: "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
-    caption: "Test data. Room selection step of the booking flow, develop preview",
+    caption: "Live site. Room selection step of the booking flow",
   },
   link: { label: "Read the case study", href: caseStudyHref },
 };

@@ -26,17 +26,19 @@ export default function NotFound() {
 
   return (
     <PageShell surface="not-found">
-    <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
-      <div className="max-w-7xl w-full">
-        <section className="pt-36 pb-section-gap-mobile md:pb-section-gap">
-          <h1 className="max-w-[68ch] text-display-mobile md:text-display text-text">
+      {/* The stage fills the viewport under the HUD strip. Left inset is the HUD's, so the h1 lines up with the
+          name label. No counter, no sheets, no display word: the message and two links. */}
+      <div className="bg-stage min-h-[70vh] w-full px-5 md:px-hud-inset-x">
+        <section className="max-w-7xl pt-20 lg:pt-32 pb-section-gap-mobile md:pb-section-gap">
+          <p className="font-mono text-sm tracking-[0.12em] text-text-secondary">404</p>
+          <h1 className="mt-4 max-w-[68ch] text-display-mobile md:text-display text-text">
             Page not found
           </h1>
           <p className="mt-6 max-w-[68ch] text-body text-text-secondary">
             I could not find that page. The link may be old or mistyped. The home page
             {study ? ` and the ${study.name} case study are` : " is"} linked below.
           </p>
-          <div className="mt-10 flex flex-wrap gap-4">
+          <div className="mt-10 flex flex-col sm:flex-row flex-wrap gap-4">
             <ButtonLink href="/">Back to home</ButtonLink>
             {study && (
               <ButtonLink href={`/work/${study.slug}`} variant="secondary">
@@ -46,7 +48,6 @@ export default function NotFound() {
           </div>
         </section>
       </div>
-    </div>
     </PageShell>
   );
 }

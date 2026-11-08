@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs && node scripts/check-links.mjs && next build && node scripts/check-budget.mjs && node scripts/check-images.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs && node scripts/check-not-found.mjs",
+    "build": "node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs && node scripts/check-links.mjs && next build && node scripts/check-budget.mjs && node scripts/check-images.mjs && node scripts/check-anchors.mjs && node scripts/check-case-study.mjs && node scripts/check-not-found.mjs && node scripts/defer-scripts.mjs",
     "start": "next start",
     "lint": "eslint . && node scripts/check-islands.mjs && node scripts/check-dates.mjs && node scripts/check-decisions.mjs && node scripts/check-payments.mjs && node scripts/check-testing.mjs && node scripts/check-assistant.mjs && node scripts/check-toc.mjs && node scripts/check-links.mjs",
     "check:islands": "node scripts/check-islands.mjs",

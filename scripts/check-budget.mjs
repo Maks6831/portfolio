@@ -4,9 +4,9 @@
 // are skipped because modern browsers never download them. One ceiling for every page, one line per page.
 // v3 adds per-page ceilings over the framework floor, which is the /_not-found page measured in the same build:
 // home <= floor + 12 kB, case study <= floor + 18 kB. /_not-found is the floor, so its +2 kB is checked against the
-// recorded FLOOR_KB baseline instead: the floor may not grow more than 2 kB past it (re-record it in DESIGN.md Do's
-// when the v3 numbers are final). Pages still over a target because of v2 code carry an interim cap in
-// scripts/lib/staged.mjs (STRICT=1 removes it).
+// recorded FLOOR_KB baseline instead: the floor may not grow more than 2 kB past it. Re-record it here and in
+// DESIGN.md Do's only when a framework upgrade moves it on purpose. A page over its target can carry an interim
+// cap in scripts/lib/staged.mjs (empty since v3 shipped; STRICT=1 ignores it).
 import { readFileSync, existsSync } from "node:fs";
 import { gzipSync } from "node:zlib";
 import { join } from "node:path";
@@ -15,7 +15,7 @@ import { builtPages } from "./lib/pages.mjs";
 import { finish } from "./lib/staged.mjs";
 
 const LIMIT_KB = 175;
-const FLOOR_KB = 135.4; // /_not-found first-load JS recorded on 2026-11-08, after story 1
+const FLOOR_KB = 136.4; // /_not-found first-load JS of the shipped v3 build, recorded 2026-11-08 (DESIGN.md Do's)
 const FLOOR_ALLOWANCE_KB = 2;
 const OVER_FLOOR_KB = { "/": 12, "/work/simply-happy": 18 };
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -42,6 +42,12 @@ for (const page of pages) {
     if (/\snomodule\b/i.test(tag)) continue;
     const m = /\ssrc=(?:"([^"]+)"|'([^']+)')/.exec(tag);
     const src = m ? (m[1] ?? m[2]) : "";
+    if (src.startsWith("/_next/static/")) srcs.add(src.split("?")[0]);
+  }
+  // After scripts/defer-scripts.mjs has run (the last build step), the chunks are listed in its loader instead of
+  // <script src> tags; count them too, so `pnpm check:budget` still works on a finished build.
+  const loader = /<script data-defer-scripts>[\s\S]*?\}\)\((\[[^\]]*\])\)<\/script>/.exec(html);
+  for (const src of loader ? JSON.parse(loader[1]) : []) {
     if (src.startsWith("/_next/static/")) srcs.add(src.split("?")[0]);
   }
   if (!srcs.size) {

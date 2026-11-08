@@ -19,7 +19,7 @@ type Props = ButtonLinkProps & {
 };
 
 const focus =
-  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-ring";
+  "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[3px] focus-visible:outline-focus-ring";
 
 type AnchorProps = Pick<Props, "href" | "external" | "download" | "className" | "children" | "routeLink">;
 
@@ -63,7 +63,7 @@ const ButtonLinkBase = ({
         download={download}
         routeLink={routeLink}
         className={cn(
-          "inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded border border-accent px-7 text-sm font-semibold text-accent transition-colors hover:border-accent-pressed hover:text-accent-pressed motion-reduce:transition-none",
+          "inline-flex min-h-[44px] items-center justify-center gap-2 rounded border border-accent px-5 py-3.5 text-sm leading-none font-semibold text-accent hover:border-accent-pressed hover:text-accent-pressed",
           focus,
           className
         )}
@@ -81,7 +81,7 @@ const ButtonLinkBase = ({
       download={download}
       routeLink={routeLink}
       className={cn(
-        "inline-flex h-12 min-h-[44px] items-center justify-center gap-2 rounded border border-accent bg-accent px-7 text-sm font-semibold text-stage transition-colors hover:border-accent-pressed hover:bg-accent-pressed motion-reduce:transition-none",
+        "inline-flex min-h-[44px] items-center justify-center gap-2 rounded border border-accent bg-accent px-5 py-3.5 text-sm leading-none font-semibold text-stage hover:border-accent-pressed hover:bg-accent-pressed",
         focus,
         className
       )}

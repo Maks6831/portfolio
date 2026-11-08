@@ -13,8 +13,6 @@
 export const STAGED = [
   // check-islands: removed with TocHighlight (story 9).
   { gate: "islands", key: "src/components/islands/TocHighlight.tsx|scroll-resize-listener", until: 9, why: "TocHighlight is replaced by CSS and the On this page row" },
-  // check-images: the hero image arrives with story 6.
-  { gate: "images", key: "/|hero-preload", until: 6, why: "home has no hero image preload yet" },
 ];
 
 const strict = process.env.STRICT === "1";

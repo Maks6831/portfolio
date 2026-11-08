@@ -10,6 +10,8 @@ export const hero = {
   eyebrow: "Muhammad Ali Khan · Full-stack engineer · London",
   headline: "I turn a client's operational mess into a product that ships safely.",
   lede: "I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform, and I own what runs behind it.",
+  // The display word: the project's name in two lines (aria-hidden decoration).
+  word: ["Simply", "Happy"],
   primaryCta: { label: "Read the Simply Happy case study", href: caseStudyHref },
   secondaryCta: { label: "Get in touch", href: "#contact" },
 };

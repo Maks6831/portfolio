@@ -1,3 +1,4 @@
+import "./home.css";
 import PageShell from "@/components/layout/PageShell";
 import Hero from "@/components/sections/Hero";
 import SimplyHappyFeature from "@/components/sections/SimplyHappyFeature";
@@ -9,15 +10,15 @@ import Footer from "@/components/sections/Footer";
 const Page = () => {
   return (
     <PageShell surface="home">
-    <div className="relative bg-stage w-full flex justify-center items-center flex-col mx-auto sm:px-10 px-5 overflow-clip">
-      <div className="max-w-7xl w-full">
+    <div className="home">
         <Hero />
-        <SimplyHappyFeature />
-        <ProofTiles />
-        <SupportingWork />
-        <Experience />
-        <Footer />
-      </div>
+        <div className="mx-auto max-w-7xl px-5 sm:px-10">
+          <SimplyHappyFeature />
+          <ProofTiles />
+          <SupportingWork />
+          <Experience />
+          <Footer />
+        </div>
     </div>
     </PageShell>
   );

@@ -1,0 +1,128 @@
+/* Home page (stories 6-8): hero, laptop frame, sheets. Plain CSS with theme(); loaded only by the home route.
+   Layout modes (EXPERIENCE.md Responsive), all in em:
+     stack     (min-width: 64em) and (min-height: 47.5em), motion allowed: hero and sheets stick and stack
+     lg flow   (min-width: 64em) otherwise: normal flow, one tab sticks under the strip (static under reduced motion)
+     below lg  the phone composition; one 32px tab sticks at top 0
+     short     (max-height: 31.25em): nothing sticks
+   No ancestor of a sticky element may set overflow other than the wrapper's overflow-x: clip. */
+
+.home {
+  --m: theme("spacing.margin-mobile");
+  overflow-x: clip;
+  background: theme("colors.stage");
+  color: theme("colors.text.DEFAULT");
+}
+@media (min-width: 48em) { .home { --m: theme("spacing.margin-tablet"); } }
+@media (min-width: 64em) { .home { --m: theme("spacing.margin-desktop"); } }
+
+.eyebrow {
+  margin: 0 0 14px;
+  font: 400 12px/1.5 theme("fontFamily.mono");
+  letter-spacing: 0.06em;
+  color: theme("colors.accent.DEFAULT");
+}
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 0;
+  background: theme("colors.stage");
+}
+.hero-copy { position: relative; z-index: 5; padding-inline: var(--m); }
+.hero h1 {
+  margin: 0 0 14px;
+  font-size: 33px;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.hero .lede {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.48;
+  color: theme("colors.text.secondary");
+}
+.hero-ctas { display: flex; flex-direction: column; gap: 8px; }
+.hero-ctas a { width: 100%; }
+@media (min-width: 48em) {
+  .hero-ctas { flex-direction: row; gap: 12px; }
+  .hero-ctas a { width: auto; }
+  .hero .lede { max-width: theme("spacing.measure-copy"); }
+}
+.hero-word {
+  margin: 32px var(--m) 0;
+  font-size: clamp(48px, 18vw, 84px);
+  line-height: 0.84;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: theme("colors.accent.DEFAULT");
+  -webkit-text-stroke: 2px theme("colors.stage");
+  paint-order: stroke fill;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--m));
+}
+.hero-word span { display: block; white-space: nowrap; }
+
+/* ---------- laptop frame: the one image box. Below lg the bezel and base drop and it is the full-bleed phone slot ---------- */
+.laptop { position: relative; }
+.laptop-screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: theme("colors.screen");
+  border-block: 1px solid theme("colors.line");
+}
+.laptop-screen img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.laptop-base { display: none; }
+.hero-laptop { margin-top: 32px; }
+
+@media (min-width: 64em) {
+  .hero { min-height: max(100svh, theme("spacing.hero-min-height")); padding: 96px 0 52px; }
+  .hero-copy { margin-left: var(--m); padding: 0; width: min(theme("spacing.measure-hero-copy"), calc(50vw - var(--m))); }
+  .hero h1 { font-size: 49px; margin-bottom: 20px; }
+  .hero .lede { font-size: 17px; margin-bottom: 28px; }
+  .hero-word {
+    margin: auto 0 0 30vw;
+    padding-top: 28px;
+    font-size: min(170px, 13.3vw);
+    width: max-content;
+    max-width: none;
+  }
+  .hero-laptop {
+    position: absolute;
+    left: 50vw;
+    top: 128px;
+    width: min(59.4vw, theme("spacing.frame-max"));
+    margin: 0;
+    z-index: 2;
+  }
+  .laptop-screen {
+    border: 10px solid theme("colors.bezel");
+    border-bottom-width: 14px;
+    border-radius: theme("borderRadius.lg") theme("borderRadius.lg") theme("borderRadius.DEFAULT") theme("borderRadius.DEFAULT");
+    overflow: hidden;
+  }
+  .laptop-base {
+    display: block;
+    block-size: 16px;
+    inline-size: 112%;
+    margin-inline-start: -6%;
+    background: linear-gradient(theme("colors.line"), theme("colors.bezel"));
+    border-radius: 0 0 theme("borderRadius.lg") theme("borderRadius.lg");
+    box-shadow: 0 30px 60px theme("colors.shadow-laptop");
+  }
+}
+.hero-word { position: relative; z-index: 4; }
+
+/* Counter chips are stack-mode only (story 7). */
+.ctr-wrap { display: none; }

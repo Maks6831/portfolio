@@ -55,6 +55,7 @@ for (const [route, doc] of html) {
       about.push({ key: `${route}|${href}`, msg: `${route}: link to ${href} (the #about section no longer exists)` });
     }
     const path = hash === -1 ? href : href.slice(0, hash);
+    if (path.split("?")[0] === "/_next/image") continue; // the optimiser's URL for a screenshot frame's link (case study, story 10)
     const internal = path.startsWith("/") && !path.startsWith("//");
     if (path !== "" && !internal) continue; // external, mailto:, "//host"
     const target = path === "" ? route : normalise(path.split("?")[0]);

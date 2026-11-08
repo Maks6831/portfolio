@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import type { AssistantSection as AssistantContent } from "@/content/work/types";
 
-type Props = { assistant?: AssistantContent; trail?: TrailPosition };
+type Props = { assistant?: AssistantContent; trail?: TrailPosition; media?: ReactNode };
 
 /**
  * Story 2.5: "Admin AI assistant (safety design)": one intro paragraph, one CaseStudyPanel per safeguard (an <h3>
@@ -10,7 +11,7 @@ type Props = { assistant?: AssistantContent; trail?: TrailPosition };
  * SQL. Server-rendered, no <article> (the gate treats articles as decision cards), no links and no muted text.
  * Renders nothing when the case study has no assistant content, so the heading order simply skips it.
  */
-const AssistantSection = ({ assistant, trail }: Props) => {
+const AssistantSection = ({ assistant, trail, media }: Props) => {
   if (!assistant) return null;
   return (
     <SectionFrame id="assistant" title="Admin AI assistant (safety design)" trail={trail}>
@@ -22,6 +23,7 @@ const AssistantSection = ({ assistant, trail }: Props) => {
           </li>
         ))}
       </ul>
+      {media ? <div className="mt-8">{media}</div> : null}
       <p className="mt-8 max-w-[68ch] text-body text-text-secondary">{assistant.closing}</p>
     </SectionFrame>
   );

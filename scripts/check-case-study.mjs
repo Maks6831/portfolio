@@ -94,7 +94,11 @@ const rawHtml = read(join(workDir, "simply-happy.html")) ?? "";
 // page without them; the trail checks read rawHtml.
 const html = rawHtml
   .replace(/<span\b[^>]*data-trail-counter[^>]*>[\s\S]*?<\/span>/g, "")
-  .replace(/<a\b[^>]*data-trail-up[^>]*>[\s\S]*?<\/a>/g, "");
+  .replace(/<a\b[^>]*data-trail-up[^>]*>[\s\S]*?<\/a>/g, "")
+  // The inline screenshot frames and their viewer dialogs are checked on their own below (rawHtml).
+  .replace(/<ul\b[^>]*data-shots[\s\S]*?<\/ul>/g, "")
+  .replace(/<figure\b[^>]*data-shot[\s\S]*?<\/figure>/g, "")
+  .replace(/<dialog\b[\s\S]*?<\/dialog>/g, "");
 const h1s = html.match(/<h1\b/g) ?? [];
 check(h1s.length === 1, "case study must have exactly one <h1>");
 const firstH1 = html.search(/<h1\b/);
@@ -131,7 +135,7 @@ if (live) {
 check(/Updated \d{1,2} [A-Z][a-z]{2} \d{4}/.test(decode(headerMeta.replace(/<[^>]+>/g, " ")).replace(/\s+/g, " ")), 'the header meta row needs "Updated D Mon YYYY"');
 
 // Heading order: h1, Summary, What I owned, The booking and payments flow, Decisions, Testing and delivery, Admin AI
-// assistant (each only when the content has any), Screenshots, then the contact footer. The content order is now
+// assistant (each only when the content has any), then the contact heading. There is no gallery. The content order is now
 // complete: 2.7 adds the contents list and 2.9 rewires home, neither adds a section.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
 const siteSrc = read(join(root, "src", "content", "site.ts")) ?? "";
@@ -145,7 +149,6 @@ const expectedH2s = [
   ...(hasTesting ? ["Testing and delivery"] : []),
   ...(hasAssistant ? ["Admin AI assistant (safety design)"] : []),
   contactHeading,
-  "Screenshots (test data)",
 ];
 check(
   h2s.length === expectedH2s.length && expectedH2s.every((t, i) => h2s[i] === t),
@@ -413,9 +416,9 @@ const trailLabels = {
 const sectionTags = rawHtml.match(/<section\b[^>]*>/g) ?? [];
 const sectionIds = sectionTags.map((tag) => /\sid="([^"]+)"/.exec(tag)?.[1]).filter(Boolean);
 check(sectionIds.length === sectionTags.length, "every <section> on the case study needs an id");
-check(JSON.stringify(sectionIds.filter((id) => id !== "screenshots")) === JSON.stringify(trailIds), `sections should run ${trailIds.join(" ")} in that order, found: ${sectionIds.join(" ")}`);
+check(JSON.stringify(sectionIds) === JSON.stringify(trailIds), `sections should run ${trailIds.join(" ")} in that order, found: ${sectionIds.join(" ")}`);
 for (const tag of sectionTags) check(/\stabindex="-1"/.test(tag), `every section must take focus (tabindex="-1"): ${tag.slice(0, 120)}`);
-for (const tag of sectionTags.filter((t) => !/\sid="screenshots"/.test(t))) {
+for (const tag of sectionTags) {
   check(/\sclass="[^"]*\btrail-section\b/.test(tag) && /\sstyle="--n:\d+"/.test(tag), `a trail section needs class trail-section and its --n position: ${tag.slice(0, 140)}`);
 }
 // Tabs: one link per section, a sibling placed directly before it (never inside it), counter "0n / 0N".
@@ -477,18 +480,35 @@ const builtReduce = cssHrefs.some((href) => {
 });
 check(builtReduce, "built CSS: a linked stylesheet needs @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important } } after the scroll-behavior: smooth rule");
 
-// Screenshots (Story 2.6). The expected count follows the content module, so the gate tracks the manifest;
-// one explicit check pins what the manifest lists today.
+// Screenshots (v3 CAP-9). Each capture sits in the section the IA table in EXPERIENCE.md names, with that slot's `sizes`.
+// There is no #screenshots section and no gallery note. The expected placement is pinned here from the IA table and the
+// content module must agree with it.
+const IA = {
+  "admin-reservations.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "admin-events.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "admin-supplies.png": { section: "owned", sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw" },
+  "booking-rooms.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
+  "booking-checkout.png": { section: "payments", sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw" },
+  "admin-events-mobile.png": { section: "testing", sizes: "(min-width: 1024px) 300px, (min-width: 768px) 384px, 100vw" },
+  "admin-calendar-assistant.png": { section: "assistant", sizes: "(min-width: 1024px) 354px, (min-width: 768px) 46vw, 100vw" },
+};
 const shotEntries = [...contentSrc.matchAll(/\bsrc:\s*"(\/work\/simply-happy\/[^"]+)"([\s\S]*?)\}/g)].map((m) => ({
   src: m[1],
+  file: m[1].split("/").pop(),
   width: Number(/\bwidth:\s*(\d+)/.exec(m[2])?.[1]),
   height: Number(/\bheight:\s*(\d+)/.exec(m[2])?.[1]),
+  section: /\bsection:\s*"([^"]+)"/.exec(m[2])?.[1],
+  sizes: /\bsizes:\s*"([^"]+)"/.exec(m[2])?.[1],
 }));
 const srcs = shotEntries.map((e) => e.src);
 check(new Set(srcs).size === srcs.length, "content module references the same screenshot twice");
 const expectedShots = new Set(srcs).size;
-check(expectedShots > 0, "content module references no screenshots under /work/simply-happy/");
-check(expectedShots === 7, `manifest currently lists 7 screenshots; content module references ${expectedShots}`);
+check(expectedShots === Object.keys(IA).length, `the IA table lists ${Object.keys(IA).length} captures; content module references ${expectedShots}`);
+check(!/screenshotsNote/.test(contentSrc), "screenshotsNote is removed with the gallery");
+for (const e of shotEntries) {
+  check(IA[e.file]?.section === e.section, `${e.file} belongs in "${IA[e.file]?.section}" (IA table); content module says "${e.section}"`);
+  check(IA[e.file]?.sizes === e.sizes, `${e.file} sizes should be "${IA[e.file]?.sizes}", content module has "${e.sizes}"`);
+}
 
 // Every referenced file exists under public/ and the declared intrinsic size matches the PNG header (IHDR).
 const pngSize = (file) => {
@@ -506,42 +526,49 @@ for (const { src, width, height } of shotEntries) {
   );
 }
 
-check(html.includes('id="screenshots"'), 'missing <section id="screenshots">');
-const shotsStart = html.indexOf('id="screenshots"');
-const shotsEnd = shotsStart !== -1 ? html.indexOf("</section>", shotsStart) : -1;
-const shots = shotsStart !== -1 && shotsEnd > shotsStart ? html.slice(shotsStart, shotsEnd) : "";
-check(ownedStart !== -1 && shotsStart > ownedStart, "#screenshots must come after #owned");
-// Every figure is either a screenshot frame inside #screenshots or the one payments diagram inside #payments.
+check(!rawHtml.includes('id="screenshots"') && !/Screenshots \(test data\)/.test(rawHtml), "there must be no #screenshots section or gallery heading");
+// Every figure is a screenshot frame (data-shot) or the one payments diagram.
 const expectedFigures = expectedShots + (hasPayments ? 1 : 0);
-const figures = html.match(/<figure\b/g) ?? [];
-check(figures.length === expectedFigures, `expected exactly ${expectedFigures} <figure> on the case study (${expectedShots} screenshots${hasPayments ? " + the payments diagram" : ""}), found ${figures.length}`);
-check((shots.match(/<figure\b/g) ?? []).length === expectedShots, `all ${expectedShots} screenshot figures must sit inside #screenshots`);
-check(!/<h3\b/.test(shots), "no <h3> inside #screenshots unless a figure heading is added deliberately");
-const allCaptions = html.match(/<figcaption\b/g) ?? [];
-check(allCaptions.length === expectedFigures, `expected ${expectedFigures} <figcaption> on the page, found ${allCaptions.length}`);
-const captions = [...shots.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
-check(captions.length === expectedShots, `expected ${expectedShots} <figcaption> inside #screenshots, found ${captions.length}`);
-for (const c of captions) check(c.startsWith("Test data"), `figcaption must start with "Test data": ${c}`);
-const thumbs = shots.match(/<button\b[^>]*aria-haspopup="dialog"/g) ?? [];
-check(thumbs.length === expectedShots, `expected ${expectedShots} thumbnail buttons with aria-haspopup="dialog", found ${thumbs.length}`);
-const dialogs = shots.match(/<dialog\b[^>]*>/g) ?? [];
-check(
-  dialogs.length === expectedShots && dialogs.every((d) => /\saria-label="Larger view: Test data/.test(d)),
-  `expected ${expectedShots} <dialog> in #screenshots, each with aria-label starting "Larger view: Test data", found ${dialogs.length}`,
-);
+check((rawHtml.match(/<figure\b/g) ?? []).length === expectedFigures, `expected exactly ${expectedFigures} <figure> on the case study (${expectedShots} screenshots${hasPayments ? " + the payments diagram" : ""}), found ${(rawHtml.match(/<figure\b/g) ?? []).length}`);
+check((rawHtml.match(/<figcaption\b/g) ?? []).length === expectedFigures, `expected ${expectedFigures} <figcaption> on the page`);
+check(!/<button\b[^>]*aria-haspopup/.test(rawHtml), "the frame is a link, not a button with aria-haspopup");
 // The same <img> requirements apply to every ScreenshotFrame image, on this page and on the home feature.
 const checkFrameImg = (img, where) => {
   check(/\salt="[^"]+"/.test(img), `${where} <img> needs non-empty alt: ${img.slice(0, 120)}`);
   check(/\sloading="lazy"/.test(img) && !/fetchpriority="high"/i.test(img), `${where} <img> must be lazy, none is the LCP: ${img.slice(0, 120)}`);
   check(/\swidth="\d+"/.test(img) && /\sheight="\d+"/.test(img) && /\ssizes="/.test(img), `${where} <img> needs width, height and sizes: ${img.slice(0, 120)}`);
 };
-const shotImgs = shots.match(/<img\b[^>]*>/g) ?? [];
-check(shotImgs.length === expectedShots, `expected ${expectedShots} <img> in #screenshots (dialog bodies mount only when open), found ${shotImgs.length}`);
-for (const img of shotImgs) checkFrameImg(img, "screenshot");
+for (const [id, start] of trailIds.map((id) => [id, rawHtml.search(new RegExp(`<section\\b[^>]*\\sid="${id}"`))])) {
+  const sec = start === -1 ? "" : rawHtml.slice(start, rawHtml.indexOf("</section>", start));
+  const want = shotEntries.filter((e) => e.section === id);
+  const frames = sec.match(/<figure\b[^>]*data-shot[\s\S]*?<\/figure>/g) ?? [];
+  check(frames.length === want.length, `#${id} should hold ${want.length} screenshot frames, found ${frames.length}`);
+  want.forEach((e, i) => {
+    const frame = frames[i] ?? "";
+    const img = /<img\b[^>]*>/.exec(frame)?.[0] ?? "";
+    check(frame.includes(encodeURIComponent(e.src)) || frame.includes(e.src), `#${id} frame ${i + 1} should show ${e.file}`);
+    checkFrameImg(img, `#${id} ${e.file}`);
+    check(decode(/\ssizes="([^"]*)"/.exec(img)?.[1] ?? "") === e.sizes, `#${id} ${e.file}: sizes should be "${e.sizes}"`);
+    const cap = decode((/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/.exec(frame)?.[1] ?? "").replace(/<[^>]+>/g, "")).trim();
+    check(cap.startsWith("Test data."), `#${id} ${e.file}: the caption must start "Test data.": "${cap}"`);
+    // Without JavaScript the frame is a link to the 1920w optimised image; the viewer island enhances it.
+    const link = /<a\b[^>]*>/.exec(frame)?.[0] ?? "";
+    const href = decode(/\shref="([^"]*)"/.exec(link)?.[1] ?? "");
+    check(href === `/_next/image?url=${encodeURIComponent(e.src)}&w=1920&q=75`, `#${id} ${e.file}: the frame link should be the 1920w optimised image, found "${href}"`);
+    check(/\saria-label="Open larger view: /.test(link), `#${id} ${e.file}: the frame link needs the accessible name "Open larger view: <alt>"`);
+    check(/<div\b[^>]*style="[^"]*aspect-ratio:\s*\d+\s*\/\s*\d+/.test(frame), `#${id} ${e.file}: the frame must reserve its aspect ratio`);
+  });
+  // The captures come after the section's own copy, so the dialog (one per frame) is the viewer's: closed, empty.
+  const dialogs = sec.match(/<dialog\b[^>]*>[\s\S]*?<\/dialog>/g) ?? [];
+  check(dialogs.length === want.length, `#${id} should hold ${want.length} viewer dialogs, found ${dialogs.length}`);
+  for (const d of dialogs) check(/\saria-labelledby="/.test(d) && !/<img\b/.test(d), `#${id}: a closed viewer dialog is named by its caption and holds no image`);
+}
+const shotImgCount = (rawHtml.match(/<img\b[^>]*data-nimg|<img\b[^>]*>/g) ?? []).length;
+check(shotImgCount === expectedShots, `expected ${expectedShots} <img> on the case study (dialog bodies mount only when open), found ${shotImgCount}`);
 // Next encodes the path in preload hrefs and imageSrcSet (%2Fwork%2Fsimply-happy%2F), so match both spellings.
 const shotPath = /(?:\/|%2F)work(?:\/|%2F)simply-happy(?:\/|%2F)/i;
-for (const tag of html.match(/<link\b[^>]*>/g) ?? []) {
-  if (/\srel="preload"/.test(tag) && /\sas="image"/.test(tag)) check(!shotPath.test(tag), `no screenshot may be preloaded: ${tag.slice(0, 160)}`);
+for (const tag of rawHtml.match(/<link\b[^>]*>/g) ?? []) {
+  if (/\srel="preload"/.test(tag) && /\sas="image"/.test(tag)) check(!shotPath.test(tag), `no image may be preloaded on the case study (its LCP is text): ${tag.slice(0, 160)}`);
 }
 
 // Home page: the ScreenshotFrame default image branch must still render inside the Simply Happy feature.

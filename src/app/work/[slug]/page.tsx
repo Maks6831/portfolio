@@ -3,11 +3,11 @@ import { notFound } from "next/navigation";
 
 import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import PageShell from "@/components/layout/PageShell";
-import ScreenshotViewer from "@/components/islands/ScreenshotViewer";
 import CaseFooter from "@/components/case-study/CaseFooter";
 import ContactSection from "@/components/case-study/ContactSection";
 import OnThisPage from "@/components/case-study/OnThisPage";
 import OwnedSection from "@/components/case-study/OwnedSection";
+import ShotGroup from "@/components/case-study/ShotGroup";
 import SummarySection from "@/components/case-study/SummarySection";
 import TrailTab from "@/components/case-study/TrailTab";
 import AssistantSection from "@/components/sections/AssistantSection";
@@ -92,6 +92,12 @@ export default async function CaseStudyPage({ params }: Props) {
   const total = sections.length;
   const trailOf = (id: string) => ({ n: sections.findIndex((x) => x.id === id) + 1, total });
   const updated = formatDay(study.updated);
+  const shotsIn = (section: string) => study.screenshots.filter((shot) => shot.section === section);
+  const shotCount = (section: string) => {
+    const n = shotsIn(section).length;
+    return n ? `${n} ${n === 1 ? "shot" : "shots"}` : undefined;
+  };
+  const media = (section: string) => <ShotGroup shots={shotsIn(section)} />;
 
   return (
     <PageShell surface="case-study">
@@ -137,13 +143,13 @@ export default async function CaseStudyPage({ params }: Props) {
           <TrailTab {...trailOf("summary")} id="summary" name="Summary" />
           <SummarySection before={study.summary.before} after={study.summary.after} trail={trailOf("summary")} />
 
-          <TrailTab {...trailOf("owned")} id="owned" name="What I owned" />
-          <OwnedSection owned={study.owned} trail={trailOf("owned")} />
+          <TrailTab {...trailOf("owned")} id="owned" name="What I owned" detail={shotCount("owned")} />
+          <OwnedSection owned={study.owned} trail={trailOf("owned")} media={media("owned")} />
 
           {study.payments ? (
             <>
-              <TrailTab {...trailOf("payments")} id="payments" name="Booking and payments" />
-              <PaymentsSection payments={study.payments} trail={trailOf("payments")} />
+              <TrailTab {...trailOf("payments")} id="payments" name="Booking and payments" detail={shotCount("payments")} />
+              <PaymentsSection payments={study.payments} trail={trailOf("payments")} media={media("payments")} />
             </>
           ) : null}
 
@@ -156,45 +162,21 @@ export default async function CaseStudyPage({ params }: Props) {
 
           {study.testing ? (
             <>
-              <TrailTab {...trailOf("testing")} id="testing" name="Testing and delivery" />
-              <TestingSection testing={study.testing} trail={trailOf("testing")} />
+              <TrailTab {...trailOf("testing")} id="testing" name="Testing and delivery" detail={shotCount("testing")} />
+              <TestingSection testing={study.testing} trail={trailOf("testing")} media={media("testing")} />
             </>
           ) : null}
 
           {study.assistant ? (
             <>
-              <TrailTab {...trailOf("assistant")} id="assistant" name="Admin AI assistant" />
-              <AssistantSection assistant={study.assistant} trail={trailOf("assistant")} />
+              <TrailTab {...trailOf("assistant")} id="assistant" name="Admin AI assistant" detail={shotCount("assistant")} />
+              <AssistantSection assistant={study.assistant} trail={trailOf("assistant")} media={media("assistant")} />
             </>
           ) : null}
 
           <TrailTab {...trailOf("contact")} id="contact" name="Contact" />
           <ContactSection trail={trailOf("contact")} />
         </div>
-
-        {/* Story 10 replaces this end-of-page gallery with captures inside the sections. */}
-        {study.screenshots.length > 0 && (
-          <section
-            id="screenshots"
-            aria-labelledby="screenshots-heading"
-            tabIndex={-1}
-            className="scroll-mt-28 px-5 py-section-gap-mobile focus:outline-none md:px-10 lg:px-16"
-          >
-            <h2 id="screenshots-heading" className="text-subheading md:text-heading text-text">
-              Screenshots (test data)
-            </h2>
-            {study.screenshotsNote ? (
-              <p className="mt-4 max-w-[68ch] text-body text-text-secondary">{study.screenshotsNote}</p>
-            ) : null}
-            <ul role="list" className="m-0 mt-10 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
-              {study.screenshots.map((shot) => (
-                <li key={shot.src} className={shot.height > shot.width ? "md:max-w-sm" : undefined}>
-                  <ScreenshotViewer {...shot} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
 
         <CaseFooter />
       </div>

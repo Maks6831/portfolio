@@ -185,31 +185,18 @@ export const simplyHappy = {
     closing:
       "I chose fixed lookups over read-only SQL because a wrong join looks right in a chat answer, and a free query could reach tokens and allergy data. A query that quietly pairs one guest's details with another guest's booking produces a confident, plausible reply, and an admin reading it has little way to spot the mistake. Seven lookups with fixed field lists are less flexible, but each one is testable and admin-checked, and the whole surface the model can reach is small enough to read in one sitting.",
   },
-  // Develop-preview captures against the repo's seed data (epic-2-owner-inputs.md, section 1), in the
-  // manifest's order. Prices and names are seed values; every caption says "Test data".
-  screenshotsNote:
-    "Captured from the develop branch running against seed data, so the names and prices are test values. Select a screenshot to see it larger.",
+  // Develop-preview captures against the repo's seed data (epic-2-owner-inputs.md, section 1). Each one sits in the
+  // section it illustrates (`section`), in the order the IA table in EXPERIENCE.md lists them; `sizes` is per slot.
+  // Prices and names are seed values; every caption says "Test data".
   screenshots: [
     {
-      src: "/work/simply-happy/booking-rooms.png",
+      src: "/work/simply-happy/admin-reservations.png",
       width: 2880,
       height: 1800,
-      alt: "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
-      caption: "Test data. Room selection step of the booking flow",
-    },
-    {
-      src: "/work/simply-happy/booking-checkout.png",
-      width: 2880,
-      height: 1800,
-      alt: "The selected room with the summary box showing nights, discount code field and total before continuing to payment",
-      caption: "Test data. Checkout summary before Stripe",
-    },
-    {
-      src: "/work/simply-happy/admin-calendar-assistant.png",
-      width: 2880,
-      height: 1800,
-      alt: "The admin booking calendar by room with the read-only Ask panel open and its note that nothing is saved",
-      caption: "Test data. Admin booking calendar with the assistant panel open",
+      alt: "Admin reservations page with the booking rules panel: auto-confirm toggle and guest cancellation window",
+      caption: "Test data. Rules for bookings paid on the site: auto-confirm and the cancellation window",
+      section: "owned",
+      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
     },
     {
       src: "/work/simply-happy/admin-events.png",
@@ -217,6 +204,8 @@ export const simplyHappy = {
       height: 1800,
       alt: "Admin events list with status, places and attendee actions per event",
       caption: "Test data. Admin events management, redesigned list",
+      section: "owned",
+      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
     },
     {
       src: "/work/simply-happy/admin-supplies.png",
@@ -224,22 +213,45 @@ export const simplyHappy = {
       height: 1800,
       alt: "Admin supplies list with stock on hand, low-stock flags, reorder points and record-delivery actions",
       caption: "Test data. Supplies: stock on hand, reorder points and deliveries",
+      section: "owned",
+      sizes: "(min-width: 1024px) 236px, (min-width: 768px) 30vw, 100vw",
     },
     {
-      src: "/work/simply-happy/admin-reservations.png",
+      src: "/work/simply-happy/booking-rooms.png",
       width: 2880,
       height: 1800,
-      alt: "Admin reservations page with the booking rules panel: auto-confirm toggle and guest cancellation window",
-      caption: "Test data. Rules for bookings paid on the site: auto-confirm and the cancellation window",
+      alt: "The booking flow after dates are chosen: room categories with photo, capacity, availability and a Select button",
+      caption: "Test data. Room selection step of the booking flow",
+      section: "payments",
+      sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw",
     },
     {
-      // Portrait phone capture; the page caps its column at max-w-sm (384px) from md up.
+      src: "/work/simply-happy/booking-checkout.png",
+      width: 2880,
+      height: 1800,
+      alt: "The selected room with the summary box showing nights, discount code field and total before continuing to payment",
+      caption: "Test data. Checkout summary before Stripe",
+      section: "payments",
+      sizes: "(min-width: 1024px) 361px, (min-width: 768px) 46vw, 100vw",
+    },
+    {
+      // Portrait phone capture, capped at 384px from md up.
       src: "/work/simply-happy/admin-events-mobile.png",
       width: 780,
       height: 1688,
       alt: "The admin events list at phone width",
       caption: "Test data. Admin events on a phone",
-      sizes: "(min-width: 768px) 384px, 100vw",
+      section: "testing",
+      sizes: "(min-width: 1024px) 300px, (min-width: 768px) 384px, 100vw",
+    },
+    {
+      src: "/work/simply-happy/admin-calendar-assistant.png",
+      width: 2880,
+      height: 1800,
+      alt: "The admin booking calendar by room with the read-only Ask panel open and its note that nothing is saved",
+      caption: "Test data. Admin booking calendar with the assistant panel open",
+      section: "assistant",
+      sizes: "(min-width: 1024px) 354px, (min-width: 768px) 46vw, 100vw",
     },
   ],
 } satisfies CaseStudy;

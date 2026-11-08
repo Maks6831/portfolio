@@ -1,8 +1,9 @@
+import type { ReactNode } from "react";
 import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
 import type { TestingSection as TestingContent } from "@/content/work/types";
 import { formatDay } from "@/lib/dates";
 
-type Props = { testing?: TestingContent; trail?: TrailPosition };
+type Props = { testing?: TestingContent; trail?: TrailPosition; media?: ReactNode };
 
 /**
  * Story 2.4: "Testing and delivery": four count tiles under one "approx., as of" label, then three short
@@ -10,7 +11,7 @@ type Props = { testing?: TestingContent; trail?: TrailPosition };
  * real text in a <dl>; no <article> and no <h3> (the gate counts articles as decision cards and h3s as panels).
  * Renders nothing when the case study has no testing content, so the heading order simply skips it.
  */
-const TestingSection = ({ testing, trail }: Props) => {
+const TestingSection = ({ testing, trail, media }: Props) => {
   if (!testing) return null;
   // A malformed date renders no date at all (the gate then fails on the missing label) rather than a wrong one.
   const asOf = formatDay(testing.countsAsOf);
@@ -28,11 +29,16 @@ const TestingSection = ({ testing, trail }: Props) => {
           </div>
         ))}
       </dl>
+      <div className="mt-6 md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,300px)] md:gap-8">
+        <div>
       {testing.paragraphs.map((paragraph, i) => (
-        <p key={`paragraph-${i}`} className="mt-6 max-w-[68ch] text-body text-text-secondary">
+        <p key={`paragraph-${i}`} className="mt-6 first:mt-0 max-w-[68ch] text-body text-text-secondary">
           {paragraph}
         </p>
       ))}
+        </div>
+        {media ? <div className="mt-8 md:mt-0">{media}</div> : null}
+      </div>
     </SectionFrame>
   );
 };

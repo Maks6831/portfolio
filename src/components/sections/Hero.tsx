@@ -1,37 +1,47 @@
+import Image from "next/image";
 import ButtonLink from "@/components/ui/ButtonLink";
-import { hero } from "@/content/site";
+import LaptopFrame from "@/components/ui/LaptopFrame";
+import Counter from "@/components/ui/Counter";
+import { hero, simplyHappyFeature } from "@/content/site";
+
+// The hero image is the LCP element: the only preloaded image on the site (EXPERIENCE.md hero image rule). One
+// <Image> whose box moves by CSS between the laptop screen (lg) and the full-bleed phone slot. `sizes` is shared with
+// sheet 01 so both ask for the same optimised candidate.
+export const heroSizes = "(min-width: 1024px) 58vw, 100vw";
 
 const Hero = () => {
+  const img = simplyHappyFeature.image;
   return (
-    <section className="flex min-h-svh flex-col justify-center pb-20 pt-36">
-      <div className="flex justify-center relative my-20 z-10">
-        <div className="max-w-[89vw] md:max-w-2xl lg:max-w-[60vw] flex flex-col items-center justify-center">
-          <p className="text-eyebrow uppercase text-center text-accent">
-            {hero.eyebrow}
-          </p>
-          <h1 className="mt-4 text-center text-display-mobile md:text-display text-text">
-            {hero.headline}
-          </h1>
-          <p className="mt-6 text-center text-body text-text-secondary max-w-xl">
-            {hero.lede}
-          </p>
-          <div className="mt-10 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row">
-            <ButtonLink
-              href={hero.primaryCta.href}
-              className="w-full sm:w-auto"
-            >
-              {hero.primaryCta.label}
-            </ButtonLink>
-            <ButtonLink
-              href={hero.secondaryCta.href}
-              variant="secondary"
-              className="w-full sm:w-auto"
-            >
-              {hero.secondaryCta.label}
-            </ButtonLink>
-          </div>
+    <section className="hero" aria-label="Introduction">
+      <div className="hero-copy">
+        <p className="eyebrow">{hero.eyebrow}</p>
+        <h1>{hero.headline}</h1>
+        <p className="lede">{hero.lede}</p>
+        <div className="hero-ctas">
+          <ButtonLink href={hero.primaryCta.href}>{hero.primaryCta.label}</ButtonLink>
+          <ButtonLink href={hero.secondaryCta.href} variant="secondary">
+            {hero.secondaryCta.label}
+          </ButtonLink>
         </div>
       </div>
+      <div className="hero-word" aria-hidden="true">
+        {hero.word.map((w) => (
+          <span key={w}>{w}</span>
+        ))}
+      </div>
+      <LaptopFrame className="hero-laptop">
+        <Image
+          src={img.src}
+          width={img.width}
+          height={img.height}
+          alt=""
+          sizes={heroSizes}
+          preload
+          loading="eager"
+          fetchPriority="high"
+        />
+      </LaptopFrame>
+      <Counter n={1} />
     </section>
   );
 };

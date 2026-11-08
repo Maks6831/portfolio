@@ -10,6 +10,8 @@ export const hero = {
   eyebrow: "Muhammad Ali Khan · Full-stack engineer · London",
   headline: "I turn a client's operational mess into a product that ships safely.",
   lede: "I took Simply Happy from email bookings and a WordPress site to a live booking and payments platform, and I own what runs behind it.",
+  // The display word: the project's name in two lines (aria-hidden decoration).
+  word: ["Simply", "Happy"],
   primaryCta: { label: "Read the Simply Happy case study", href: caseStudyHref },
   secondaryCta: { label: "Get in touch", href: "#contact" },
 };
@@ -32,10 +34,17 @@ export const simplyHappyFeature = {
 };
 
 export const navItems = [
-    { name: "About", link: "#about" },
-    { name: "Work", link: "#work" },
-    { name: "Contact", link: "#contact" },
-  ];
+  { name: "Work", link: "#work" },
+  { name: "Profile", link: "#profile" },
+  { name: "Connect", link: "#contact" },
+];
+
+// Sheet tabs (EXPERIENCE.md HUD label table): "0n / 03", name, one detail, and a stack-mode hint.
+export const sheetTabs = [
+  { name: "Headline work", detail: "Simply Happy · Aug 2025 –", hint: "Scroll ↓ the sheets stack" },
+  { name: "Proof", detail: "Four things I can show", hint: "Hover or Tab onto a tile" },
+  { name: "Also shipped", detail: "Admin AI assistant · CoinFlow", hint: "Last sheet · Profile and Connect follow" },
+];
 
 export const proofSection = {
   eyebrow: "Proof",
@@ -60,6 +69,7 @@ export const proofTiles = [
     title: "Safe by design",
     body: "An admin AI assistant limited to seven fixed, read-only lookups. Health data is never sent, enforced by a test.",
     chip: "Enforced",
+    link: { href: `${caseStudyHref}#assistant`, label: "Read the safety design" },
   },
   {
     id: "ai",
@@ -70,17 +80,30 @@ export const proofTiles = [
 ];
 
 export const supportingWork = {
+  eyebrow: "Supporting work",
   heading: "Also shipped",
+  sub: "The assistant is part of Simply Happy and links into the case study. CoinFlow is a small secondary project and links out.",
   items: [
     {
       id: "assistant",
       featured: true,
+      kicker: ["Simply Happy", "back office"],
+      linkLabel: "Read the safety design",
+      image: {
+        src: "/work/simply-happy/admin-calendar-assistant.png",
+        width: 2880,
+        height: 1800,
+        alt: "The admin booking calendar by room with the read-only Ask panel open and its note that nothing is saved",
+        caption: "Test data. Admin booking calendar with the assistant panel open",
+      },
       title: "Admin AI assistant",
       body: "A read-only help panel for the back office. Seven fixed lookups beat free-form SQL because wrong joins look right. No chats are stored.",
       href: `${caseStudyHref}#assistant` as string | undefined,
     },
     {
       id: "coinflow",
+      kicker: ["Side project", "external"],
+      linkLabel: "coinflow.netlify.app",
       title: "CoinFlow",
       body: "Real-time crypto tracking in Next.js.",
       href: "https://coinflow.netlify.app" as string | undefined,
@@ -88,7 +111,13 @@ export const supportingWork = {
   ],
 };
 
-  export const workExperience = [
+export const experienceSection = {
+  eyebrow: "Profile",
+  heading: "Experience",
+  sub: "Three roles. Simply Happy is expanded in the case study; the other two are the facts, in the order the CV gives them.",
+};
+
+export const workExperience = [
     {
       id: 1,
       title: "Full-stack Developer",
@@ -150,6 +179,7 @@ export const supportingWork = {
 
 
 export const contact = {
+  eyebrow: "Connect",
   heading: "Hiring for a full-stack role?",
   line: "Available from December 2026.",
   email,

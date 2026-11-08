@@ -1,7 +1,6 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
-import { FloatingNav } from "@/components/islands/FloatingNavbar";
 import PageShell from "@/components/layout/PageShell";
 import CaseFooter from "@/components/case-study/CaseFooter";
 import ContactSection from "@/components/case-study/ContactSection";
@@ -27,13 +26,6 @@ export const dynamicParams = false;
 export function generateStaticParams() {
   return caseStudySlugs.map((slug) => ({ slug }));
 }
-
-// Home-absolute links so the nav works from a nested route; #contact is on this page.
-const navItems = [
-  { name: "About", link: "/#about" },
-  { name: "Work", link: "/#work" },
-  { name: "Contact", link: "#contact" },
-];
 
 export async function generateMetadata(
   { params }: Props,
@@ -102,8 +94,6 @@ export default async function CaseStudyPage({ params }: Props) {
   return (
     <PageShell surface="case-study">
       <div className="relative w-full overflow-x-clip bg-stage">
-        <FloatingNav navItems={navItems} />
-
         <header className="flex flex-col px-5 pb-11 pt-8 md:px-10 lg:min-h-[max(100svh,720px)] lg:px-16 lg:pb-11 lg:pt-24">
           <div className="lg:max-w-[760px]">
             <p className="m-0 mb-3.5 font-mono text-[12px] tracking-[0.06em] text-accent lg:mb-5">{study.eyebrow}</p>

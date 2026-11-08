@@ -81,6 +81,75 @@
   @media (min-width: 64em) and (not (max-height: 31.25em)) {
     .hud-strip { position: fixed; inset: 0 0 auto 0; }
   }
+  /* The one Sections nav (story 5). Below lg: the fixed phone pill. At lg: bottom-left HUD links. Where the strip sits in
+     flow (short viewports) the nav sits in flow too. */
+  .hud-nav {
+    position: fixed;
+    z-index: 4000;
+    left: 50%;
+    bottom: 22px;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 2px;
+    padding: 4px;
+    background: theme("colors.scrim");
+    border: 1px solid theme("colors.line");
+    border-radius: theme("borderRadius.full");
+    font: 400 12px/1.5 theme("fontFamily.mono");
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .hud-nav a {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: theme("spacing.target-min");
+    padding: 10px 14px;
+    border-radius: theme("borderRadius.full");
+    color: theme("colors.muted");
+    text-decoration: none;
+  }
+  .hud-nav a[aria-current] {
+    background: theme("colors.accent.DEFAULT");
+    color: theme("colors.stage");
+  }
+  .hud-nav a:focus-visible {
+    outline: 2px solid theme("colors.focus-ring");
+    outline-offset: -4px;
+  }
+  @media (min-width: 64em) {
+    .hud-nav {
+      left: theme("spacing.hud-inset-x");
+      bottom: theme("spacing.hud-inset-y");
+      transform: none;
+      gap: 18px;
+      padding: 0 8px;
+      background: theme("colors.stage");
+      border: 0;
+      border-radius: 0;
+      font-size: 11px;
+      letter-spacing: 0.1em;
+    }
+    .hud-nav a {
+      min-block-size: theme("spacing.target-floor");
+      padding: 0;
+      border-radius: 0;
+      color: theme("colors.text.DEFAULT");
+    }
+    .hud-nav a[aria-current] {
+      background: none;
+      color: theme("colors.accent.DEFAULT");
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 6px;
+    }
+  }
+  @media (min-width: 64em) and (pointer: coarse) {
+    .hud-nav a { min-block-size: theme("spacing.target-min"); }
+  }
+  @media (max-height: 31.25em) {
+    .hud-nav { position: static; transform: none; margin: 4px theme("spacing.margin-mobile"); inline-size: fit-content; }
+  }
   .hud-link {
     display: inline-flex;
     align-items: center;
@@ -97,13 +166,13 @@
   /* The clock island (story 4) fills this box; its width is reserved so the label never shifts. */
   .hud-clock {
     display: inline-block;
-    min-inline-size: 8ch;
+    min-inline-size: calc(8 * (1ch + 0.1em)); /* 8 glyphs plus the HUD letter-spacing */
     margin-inline-start: 0.7em;
     color: theme("colors.accent.DEFAULT");
     font-variant-numeric: tabular-nums;
   }
   @media (prefers-reduced-motion: reduce) {
-    .hud-clock { min-inline-size: 5ch; }
+    .hud-clock { min-inline-size: calc(5 * (1ch + 0.1em)); }
   }
 
   /* Skip link: first focusable element, off screen until focused, then above the HUD strip. */

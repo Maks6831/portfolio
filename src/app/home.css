@@ -1,0 +1,349 @@
+/* Home page (stories 6-8): hero, laptop frame, sheets. Plain CSS with theme(); loaded only by the home route.
+   Layout modes (EXPERIENCE.md Responsive), all in em:
+     stack     (min-width: 64em) and (min-height: 47.5em), motion allowed: hero and sheets stick and stack
+     lg flow   (min-width: 64em) otherwise: normal flow, one tab sticks under the strip (static under reduced motion)
+     below lg  the phone composition; one 32px tab sticks at top 0
+     short     (max-height: 31.25em): nothing sticks
+   No ancestor of a sticky element may set overflow other than the wrapper's overflow-x: clip. */
+
+.home, .site-footer { --m: theme("spacing.margin-mobile"); }
+@media (min-width: 48em) { .home, .site-footer { --m: theme("spacing.margin-tablet"); } }
+@media (min-width: 64em) { .home, .site-footer { --m: theme("spacing.margin-desktop"); } }
+.home {
+  overflow-x: clip;
+  background: theme("colors.stage");
+  color: theme("colors.text.DEFAULT");
+}
+
+.eyebrow {
+  margin: 0 0 14px;
+  font: 400 12px/1.5 theme("fontFamily.mono");
+  letter-spacing: 0.06em;
+  color: theme("colors.accent.DEFAULT");
+}
+
+/* ---------- hero ---------- */
+.hero {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0 0;
+  background: theme("colors.stage");
+}
+.hero-copy { position: relative; z-index: 5; padding-inline: var(--m); }
+.hero h1 {
+  margin: 0 0 14px;
+  font-size: 33px;
+  line-height: 1.02;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.hero .lede {
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.48;
+  color: theme("colors.text.secondary");
+}
+.hero-ctas { display: flex; flex-direction: column; gap: 8px; }
+.hero-ctas a { width: 100%; }
+@media (min-width: 48em) {
+  .hero-ctas { flex-direction: row; gap: 12px; }
+  .hero-ctas a { width: auto; }
+  .hero .lede { max-width: theme("spacing.measure-copy"); }
+}
+.hero-word {
+  margin: 32px var(--m) 0;
+  font-size: clamp(48px, 18vw, 84px);
+  line-height: 0.84;
+  font-weight: 800;
+  letter-spacing: -0.05em;
+  text-transform: uppercase;
+  color: theme("colors.accent.DEFAULT");
+  -webkit-text-stroke: 2px theme("colors.stage");
+  paint-order: stroke fill;
+  pointer-events: none;
+  width: max-content;
+  max-width: calc(100% - 2 * var(--m));
+}
+.hero-word span { display: block; white-space: nowrap; }
+
+/* ---------- laptop frame: the one image box. Below lg the bezel and base drop and it is the full-bleed phone slot ---------- */
+.laptop { position: relative; }
+.laptop-screen {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: theme("colors.screen");
+  border-block: 1px solid theme("colors.line");
+}
+.laptop-screen img {
+  position: absolute;
+  inset: 0;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: top;
+}
+.laptop-base { display: none; }
+.hero-laptop { margin-top: 32px; }
+
+@media (min-width: 64em) {
+  .hero { min-height: max(100svh, theme("spacing.hero-min-height")); padding: 96px 0 0; }
+  .hero-copy { margin-left: var(--m); padding: 0; width: min(theme("spacing.measure-hero-copy"), calc(50vw - var(--m))); }
+  .hero h1 { font-size: 49px; margin-bottom: 20px; }
+  .hero .lede { font-size: 17px; margin-bottom: 28px; }
+  .hero-word {
+    margin: auto 0 52px 30vw;
+    padding-top: 28px;
+    font-size: min(170px, 13.3vw);
+    width: max-content;
+    max-width: none;
+  }
+  .hero-laptop {
+    position: absolute;
+    left: 50vw;
+    top: 128px;
+    width: min(59.4vw, theme("spacing.frame-max"));
+    margin: 0;
+    z-index: 2;
+  }
+  .laptop-screen {
+    border: 10px solid theme("colors.bezel");
+    border-bottom-width: 14px;
+    border-radius: theme("borderRadius.lg") theme("borderRadius.lg") theme("borderRadius.DEFAULT") theme("borderRadius.DEFAULT");
+    overflow: hidden;
+  }
+  .laptop-base {
+    display: block;
+    block-size: 16px;
+    inline-size: 112%;
+    margin-inline-start: -6%;
+    background: linear-gradient(theme("colors.line"), theme("colors.bezel"));
+    border-radius: 0 0 theme("borderRadius.lg") theme("borderRadius.lg");
+    box-shadow: 0 30px 60px theme("colors.shadow-laptop");
+  }
+}
+.hero-word { position: relative; z-index: 4; }
+
+/* ---------- shared bits ---------- */
+.home a:focus-visible, .home button:focus-visible {
+  outline: 2px solid theme("colors.focus-ring");
+  outline-offset: 3px;
+}
+.home .stretch { text-decoration: none; color: inherit; }
+.home .stretch::after { content: ""; position: absolute; inset: 0; border-radius: theme("borderRadius.md"); }
+.home .stretch:focus-visible { outline: none; }
+.home .stretch:focus-visible::after { outline: 2px solid theme("colors.focus-ring"); outline-offset: 3px; }
+.home .link {
+  display: inline-block;
+  font: 600 14px/1.2 theme("fontFamily.sans");
+  color: theme("colors.accent.DEFAULT");
+  border-bottom: 1px solid theme("colors.accent.DEFAULT");
+  padding-bottom: 2px;
+}
+.home .kicker {
+  font: 400 12px/1.4 theme("fontFamily.mono");
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+.home .cap {
+  margin: 12px 0 0;
+  font: 400 12px/1.5 theme("fontFamily.mono");
+  color: theme("colors.text.secondary");
+}
+.home .cap::before {
+  content: "";
+  display: inline-block;
+  inline-size: 6px;
+  block-size: 6px;
+  margin-inline-end: 8px;
+  border-radius: 50%;
+  background: theme("colors.accent.DEFAULT");
+  vertical-align: middle;
+}
+.home .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+
+/* ---------- sheets and flow sections (stories 7-8) ---------- */
+.sheet, .flow {
+  position: relative;
+  background: theme("colors.stage");
+  border-top: 1px solid theme("colors.line");
+}
+.sheet { display: flex; flex-direction: column; }
+.sheet-2 { background: theme("colors.bezel"); }
+.tab {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  block-size: theme("spacing.sheet-tab-step-mobile");
+  padding-inline: var(--m);
+  font: 400 11px/1 theme("fontFamily.mono");
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+  background: theme("colors.bezel");
+  border-bottom: 1px solid theme("colors.line");
+  white-space: nowrap;
+}
+.sheet-2 .tab { background: theme("colors.stage"); }
+.tab b { font-weight: 400; color: theme("colors.accent.DEFAULT"); }
+.tab-d { display: none; }
+.tab-hint { display: none; }
+@media (min-width: 48em) { .tab-d { display: inline; } }
+.sbody, .flow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+}
+.sbody { flex: 1 1 auto; align-content: start; padding: 24px var(--m) 36px; align-items: start; }
+.flow { padding: theme("spacing.section-gap-mobile") var(--m) 40px; }
+.sbody h2, .flow h2 {
+  margin: 0 0 20px;
+  font-size: 30px;
+  line-height: 1.04;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+.sub { margin: 0 0 20px; font-size: 15px; line-height: 1.5; color: theme("colors.text.secondary"); max-width: 380px; }
+.pos { position: relative; }
+.ba { border-top: 1px solid theme("colors.line"); padding: 14px 0; }
+.ba b { display: block; margin-bottom: 6px; font: 400 12px/1.4 theme("fontFamily.mono"); letter-spacing: 0.12em; text-transform: uppercase; color: theme("colors.muted"); }
+.ba p { margin: 0; font-size: 15px; line-height: 1.45; color: theme("colors.text.DEFAULT"); }
+.pos .chips { margin: 16px 0 20px; }
+
+.frame { margin: 20px calc(-1 * var(--m)) 0; }
+.frame .laptop-screen { border-inline: 0; }
+.frame .cap { padding-inline: var(--m); }
+
+@media (min-width: 64em) {
+  .tab { block-size: theme("spacing.sheet-tab-step"); padding-inline: 24px; gap: 22px; }
+  .sbody, .flow { grid-template-columns: minmax(0, 1fr) 2fr; gap: 0 theme("spacing.gutter"); }
+  .sbody { padding: theme("spacing.sheet-body-padding-top") var(--m) theme("spacing.sheet-body-padding-bottom"); }
+  .flow { padding: theme("spacing.section-gap") var(--m) 96px; }
+  .sbody h2, .flow h2 { font-size: 40px; margin-bottom: 26px; }
+  .pos .chips { margin: 18px 0 22px; }
+  .frame { margin: 0; }
+  .frame .laptop-screen { border-inline: 10px solid theme("colors.bezel"); }
+  .frame .cap { padding-inline: 0; margin-top: 22px; }
+  .sheet-2 .frame .laptop-screen { border-color: theme("colors.stage"); }
+}
+
+/* One tab sticks while its sheet scrolls (below lg: top 0; lg flow: under the strip). Static under reduced motion and in short viewports. */
+@media (not (max-height: 31.25em)) and (prefers-reduced-motion: no-preference) {
+  .tab { position: sticky; top: 0; z-index: 10; }
+}
+@media (min-width: 64em) and (not (max-height: 31.25em)) and (prefers-reduced-motion: no-preference) {
+  .tab { top: theme("spacing.hud-strip"); }
+}
+
+/* Counter chip: stack mode only. */
+.ctr-wrap { display: none; }
+.flow > .ctr-wrap { grid-column: 1 / -1; margin-inline: calc(-1 * var(--m)); }
+.ctr {
+  position: absolute;
+  right: 16px;
+  bottom: 0;
+  padding: 0 8px;
+  background: theme("colors.stage");
+  font: 400 11px/24px theme("fontFamily.mono");
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+  white-space: nowrap;
+}
+.ctr b { font-weight: 400; color: theme("colors.accent.DEFAULT"); }
+
+/* ---------- stack mode: the hero and sheets stick and slide over one another, with zero JS ---------- */
+@media (min-width: 64em) and (min-height: 47.5em) and (prefers-reduced-motion: no-preference) {
+  .hero { position: sticky; top: 0; z-index: 1; }
+  .sheet { position: sticky; top: var(--top); min-height: calc(100svh - var(--top)); box-shadow: 0 -24px 48px theme("colors.shadow-sheet"); }
+  .sheet-1 { --top: 32px; z-index: 2; }
+  .sheet-2 { --top: 68px; z-index: 3; }
+  .sheet-3 { --top: 104px; z-index: 4; }
+  .flow { z-index: 20; box-shadow: 0 -24px 48px theme("colors.shadow-sheet"); }
+  .tab { position: static; }
+  .tab-hint { display: inline; margin-left: auto; }
+  .ctr-wrap { display: block; position: sticky; bottom: 18px; block-size: 0; z-index: 10; pointer-events: none; }
+  /* A surface that holds focus is raised above the stack, so a focused control is never covered. */
+  .hero:focus-within, .sheet:focus-within { z-index: 30; }
+  .flow:focus-within { z-index: 31; }
+}
+
+/* ---------- tiles, also shipped, roles, contact, footer (story 8) ---------- */
+.tiles, .also { display: grid; grid-template-columns: 1fr 1fr; gap: theme("spacing.tile-gap"); margin: 0; padding: 0; list-style: none; }
+.tiles > li { display: flex; }
+.tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  inline-size: 100%;
+  padding: 16px 16px 14px;
+  background: theme("colors.stage");
+  border: 1px solid theme("colors.line");
+  border-radius: theme("borderRadius.md");
+}
+.sheet-2 .tile { background: theme("colors.bezel"); }
+.tile h3, .it h3 { margin: 0 0 8px; font-size: 18px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+.tile p, .it p { margin: 0; flex: 1; font-size: 14px; line-height: 1.45; color: theme("colors.text.secondary"); }
+.tile .link { align-self: flex-start; margin-top: 12px; }
+.tile-chip { align-self: flex-start; margin-top: 16px; }
+.tile-link:hover, .tile-link:focus-within { border-color: theme("colors.accent.DEFAULT"); box-shadow: 0 0 0 3px theme("colors.ring-glow"); }
+.tile-link:hover .tile-chip, .tile-link:focus-within .tile-chip { background: theme("colors.accent.DEFAULT"); color: theme("colors.stage"); border-color: theme("colors.accent.DEFAULT"); }
+
+.also { grid-template-columns: minmax(0, 1fr); }
+.it {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  border: 1px solid theme("colors.line");
+  border-radius: theme("borderRadius.md");
+}
+.it:hover, .it:focus-within { border-color: theme("colors.accent.DEFAULT"); box-shadow: 0 0 0 3px theme("colors.ring-glow"); }
+.it-txt { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.it h3 { margin: 0; }
+.it .kicker { font-size: 12px; }
+.it .kicker i { font-style: normal; color: theme("colors.accent.DEFAULT"); }
+.it figure { margin: 0; }
+@media (min-width: 48em) {
+  .also { grid-template-columns: 1fr 1fr; }
+  .it-ft { grid-column: 1 / -1; display: grid; grid-template-columns: 1fr 1.2fr; }
+}
+@media (min-width: 64em) {
+  .tile { padding: 20px 20px 18px; min-block-size: 196px; }
+}
+
+.role { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 22px 0 24px; border-top: 1px solid theme("colors.line"); }
+.role .when { font: 400 11px/1.7 theme("fontFamily.mono"); letter-spacing: 0.06em; text-transform: uppercase; color: theme("colors.muted"); }
+.role .when b { display: block; font-weight: 400; color: theme("colors.accent.DEFAULT"); }
+.role h3 { margin: 0 0 2px; font-size: 20px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; }
+.role .co { margin: 0 0 12px; font-size: 15px; color: theme("colors.text.secondary"); }
+.role ul:not(.chips) { margin: 0 0 14px; padding-left: 18px; font-size: 14px; line-height: 1.5; color: theme("colors.text.secondary"); }
+.role li { margin: 0 0 4px; }
+.role .chips li { margin: 0; }
+@media (min-width: 64em) {
+  .role { grid-template-columns: 200px minmax(0, 1fr); gap: 24px; }
+}
+
+.btns { display: flex; flex-wrap: wrap; gap: 10px; margin: 0 0 14px; }
+@media (max-width: 47.99em) { .btns > a, .btns > button { inline-size: 100%; } }
+.email-line { margin: 0; font: 400 14px/1.5 theme("fontFamily.mono"); letter-spacing: 0.04em; color: theme("colors.text.secondary"); }
+
+.site-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 24px;
+  padding: 18px var(--m) 96px;
+  background: theme("colors.stage");
+  border-top: 1px solid theme("colors.line");
+  font: 400 11px/1.6 theme("fontFamily.mono");
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: theme("colors.muted");
+}
+.site-footer a { color: inherit; text-decoration: none; display: inline-flex; min-block-size: theme("spacing.target-floor"); align-items: center; }
+.site-footer a:hover { color: theme("colors.text.DEFAULT"); }
+.foot-links { display: flex; gap: 18px; }
+@media (min-width: 64em) { .site-footer { padding-bottom: 48px; } }

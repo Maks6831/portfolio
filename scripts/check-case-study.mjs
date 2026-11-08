@@ -139,7 +139,7 @@ check(/Updated \d{1,2} [A-Z][a-z]{2} \d{4}/.test(decode(headerMeta.replace(/<[^>
 // complete: 2.7 adds the contents list and 2.9 rewires home, neither adds a section.
 const h2s = [...html.matchAll(/<h2\b[^>]*>([\s\S]*?)<\/h2>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
 const siteSrc = read(join(root, "src", "content", "site.ts")) ?? "";
-const contactHeading = /export const contact = \{\s*heading:\s*"([^"]*)"/.exec(siteSrc)?.[1] ?? "";
+const contactHeading = /export const contact = \{[^}]*?\bheading:\s*"([^"]*)"/.exec(siteSrc)?.[1] ?? "";
 check(contactHeading !== "", "could not read contact.heading from site.ts");
 const expectedH2s = [
   "Summary",
@@ -608,8 +608,14 @@ const heroStart = home.search(/<h1\b/);
 const homeHero = heroStart !== -1 && workStart > heroStart ? home.slice(heroStart, workStart) : "";
 check(homeHero !== "", "home: could not find the hero between the <h1> and #work");
 checkInternal(anchors(homeHero).filter((a) => a.href === "/work/simply-happy"), "home hero", "/work/simply-happy", "Read the Simply Happy case study");
-checkInternal(anchors(homeWork).filter((a) => a.href === "/work/simply-happy"), "home #work feature", "/work/simply-happy", "Read the case study");
-checkInternal(anchors(home).filter((a) => a.href === "/work/simply-happy#assistant"), "home assistant tile", "/work/simply-happy#assistant", "Admin AI assistant");
+// v3: sheet 01's link is a stretched <a> on the h2, so its name is the heading (the "Read the case study" line is aria-hidden decoration).
+checkInternal(anchors(homeWork).filter((a) => a.href === "/work/simply-happy"), "home #work feature", "/work/simply-happy", "Simply Happy: retreat booking and payments");
+// v3: two links into #assistant: the "Safe by design" proof tile and the Also shipped assistant item.
+const assistantLinks = anchors(home).filter((a) => a.href === "/work/simply-happy#assistant");
+check(assistantLinks.length === 2, `home should link to /work/simply-happy#assistant twice (Safe by design tile, assistant item), found ${assistantLinks.length}`);
+for (const [label, a] of [["Safe by design", assistantLinks[0]], ["Admin AI assistant", assistantLinks[1]]]) {
+  check(!!a && a.text.startsWith(label) && !/\starget=/.test(a.attrs), `home #assistant link should read "${label}" and open in place`);
+}
 check(ids.has("assistant"), 'the case study needs id="assistant" for the home assistant tile to land on');
 const clientDomain = /\shref="[^"]*simplyhappy\.pt/i;
 check(!clientDomain.test(home), "home must not link to the client's site (simplyhappy.pt); only the case study does");
@@ -632,23 +638,21 @@ const featureSrc = attr(featureImg, /\ssrc="([^"]*)"/) ?? "";
 let featurePath = featureSrc;
 try { featurePath = decodeURIComponent(new URL(featureSrc, "http://x").searchParams.get("url") ?? featureSrc); } catch {}
 check(featurePath.startsWith("/") && existsSync(join(root, "public", featurePath)), `home feature image file missing under public/: ${featurePath || "(no src)"}`);
-// Links that stay plain <a> (Story 2.9): the footer CV keeps download on both pages; the CoinFlow tile opens a new tab.
+// Links that stay plain <a> (Story 2.9): the CV link keeps download on both pages.
 for (const [name, doc] of [["home", home], ["case study", html]]) {
   const cv = anchors(doc).filter((a) => a.href === "/Muhammad-Ali-Khan-CV.pdf");
   check(cv.length === 1 && /\sdownload(?:=|\s|$)/.test(cv[0].attrs), `${name}: the footer CV link (/Muhammad-Ali-Khan-CV.pdf) needs a download attribute`);
 }
+// v3: CoinFlow opens in the same tab (EXPERIENCE.md Also shipped item); the "↗" is decorative.
 const coinflow = anchors(home).filter((a) => a.href === "https://coinflow.netlify.app");
-check(
-  coinflow.length === 1 && /\starget="_blank"/.test(coinflow[0].attrs) && /\srel="noopener noreferrer"/.test(coinflow[0].attrs) && coinflow[0].text.includes("(opens in a new tab)"),
-  'home: the CoinFlow tile needs target="_blank", rel="noopener noreferrer" and the "(opens in a new tab)" hint',
-);
+check(coinflow.length === 1 && !/\starget=/.test(coinflow[0].attrs), "home: the CoinFlow item must open in the same tab (no target)");
 
 // Exactly the expected islands (source files only); "use client" placement itself is enforced by check-islands.
 const islandsDir = join(root, "src", "components", "islands");
 const islands = existsSync(islandsDir)
   ? readdirSync(islandsDir, { withFileTypes: true }).filter((e) => e.isFile() && /\.[jt]sx?$/.test(e.name)).map((e) => e.name).sort()
   : [];
-const expectedIslands = ["CopyEmail.tsx", "FloatingNavbar.tsx", "ScreenshotViewer.tsx"];
+const expectedIslands = ["CopyEmail.tsx", "LiveClock.tsx", "PillNav.tsx", "ScreenshotViewer.tsx"];
 check(JSON.stringify(islands) === JSON.stringify(expectedIslands), `src/components/islands should hold exactly ${expectedIslands.join(", ")}; found: ${islands.join(", ") || "none"}`);
 
 // Metadata

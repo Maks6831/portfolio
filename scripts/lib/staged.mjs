@@ -11,17 +11,7 @@
 // Keys: check-islands `<file>|<rule>`, check-anchors `<route>|<href>`, check-budget `<route>|ceiling`,
 // check-images `<route>|<rule>`.
 export const STAGED = [
-  // check-islands: removed with FloatingNavbar (story 5).
-  { gate: "islands", key: "src/components/islands/FloatingNavbar.tsx|scroll-resize-listener", until: 5, why: "FloatingNavbar is replaced by the PillNav island" },
-  { gate: "islands", key: "src/components/islands/FloatingNavbar.tsx|backdrop-filter", until: 5, why: "FloatingNavbar's inline blur goes with it" },
-  // check-budget: v2 bundles are above the v3 per-page targets until the v2 islands are gone. Interim hard caps,
-  // in kB over the /_not-found floor. Targets: home 12, case study 18.
-  { gate: "budget", key: "/|ceiling", until: 9, max: 16.5, why: "home is floor +16.1 kB today; target +12" },
-  // check-anchors: the #about section is gone in v3; navItems change in story 5, the case-study header in story 9.
-  { gate: "anchors", key: "/|#about", until: 5, why: "navItems in src/content/site.ts becomes Work / Profile / Connect" },
-  { gate: "anchors", key: "/work/simply-happy|/#about", until: 9, why: "the case-study nav in src/app/work/[slug]/page.tsx is rebuilt" },
-  // check-images: the hero image arrives with story 6.
-  { gate: "images", key: "/|hero-preload", until: 6, why: "home has no hero image preload yet" },
+  // Empty: every v2 offender is gone. STRICT=1 pnpm build must match a normal build.
 ];
 
 const strict = process.env.STRICT === "1";

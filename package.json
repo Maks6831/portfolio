@@ -14,6 +14,7 @@
     "check:dates": "node scripts/check-dates.mjs",
     "check:budget": "node scripts/check-budget.mjs",
     "check:images": "node scripts/check-images.mjs",
+    "release:lcp": "node scripts/release-lcp.mjs",
     "check:anchors": "node scripts/check-anchors.mjs",
     "check:case-study": "node scripts/check-case-study.mjs",
     "check:not-found": "node scripts/check-not-found.mjs",

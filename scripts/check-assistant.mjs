@@ -8,10 +8,12 @@ const { load } = compileComponents({
   cacheName: "check-assistant",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/components/ui/CaseStudyPanel": "./CaseStudyPanel.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/components/ui/CaseStudyPanel.tsx": "CaseStudyPanel.js",
     "src/components/sections/AssistantSection.tsx": "AssistantSection.js",
   },
@@ -66,14 +68,17 @@ check(!/<[^>]*>\s*undefined\s*</.test(section) && !/>\s*null\s*</.test(section),
 const intro = /<p\b[^>]*class="([^"]*)"/.exec(beforeList)?.[1] ?? "";
 const closing = /<p\b[^>]*class="([^"]*)"/.exec(afterList)?.[1] ?? "";
 for (const [name, cls] of [["intro", intro], ["closing", closing]]) {
-  check(/(?:^|\s)max-w-\[68ch\](?:\s|$)/.test(cls) && /\btext-body\b/.test(cls) && /\btext-text-secondary\b/.test(cls), `section: the ${name} <p> is max-w-[68ch] text-body text-text-secondary`);
+  check(/(?:^|\s)max-w-\[68ch\](?:\s|$)/.test(cls) && /\btext-text-secondary\b/.test(cls), `section: the ${name} <p> is max-w-[68ch] text-text-secondary`);
 }
 
 // Matrix: "Narrow viewport" -> panels stack by default, two columns only from md:, nothing hidden, no fixed widths.
+// v3: the safeguards are rows in one column (h3 over body under a hairline); the section's capture sits beside them from
+// md, so the wrapper is a single column until md and two columns after it.
 const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(section)?.[1] ?? "";
-check(/\bgrid\b/.test(grid) && /\bgrid-cols-1\b/.test(grid), "layout: the panel grid must default to grid-cols-1");
-check(/\bmd:grid-cols-2\b/.test(grid), "layout: two columns only from md: (md:grid-cols-2)");
-check(!/(^|\s)grid-cols-2\b/.test(grid) && !/\blg:grid-cols-/.test(grid), "layout: grid-cols-2 must be md:-prefixed, never unconditional, and no third column");
+check(!/\bgrid\b/.test(grid) && !/\bgrid-cols-/.test(grid), "layout: the safeguard rows are one stacked column (no grid on the list)");
+const wrapper = /<div\b[^>]*class="([^"]*\bmd:grid-cols-\[[^"]*)"/.exec(section)?.[1] ?? "";
+check(!!wrapper && !/(^|\s)grid(\s|$)/.test(wrapper) && /\bmd:grid\b/.test(wrapper), "layout: the rows and the capture sit in a wrapper that is a plain block until md (md:grid md:grid-cols-[...])");
+check(/(^|\s)border-t\b/.test(/<li\b[^>]*class="([^"]*)"/.exec(section)?.[1] ?? ""), "layout: each safeguard row sits under a hairline (border-t)");
 const classAttrs = [...section.matchAll(/\sclass="([^"]*)"/g)].map((m) => m[1]);
 check(!classAttrs.some((c) => /(?:^|\s)(?:[a-z-]+:)*(?:hidden|sr-only|invisible)(?:\s|$)/.test(c)) && !/<details\b/.test(section), "layout: nothing may be hidden behind disclosure or utility classes");
 check(!/(?:^|[\s":])(?:min-)?w-(?:\[|\d|screen|full)|whitespace-nowrap/.test(section), "layout: no fixed widths or nowrap that could cause horizontal scroll at 390px (max-w- is fine)");

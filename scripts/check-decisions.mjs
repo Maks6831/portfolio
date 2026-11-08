@@ -8,11 +8,15 @@ const { load } = compileComponents({
   cacheName: "check-decisions",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/components/ui/DecisionCard": "./DecisionCard.js",
+    "@/components/ui/StateDiagram": "./StateDiagram.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/components/ui/DecisionCard.tsx": "DecisionCard.js",
+    "src/components/ui/StateDiagram.tsx": "StateDiagram.js",
     "src/components/sections/DecisionsSection.tsx": "DecisionsSection.js",
   },
 });
@@ -64,6 +68,20 @@ const ul = /<ul\b[^>]*class="([^"]*)"/.exec(section)?.[1] ?? "";
 check(/\bgrid-cols-1\b/.test(ul), "section: the card list must be a single column (grid-cols-1)");
 check(!/\b(?:md|lg):grid-cols-/.test(ul), "section: the card list must stay single-column at every breakpoint (no md:/lg:grid-cols-)");
 check(count(section, /Where this lives/g) === 1, "section: only the card with a source shows 'Where this lives'");
+
+// v3: the payment-state diagram ends the section, after the cards, with its caption as the shortcut row.
+const diagram = {
+  states: [
+    { state: "Pending", meaning: "Open." },
+    { state: "Confirmed", meaning: "Paid." },
+  ],
+  transitions: ["Webhook"],
+  caption: "Shortcut row caption.",
+};
+const withDiagram = render(h(DecisionsSection, { decisions: [withSource], diagram }));
+check(count(withDiagram, /<figure\b/g) === 1 && withDiagram.lastIndexOf("</ul>") < withDiagram.indexOf("<figure"), "section: the state diagram follows the decision cards");
+check(/<figcaption\b[^>]*\btext-muted\b[^>]*>\s*Shortcut row caption\.\s*<\/figcaption>/.test(withDiagram), "section: the diagram's shortcut row (caption) is muted and always visible");
+check(count(render(h(DecisionsSection, { decisions: [withSource] })), /<figure\b/g) === 0, "section: no figure when the content has no diagram");
 
 if (failures.length) {
   console.error(`check:decisions failed:\n - ${failures.join("\n - ")}`);

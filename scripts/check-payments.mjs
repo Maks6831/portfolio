@@ -8,11 +8,13 @@ const { load } = compileComponents({
   cacheName: "check-payments",
   aliases: {
     "@/app/lib/utils": "./utils.js",
+    "@/components/case-study/SectionFrame": "./SectionFrame.js",
     "@/components/ui/CaseStudyPanel": "./CaseStudyPanel.js",
     "@/components/ui/StateDiagram": "./StateDiagram.js",
   },
   files: {
     "src/app/lib/utils.ts": "utils.js",
+    "src/components/case-study/SectionFrame.tsx": "SectionFrame.js",
     "src/components/ui/CaseStudyPanel.tsx": "CaseStudyPanel.js",
     "src/components/ui/StateDiagram.tsx": "StateDiagram.js",
     "src/components/sections/PaymentsSection.tsx": "PaymentsSection.js",
@@ -49,9 +51,13 @@ check(/<section\b[^>]*\sid="payments"/.test(section), 'section: missing <section
 check(/<h2\b[^>]*>\s*The booking and payments flow\s*<\/h2>/.test(section), "section: h2 must read exactly 'The booking and payments flow'");
 const h2Id = /<h2\b[^>]*\sid="([^"]+)"/.exec(section)?.[1];
 check(!!h2Id && new RegExp(`<section\\b[^>]*aria-labelledby="${h2Id}"`).test(section), "section: aria-labelledby must point at the h2");
-const figureAt = section.indexOf("<figure");
-check(figureAt !== -1, "section: must contain the <figure> diagram");
-check(count(section.slice(0, figureAt), /<p\b/g) === payments.flow.length, `section: one <p> per flow paragraph before the figure (${payments.flow.length})`);
+// v3: the state diagram ends the Decisions section (check-decisions); here the flow is four numbered steps.
+check(count(section, /<figure\b/g) === 0, "section: no <figure> (the payment-state diagram lives in #decisions)");
+const eyebrowAt = section.search(/<p\b[^>]*>\s*Reliability decisions/);
+check(count(section.slice(0, eyebrowAt), /<p\b/g) === payments.flow.length, `section: one <p> per flow paragraph before the reliability cards (${payments.flow.length})`);
+const flowList = /<ol\b[^>]*role="list"[^>]*>[\s\S]*?<\/ol>/.exec(section)?.[0] ?? "";
+check(count(flowList, /<li\b/g) === payments.flow.length, "section: the flow is one <ol role=\"list\"> with one <li> per step");
+payments.flow.forEach((_, i) => check(new RegExp(`<span\\b[^>]*aria-hidden="true"[^>]*>\\s*0${i + 1}\\s*</span>`).test(flowList), `section: flow step ${i + 1} carries the aria-hidden numeral 0${i + 1}`));
 check(count(section, /<article\b/g) === 0, "section: no <article> (the gate treats articles as decision cards)");
 check(count(section, /<h3\b/g) === payments.reliability.length, `section: one <h3> per reliability panel (${payments.reliability.length})`);
 check(count(section, /<h2\b/g) === 1 && !/<h4\b|<h5\b|<h6\b/.test(section), "section: exactly one h2 and no deeper headings than h3");
@@ -92,7 +98,7 @@ check(!/(^|\s)flex-row\b/.test(ol), "diagram: flex-row must be md:-prefixed, nev
 const classAttrs = [...section.matchAll(/\sclass="([^"]*)"/g)].map((m) => m[1]);
 check(!classAttrs.some((c) => /(?:^|\s)(?:hidden|sr-only|invisible)(?:\s|$)/.test(c)) && !/<details\b/.test(section), "section: nothing may be hidden behind disclosure or utility classes (aria-hidden glyphs aside)");
 check(!/(?:^|[\s":])(?:min-)?w-\[|whitespace-nowrap/.test(section), "section: no fixed widths or nowrap that could cause horizontal scroll at 390px (max-w- is fine)");
-check(count(section, /aria-hidden="true"/g) === payments.diagram.transitions.length, "section: the connector glyphs must be the only aria-hidden elements");
+check(count(section, /aria-hidden="true"/g) === payments.flow.length, "section: the flow numerals must be the only aria-hidden elements");
 check(!/\boverflow-x-(?:auto|scroll)\b/.test(section), "section: no horizontal scroll container");
 check(!/\b(?:bg-|text-|border-)success\b/.test(section), "section: the success colour is reserved for shipped, live or passing-test indicators");
 const mutedUses = [...section.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-muted\b[^"]*"/g)].map((m) => m[1]);

@@ -13,8 +13,13 @@ export type Screenshot = {
   alt: string;
   /** Must start with "Test data" so nobody mistakes it for real customers. */
   caption: `Test data${string}`;
+  /** The case-study section the capture illustrates (EXPERIENCE.md IA table); array order is the order inside it. */
+  section: ScreenshotSection;
   sizes?: string;
 };
+
+/** Sections that carry inline captures. There is no end-of-page gallery. */
+export type ScreenshotSection = "owned" | "payments" | "testing" | "assistant";
 
 export type OwnedArea = {
   title: string;
@@ -114,14 +119,12 @@ export type CaseStudy = {
   };
   owned: OwnedArea[];
   screenshots: Screenshot[];
-  /** One or two sentences under the Screenshots heading, e.g. where the captures come from. */
-  screenshotsNote?: string;
   /** Story 2.3: one card per decision, rendered after the payments flow. */
   decisions?: Decision[];
   /** Story 2.2: rendered between What I owned and Decisions. */
   payments?: PaymentsSection;
-  /** Story 2.4: rendered between Decisions and Screenshots. */
+  /** Story 2.4: rendered between Decisions and the assistant. */
   testing?: TestingSection;
-  /** Story 2.5: rendered between Testing and Screenshots. */
+  /** Story 2.5: rendered between Testing and Contact. */
   assistant?: AssistantSection;
 };

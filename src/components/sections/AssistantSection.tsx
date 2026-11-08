@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import SectionFrame, { type TrailPosition } from "@/components/case-study/SectionFrame";
-import CaseStudyPanel from "@/components/ui/CaseStudyPanel";
 import type { AssistantSection as AssistantContent } from "@/content/work/types";
 
 type Props = { assistant?: AssistantContent; trail?: TrailPosition; media?: ReactNode };
@@ -15,16 +14,21 @@ const AssistantSection = ({ assistant, trail, media }: Props) => {
   if (!assistant) return null;
   return (
     <SectionFrame id="assistant" title="Admin AI assistant (safety design)" trail={trail}>
-      <p className="mt-6 max-w-[68ch] text-body text-text-secondary">{assistant.intro}</p>
-      <ul role="list" className="m-0 mt-8 grid list-none grid-cols-1 gap-6 p-0 md:grid-cols-2">
-        {assistant.safeguards.map((panel, i) => (
-          <li key={`safeguard-${i}`}>
-            <CaseStudyPanel heading={panel.title}>{panel.text}</CaseStudyPanel>
-          </li>
-        ))}
-      </ul>
-      {media ? <div className="mt-8">{media}</div> : null}
-      <p className="mt-8 max-w-[68ch] text-body text-text-secondary">{assistant.closing}</p>
+      <p className="m-0 max-w-[68ch] text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">{assistant.intro}</p>
+      <div className="mt-6 md:grid md:grid-cols-[minmax(0,1fr)_46%] md:items-start md:gap-tile-gap lg:grid-cols-[minmax(0,1fr)_354px]">
+        <ul role="list" className="m-0 list-none p-0">
+          {assistant.safeguards.map((panel, i) => (
+            <li key={`safeguard-${i}`} className="border-t border-line py-4">
+              <h3 className="m-0 text-[18px] font-semibold leading-tight tracking-[-0.01em] text-text">{panel.title}</h3>
+              <p className="m-0 mt-2 max-w-[68ch] text-[14px] leading-[1.45] text-text-secondary">{panel.text}</p>
+            </li>
+          ))}
+        </ul>
+        {media ? <div className="mt-6 md:mt-4">{media}</div> : null}
+      </div>
+      <p className="m-0 mt-6 max-w-[68ch] border-t border-line pt-5 text-[15px] leading-[1.55] text-text-secondary lg:text-[16px]">
+        {assistant.closing}
+      </p>
     </SectionFrame>
   );
 };

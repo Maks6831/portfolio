@@ -156,7 +156,7 @@ export default async function CaseStudyPage({ params }: Props) {
           {study.decisions?.length ? (
             <>
               <TrailTab {...trailOf("decisions")} id="decisions" name="Decisions" />
-              <DecisionsSection decisions={study.decisions} trail={trailOf("decisions")} />
+              <DecisionsSection decisions={study.decisions} diagram={study.payments?.diagram} trail={trailOf("decisions")} />
             </>
           ) : null}
 

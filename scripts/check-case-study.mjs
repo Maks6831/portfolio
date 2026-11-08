@@ -172,11 +172,16 @@ if (!hasPayments) {
   check(screenshotsAt === -1 || screenshotsAt > paymentsStart, "#payments must come before #screenshots");
   check(/<h2\b[^>]*>\s*The booking and payments flow\s*<\/h2>/.test(paymentsHtml), '#payments h2 must read exactly "The booking and payments flow"');
   check(!/<article\b/.test(paymentsHtml), "#payments must not contain <article> (articles are decision cards)");
-  const figureAt = paymentsHtml.indexOf("<figure");
-  check(figureAt !== -1, "#payments must contain the state-diagram <figure>");
-  check((paymentsHtml.match(/<figure\b/g) ?? []).length === 1, "#payments must hold exactly one <figure>");
-  check((paymentsHtml.slice(0, figureAt === -1 ? undefined : figureAt).match(/<p\b/g) ?? []).length === expectedFlow, `#payments should hold ${expectedFlow} flow paragraphs (<p>) before the diagram`);
-  const figure = /<figure\b[\s\S]*?<\/figure>/.exec(paymentsHtml)?.[0] ?? "";
+  // v3: the flow is four numbered steps, then the captures and the reliability cards; the state diagram ends #decisions.
+  check(!/<figure\b/.test(paymentsHtml), "#payments must hold no <figure> (the state diagram ends #decisions; the captures are checked below)");
+  const eyebrowAt = paymentsHtml.search(/<p\b[^>]*>\s*Reliability decisions\s*<\/p>/);
+  check((paymentsHtml.slice(0, eyebrowAt === -1 ? undefined : eyebrowAt).match(/<p\b/g) ?? []).length === expectedFlow, `#payments should hold ${expectedFlow} flow paragraphs (<p>) before the reliability cards`);
+  check((paymentsHtml.match(/<ol\b[^>]*role="list"/g) ?? []).length === 1, "#payments must hold the flow as one <ol role=\"list\">");
+  const decStart = html.indexOf('id="decisions"');
+  const decEnd = decStart === -1 ? -1 : html.indexOf("</section>", decStart);
+  const decisionsSlice = decStart === -1 ? "" : html.slice(decStart, decEnd === -1 ? undefined : decEnd);
+  check((decisionsSlice.match(/<figure\b/g) ?? []).length === 1 && decisionsSlice.lastIndexOf("</ul>") < decisionsSlice.indexOf("<figure"), "#decisions must hold the one state-diagram <figure>, after the decision cards");
+  const figure = /<figure\b[\s\S]*?<\/figure>/.exec(decisionsSlice)?.[0] ?? "";
   const labelledBy = /<figure\b[^>]*aria-labelledby="([^"]+)"/.exec(figure)?.[1];
   check(!!labelledBy && new RegExp(`<figcaption\\b[^>]*\\sid="${labelledBy}"`).test(figure), "#payments figure must be named by its figcaption");
   check(/<ol\b[^>]*role="list"/.test(figure), '#payments diagram must be an <ol role="list">');
@@ -185,21 +190,22 @@ if (!hasPayments) {
   const expectedTransitions = expectedStates - 1;
   check(items.length === expectedStates + expectedTransitions, `#payments diagram should list ${expectedStates} states and ${expectedTransitions} transitions (${expectedStates + expectedTransitions} <li>), found ${items.length}`);
   // The pills carry the raised surface; the labels between them carry an aria-hidden connector glyph.
-  check((figure.match(/<li\b[^>]*bg-bezel/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state pills`);
+  check((figure.match(/<li\b[^>]*border-accent/g) ?? []).length === expectedStates, `#payments diagram should hold ${expectedStates} state boxes`);
   check((figure.match(/aria-hidden="true"/g) ?? []).length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} aria-hidden connector glyphs, one per transition`);
   // Every transition item must carry a visible label once the glyph is removed; an undefined label renders an empty span.
-  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*bg-bezel)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
+  const transitionItems = [...figure.matchAll(/<li\b(?![^>]*border-accent)[^>]*>([\s\S]*?)<\/li>/g)].map((m) =>
     decode(m[1].replace(/<span\b[^>]*aria-hidden="true"[^>]*>[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, " ")).trim(),
   );
   check(transitionItems.length === expectedTransitions, `#payments diagram should hold ${expectedTransitions} transition items, found ${transitionItems.length}`);
   transitionItems.forEach((label, i) => check(label.length > 0, `#payments diagram transition ${i + 1} has no label text`));
-  const pills = [...figure.matchAll(/<li\b[^>]*bg-bezel[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
+  const pills = [...figure.matchAll(/<li\b[^>]*border-accent[^>]*>\s*<span\b[^>]*>([\s\S]*?)<\/span>/g)].map((m) => decode(m[1]).trim());
   check(pills[0] === "Pending" && pills[pills.length - 1] === "Confirmed", `#payments diagram must run from Pending to Confirmed, found: ${pills.join(" > ") || "none"}`);
   // Panels: one <h3> per reliability entry, under an eyebrow that is not a heading, in a grid that stacks first.
   check((paymentsHtml.match(/<h3\b/g) ?? []).length === expectedPanels, `#payments should hold exactly ${expectedPanels} <h3>, one per reliability panel`);
   check(/<p\b[^>]*>\s*Reliability decisions\s*<\/p>/.test(paymentsHtml), '#payments needs the "Reliability decisions" eyebrow as a <p>, not a heading');
   const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(paymentsHtml)?.[1] ?? "";
   check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#payments panel grid must be grid-cols-1 md:grid-cols-2");
+  // The panel list is the last <ul> before the section ends; the flow is the <ol>.
   // Honesty and confidentiality: "a daily job" and the verified 30-day threshold; no time of day or schedule, no
   // currency, URL, path, file name or link, and stays are never described as webhook-only.
   const text = decode(paymentsHtml.replace(/<[^>]+>/g, " "));
@@ -357,7 +363,8 @@ if (!hasAssistant) {
   const h3Texts = [...list.matchAll(/<h3\b[^>]*>([\s\S]*?)<\/h3>/g)].map((m) => decode(m[1].replace(/<[^>]+>/g, "")).trim());
   check(JSON.stringify(h3Texts) === JSON.stringify(expectedSafeguardTitles), `#assistant panel headings should read ${expectedSafeguardTitles.join(" | ")}, found: ${h3Texts.join(" | ") || "none"}`);
   const grid = /<ul\b[^>]*role="list"[^>]*class="([^"]*)"/.exec(assistantHtml)?.[1] ?? "";
-  check(/\bgrid-cols-1\b/.test(grid) && /\bmd:grid-cols-2\b/.test(grid), "#assistant panel grid must be grid-cols-1 md:grid-cols-2");
+  check(!/\bgrid-cols-/.test(grid), "#assistant safeguards are one stacked column of rows (the capture sits beside them from md)");
+  check(/<div\b[^>]*class="[^"]*\bmd:grid-cols-\[[^"]*"[^>]*>\s*<ul\b/.test(assistantHtml), "#assistant rows sit in the two-column wrapper that holds the capture from md");
   // One intro <p> between the h2 and the list and one closing <p> after it; the panels' own <p> bodies sit inside the list.
   const beforeList = ulStart === -1 ? assistantHtml : assistantHtml.slice(0, ulStart);
   const afterList = ulEnd === -1 ? "" : assistantHtml.slice(ulEnd);

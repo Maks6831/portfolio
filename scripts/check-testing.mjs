@@ -71,7 +71,7 @@ check(!/<(dd|dt|p|span)\b[^>]*>\s*<\/\1>/.test(bare), "tile without detail: no e
 check(!/<[^>]*>\s*undefined\s*</.test(section) && !/>\s*null\s*</.test(section), "section: never prints undefined or null");
 const withDetail = tiles[0] ?? "";
 check(withDetail.includes(testing.counts[0].detail), "tile with detail: the detail line must render");
-check(/<dd\b[^>]*\btext-muted\b[^>]*>\s*first detail line\s*<\/dd>/.test(withDetail), "tile with detail: the detail line is a text-muted <dd>");
+check(/<dd\b[^>]*\btext-text-secondary\b[^>]*>\s*first detail line\s*<\/dd>/.test(withDetail), "tile with detail: the detail line is a text-secondary <dd>");
 
 // Matrix: "Date formatting" -> ISO in content, "D Mon YYYY" on the page, once; malformed renders no date.
 const label = /<p\b[^>]*>\s*(approx\.[^<]*)<\/p>/.exec(section)?.[1]?.trim();
@@ -79,7 +79,7 @@ check(label === "approx., as of 18 Oct 2026", `section: as-of label must read "a
 check(count(section, /approx\., as of/g) === 1, "section: the as-of label appears exactly once");
 check(!section.includes("2026-10-18"), "section: the ISO date must not leak into the markup");
 const asOfP = /<p\b[^>]*class="([^"]*)"[^>]*>\s*approx\./.exec(section)?.[1] ?? "";
-check(/\btext-caption\b/.test(asOfP) && /\btext-muted\b/.test(asOfP), "section: the as-of label is text-caption text-muted");
+check(/\bfont-mono\b/.test(asOfP) && /\btext-muted\b/.test(asOfP), "section: the as-of label is mono text-muted");
 check(section.indexOf("approx., as of") < section.indexOf("<dl"), "section: the as-of label comes before the tiles");
 const asOfId = /<p\b[^>]*\sid="([^"]+)"[^>]*>\s*approx\./.exec(section)?.[1];
 check(asOfId === "testing-asof" && /<dl\b[^>]*aria-describedby="testing-asof"/.test(section), 'section: the <dl> must be described by the as-of <p> (id="testing-asof", aria-describedby)');
@@ -103,7 +103,7 @@ check(!/<(?:img|svg|picture|canvas)\b/.test(section), "layout: real text only, n
 check(!/\b(?:bg-|text-|border-)success\b/.test(section), "tokens: the success colour is reserved for shipped, live or passing-test indicators");
 check(!/#[0-9a-f]{3,8}\b/i.test(section), "tokens: no raw hex colours");
 const mutedUses = [...section.matchAll(/<(\w+)\b[^>]*class="[^"]*\btext-muted\b[^"]*"/g)].map((m) => m[1]);
-check(mutedUses.length === 1 + details && mutedUses.every((tag) => tag === "p" || tag === "dd"), `tokens: text-muted only on the as-of label and the detail lines, found on: ${mutedUses.join(", ")}`);
+check(mutedUses.length === 1 && mutedUses[0] === "p", `tokens: text-muted only on the as-of label, found on: ${mutedUses.join(", ")}`);
 check(strip(section).includes("First files 12 first detail line Second tests about 34"), "section: tile text reads label, value, detail in order");
 
 if (failures.length) {

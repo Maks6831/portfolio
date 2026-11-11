@@ -182,7 +182,7 @@ export const contact = {
   heading: "Hiring for a full-stack role?",
   line: "Available from December 2026.",
   email,
-  linkedin: "https://www.linkedin.com/in/muhammad-khan-464b80203/",
+  linkedin: "https://www.linkedin.com/in/muhammad-ali-khan-464b80203/",
   github: "https://github.com/Maks6831",
   cv: { href: "/Muhammad-Ali-Khan-CV.pdf", label: "Download CV (PDF)" },
   name: siteName,

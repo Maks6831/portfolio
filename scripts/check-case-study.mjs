@@ -709,7 +709,7 @@ check(locs.length === 2 && locs.includes("https://muhammadalikhan.co.uk") && loc
 check((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) ?? []).length === 2, "sitemap entries need a fixed date-only lastmod");
 
 // Person JSON-LD, once per page
-const sameAs = ["https://www.linkedin.com/in/muhammad-khan-464b80203/", "https://github.com/Maks6831"];
+const sameAs = ["https://www.linkedin.com/in/muhammad-ali-khan-464b80203/", "https://github.com/Maks6831"];
 for (const [name, file] of [["home", join(app, "index.html")], ["case study", join(workDir, "simply-happy.html")]]) {
   const doc = read(file) ?? "";
   const scripts = doc.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) ?? [];

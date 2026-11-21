@@ -264,7 +264,11 @@
   .flow { z-index: 20; box-shadow: 0 -24px 48px theme("colors.shadow-sheet"); }
   .tab { position: static; }
   .tab-hint { display: inline; margin-left: auto; }
-  .ctr-wrap { display: block; position: sticky; bottom: 18px; block-size: 0; z-index: 10; pointer-events: none; }
+  /* The wrap is the chip's own 24px box; the negative bottom margin cancels its height so it adds no layout, and leaves the
+     top margin edge where sticky clamps it (a negative top margin would let it slip 24px out). Sticky keeps a box inside its
+     section, so the chip can never hang past the section's top edge and show over the surface below it (with a 0-size
+     wrap it hung 24px above, so at load sheet 01's chip sat under the hero's and the corner read "01 / 03" twice). */
+  .ctr-wrap { display: block; position: sticky; bottom: 18px; block-size: 24px; margin-bottom: -24px; z-index: 10; pointer-events: none; }
   /* A surface that holds focus is raised above the stack, so a focused control is never covered. */
   .hero:focus-within, .sheet:focus-within { z-index: 30; }
   .flow:focus-within { z-index: 31; }

@@ -1,4 +1,4 @@
-import type { Metadata, ResolvingMetadata } from "next";
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import PageShell from "@/components/layout/PageShell";
@@ -17,6 +17,7 @@ import Chip from "@/components/ui/Chip";
 import { caseStudySlugs, getCaseStudy } from "@/content/work";
 import { siteMeta } from "@/content/site";
 import { formatDay } from "@/lib/dates";
+import { caseStudyJsonLd } from "@/lib/json-ld";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,17 +28,13 @@ export function generateStaticParams() {
   return caseStudySlugs.map((slug) => ({ slug }));
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const study = getCaseStudy(slug);
   if (!study) notFound();
 
-  // `openGraph` is replaced, not merged, so carry the root's social image over. `twitter.images`
+  // The social image comes from ./opengraph-image.tsx (file-based metadata wins over this object); `twitter.images`
   // is left unset so it falls back to that same image.
-  const inherited = await parent;
   const title = `${study.name} case study · ${siteMeta.name}`;
   const path = `/work/${study.slug}`;
   return {
@@ -51,7 +48,6 @@ export async function generateMetadata(
       title,
       description: study.lede,
       locale: "en_GB",
-      images: inherited.openGraph?.images ?? [],
     },
     twitter: {
       card: "summary_large_image",
@@ -170,6 +166,7 @@ export default async function CaseStudyPage({ params }: Props) {
 
         <CaseFooter />
       </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: caseStudyJsonLd(study) }} />
     </PageShell>
   );
 }

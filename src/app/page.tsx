@@ -7,6 +7,7 @@ import SupportingWork from "@/components/sections/SupportingWork";
 import Experience from "@/components/sections/Experience";
 import ContactSection from "@/components/sections/ContactSection";
 import SiteFooter from "@/components/sections/SiteFooter";
+import { homeJsonLd } from "@/lib/json-ld";
 
 // Hero, sheets 01-03, then Experience and Contact (flow sections that slide over the stack) in one container, so the
 // sticky hero and sheets stay stuck until the end. The wrapper's overflow-x: clip is the only clipping.
@@ -20,6 +21,7 @@ const Page = () => (
       <Experience />
       <ContactSection />
     </div>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: homeJsonLd() }} />
   </PageShell>
 );
 

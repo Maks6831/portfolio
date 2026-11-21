@@ -191,7 +191,7 @@ export const contact = {
 export const siteMeta = {
   origin: "https://muhammadalikhan.co.uk",
   // ISO date of the last home-page content change; feeds the sitemap.
-  updated: "2026-11-07",
+  updated: "2026-11-21",
   name: siteName,
   role: siteRole,
   title: `${siteName} · ${siteRole}`,
@@ -201,10 +201,14 @@ export const siteMeta = {
   imageAlt: `${siteName}, ${siteRole.toLowerCase()}. From email bookings to a live booking and payments platform.`,
 };
 
-// Person JSON-LD source (rendered once in the root layout). URLs come from `contact` and `siteMeta`.
+// Person JSON-LD source (src/lib/json-ld.ts, rendered on the home page and the case study). URLs come from `contact`
+// and `siteMeta`. `description` is third person (it describes the entity); `knowsAbout` lists only stacks the site names.
 export const person = {
   name: siteName,
   jobTitle: siteRole,
+  description:
+    "Full-stack engineer in London who took Simply Happy from email bookings and a WordPress site to a live booking and payments platform.",
+  knowsAbout: ["TypeScript", "SvelteKit", "tRPC", "PostgreSQL", "Stripe", "Playwright", "React", "Next.js", "Vue.js"],
   url: siteMeta.origin,
   sameAs: [contact.linkedin, contact.github],
   address: { locality: "London", country: "GB" },

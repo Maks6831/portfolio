@@ -39,6 +39,7 @@
   font-weight: 700;
   letter-spacing: -0.03em;
 }
+.hero h1 .eyebrow { display: block; }
 .hero .lede {
   margin: 0 0 18px;
   font-size: 15px;

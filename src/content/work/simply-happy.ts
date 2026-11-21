@@ -9,7 +9,7 @@ export const simplyHappy = {
   title: simplyHappyFeature.heading,
   eyebrow: "Case study",
   lede: hero.lede,
-  updated: "2026-10-19",
+  updated: "2026-11-11",
   summary: {
     before: simplyHappyFeature.before,
     after: simplyHappyFeature.after,

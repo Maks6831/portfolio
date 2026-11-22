@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { person, siteMeta } from "@/content/site";
+import { siteMeta } from "@/content/site";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteMeta.origin),
@@ -22,21 +22,6 @@ export const metadata: Metadata = {
   },
 };
 
-// Person entity for name search. `<` is escaped so content can never close the script tag.
-const personJsonLd = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: person.name,
-  jobTitle: person.jobTitle,
-  url: person.url,
-  sameAs: person.sameAs,
-  address: {
-    "@type": "PostalAddress",
-    addressLocality: person.address.locality,
-    addressCountry: person.address.country,
-  },
-}).replace(/</g, "\\u003c");
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -49,7 +34,6 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: personJsonLd }} />
       </body>
     </html>
   );

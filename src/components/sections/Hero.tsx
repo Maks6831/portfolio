@@ -14,8 +14,12 @@ const Hero = () => {
   return (
     <section className="hero" aria-label="Introduction">
       <div className="hero-copy">
-        <p className="eyebrow">{hero.eyebrow}</p>
-        <h1>{hero.headline}</h1>
+        {/* The name, role and city line sits inside the <h1> so the page's main heading says who this is (name search);
+            it still renders as the small mono eyebrow above the headline. */}
+        <h1>
+          <span className="eyebrow">{hero.eyebrow}</span>{" "}
+          {hero.headline}
+        </h1>
         <p className="lede">{hero.lede}</p>
         <div className="hero-ctas">
           <ButtonLink href={hero.primaryCta.href}>{hero.primaryCta.label}</ButtonLink>

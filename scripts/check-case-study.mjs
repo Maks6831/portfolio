@@ -1,4 +1,4 @@
-// Story 2.1: the case-study route, its metadata, robots, sitemap and the Person JSON-LD
+// Story 2.1: the case-study route, its metadata, robots, sitemap and the JSON-LD (Person, WebSite, page node)
 // must come out of the static build exactly as specified (spec I/O matrix).
 // Story 2.6: the Screenshots section, its "Test data" captions, the files behind it and the island set.
 // Story 2.3: the Decisions section between #owned and #screenshots, one card per decision with both columns.
@@ -708,19 +708,25 @@ check(locs.length === 2 && locs.includes("https://muhammadalikhan.co.uk") && loc
 // A date-only lastmod proves the value came from content; `new Date()` would serialise with a time part.
 check((sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) ?? []).length === 2, "sitemap entries need a fixed date-only lastmod");
 
-// Person JSON-LD, once per page
+// JSON-LD, once per page: one @graph holding the page's own node, the WebSite and the Person (src/lib/json-ld.ts).
 const sameAs = ["https://www.linkedin.com/in/muhammad-ali-khan-464b80203/", "https://github.com/Maks6831"];
-for (const [name, file] of [["home", join(app, "index.html")], ["case study", join(workDir, "simply-happy.html")]]) {
+for (const [name, file, pageType] of [["home", join(app, "index.html"), "ProfilePage"], ["case study", join(workDir, "simply-happy.html"), "WebPage"]]) {
   const doc = read(file) ?? "";
   const scripts = doc.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g) ?? [];
   check(scripts.length === 1, `${name}: expected exactly one JSON-LD script, found ${scripts.length}`);
   if (scripts.length === 1) {
     try {
       const data = JSON.parse(scripts[0].replace(/^<script[^>]*>/, "").replace(/<\/script>$/, ""));
-      check(data["@type"] === "Person" && data.name && data.jobTitle, `${name}: Person JSON-LD is missing name or jobTitle`);
-      check(data.url === "https://muhammadalikhan.co.uk", `${name}: Person url mismatch`);
-      check(JSON.stringify(data.sameAs) === JSON.stringify(sameAs), `${name}: Person sameAs must be exactly LinkedIn then GitHub`);
-      check(data.address?.addressLocality === "London" && data.address?.addressCountry === "GB", `${name}: Person address must be London, GB`);
+      const graph = Array.isArray(data["@graph"]) ? data["@graph"] : [];
+      const node = (type) => graph.find((n) => n["@type"] === type);
+      const person = node("Person") ?? {};
+      check(!!node(pageType), `${name}: JSON-LD @graph needs a ${pageType} node`);
+      check(!!node("WebSite"), `${name}: JSON-LD @graph needs a WebSite node`);
+      check(person["@id"] === "https://muhammadalikhan.co.uk/#person", `${name}: Person @id must be https://muhammadalikhan.co.uk/#person`);
+      check(person.name && person.jobTitle && person.description, `${name}: Person JSON-LD is missing name, jobTitle or description`);
+      check(person.url === "https://muhammadalikhan.co.uk", `${name}: Person url mismatch`);
+      check(JSON.stringify(person.sameAs) === JSON.stringify(sameAs), `${name}: Person sameAs must be exactly LinkedIn then GitHub`);
+      check(person.address?.addressLocality === "London" && person.address?.addressCountry === "GB", `${name}: Person address must be London, GB`);
     } catch { failures.push(`${name}: JSON-LD does not parse`); }
   }
 }
